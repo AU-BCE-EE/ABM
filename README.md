@@ -2,7 +2,10 @@
 R model for anaerobic microbial degradation of organic matter with multiple microbial groups
 
 # Description
-Model predicts conversion of animal manure or other high-moisture organic wastes to methane and carbon dioxide under anaerobic conditions.
+The ATM99 model predicts conversion of animal manure or other high-moisture organic wastes to methane and carbon dioxide under anaerobic conditions.
+The name comes from **a**naerobic **t**ransformation **m**odel, and 99 represents the unlimited number of microbial groups that can be included. 
+With multiple microbial groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change.
+
 
 # Installation
 This R package is currently under development. Installation instructions will be added in mid-August 2020.

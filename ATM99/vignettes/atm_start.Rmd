@@ -1,0 +1,90 @@
+---
+title: "An introduction to the ATM99 model in R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Put the title of your vignette here}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Overview
+The ATM99 model predicts conversion of animal manure or other high-moisture organic wastes to methane (CH~4~) and carbon dioxide (CO~2~) under anaerobic conditions.
+The name comes from **a**naerobic **t**ransformation **m**odel, and 99 represents the unlimited number of microbial groups that can be included. 
+With multiple microbial groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change.
+Although it was storage of organic waste (animal manure) in unheated tanks that drove the initial development of the model, with its flexibility it is well-suited to simulate biogas production from organic waste in anaerobic digesters, particularly in the presence of temperature variation.
+
+# Installation
+
+# REMOVE LATER
+```{r}
+ff <- list.files('../R', full.names = TRUE)
+for (i in ff) source(i)
+ls()
+```
+
+# A simple example
+By default, the `atm()` function simulates degradation of animal manure from a 33 m^3^ storage tank with a 30 day emptying interval.
+Fresh slurry is added continuously at a rate of 1000 kg d^-1^.
+Default values are included for all arguments, including the first two, which set the length of the simulation (365 d) and the time interval in the output (1 d).
+
+```{r}
+pred1 <- atm()
+```
+
+Output is, by default, a data frame with predicted variables over time.
+Typically the primary variable of interest is CH~4~ emission, which is returned as a total (g) and rate, overall or normalized to COD or VS mass:
+
+```{r}
+names(pred1[grepl('^CH4', names(pred1))])
+```
+
+Total cumulative emission (g) and emission rate (g/d) are plotted below.
+
+```{r}
+plot(CH4_emis_cum ~ time, data = pred1, type = 'l')
+plot(CH4_emis_rate ~ time, data = pred1, type = 'l')
+```
+
+Microbial biomass (g) is given in columns with the names set in the `grp_pars` argument.
+
+```{r}
+matplot(pred1$time, pred1[, c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], type = 'l')
+```
+
+Because of a default temperature of 23 (NTS: why so high???) methanogen `m3` dominates.
+Biomass concentrations (g/kg) may be more informative.
+
+```{r}
+plot(m3_conc ~ time, data = pred1, type = 'l')
+```
+
+Dynamics in production of CH~4~ are often related to VFA accumulation, and VFA mass (g) and concentration (g/kg) can be extracted.
+
+```{r}
+plot(VFA ~ time, data = pred1, type = 'l')
+plot(VFA_conc ~ time, data = pred1, type = 'l')
+```
+
+# Setting parameter values
+
+# Output options
+
+# COD mass balance
+
+# Setting feed characteristics
+
+# Defining microbial groups
+
+# Simulating reactors
+
+# Temperature variation
+
+# Temperature shocks
+
+# Acidification
+
+# Picking up where you left off
+
+# 
+
+

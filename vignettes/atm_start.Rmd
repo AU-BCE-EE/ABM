@@ -66,6 +66,42 @@ plot(VFA_conc ~ time, data = pred1, type = 'l')
 ```
 
 # Setting parameter values
+Although the ATM99 model is relatively simple, explicitly simulating the activity of multiple microbial groups means there are a lot of parameters. 
+The complete list can be seen in the help file.
+
+```{r,eval=FALE}
+?atm
+```
+
+Parameters are grouped to make changes easier (or to prevent mistakes) and to limit the number of parameter names that are needed.
+But there are also some shortcuts built into the `atm()` funtion to make small tweaks simple.
+
+As an example, the composition of the fresh slurry (influent, or feed) is set with the `man_pars` argument, which is a list of solute concentrations and pH.
+By default:
+```
+man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.0, Sp = 65, COD = 170), pH = 7), ...
+```
+To simulate a lower pH then, the following call could be used:
+
+```{r}
+pred2 <- atm(365, 1, man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.0, Sp = 65, COD = 170), pH = 6))
+```
+
+```{r}
+plot(CH4_emis_rate ~ time, data = pred2, type = 'l')
+lines(CH4_emis_rate ~ time, data = pred1, type = 'l', col = 'red')
+```
+
+Alternatively, the special `add_pars` argument can be used to specify just those parameters that will be changed from their defaults.
+
+```{r}
+pred2 <- atm(365, 1, add_pars = list(pH = 6))
+```
+
+Note that the `man_pars` name is not needed here.
+
+
+
 
 # Output options
 

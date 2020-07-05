@@ -8,7 +8,7 @@ function(
                  resid_frac = 0.10,         # Residual slurry fraction after emptying
                  area = 11,                 # Based on 3 m depth (m2)
                  temp_C = 23),
-  man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 63.7, COD = 163.6),
+  man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160),
                  pH = 7), # Note list not c() so SO4 can be data frame
   grp_pars = list(yield = c(default = 0.04, sr1 = 0.065),
                   xa_fresh = c(default = 0.001, sr1 = 0.001),

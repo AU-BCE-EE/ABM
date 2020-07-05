@@ -84,21 +84,25 @@ man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.0, Sp 
 To simulate a lower pH then, the following call could be used:
 
 ```{r}
-pred2 <- atm(365, 1, man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.0, Sp = 65, COD = 170), pH = 6))
+pred2 <- atm(365, 1, man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160), pH = 6))
 ```
 
 ```{r}
-plot(CH4_emis_rate ~ time, data = pred2, type = 'l')
-lines(CH4_emis_rate ~ time, data = pred1, type = 'l', col = 'red')
+plot(CH4_emis_rate ~ time, data = pred1, type = 'l', xlab = 'Time (d)', ylab = expression('CH'[4]~'emission (g/d)'))
+lines(CH4_emis_rate ~ time, data = pred2, type = 'l', col = 'red')
 ```
 
 Alternatively, the special `add_pars` argument can be used to specify just those parameters that will be changed from their defaults.
 
 ```{r}
-pred2 <- atm(365, 1, add_pars = list(pH = 6))
+pred2b <- atm(365, 1, add_pars = list(pH = 6))
+all.equal(pred2, pred2b)
 ```
 
-Note that the `man_pars` name is not needed here.
+Note that the `man_pars` name is not needed for the `add_pars` option.
+
+Many arguments for the `atm()` function are named lists or vectors.
+These arguments--or even one element within them--can still be specified using `add_pars`.
 
 
 

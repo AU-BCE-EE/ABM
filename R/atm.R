@@ -237,12 +237,14 @@ function(
 
   # Get averages (excluding startup period)
   dat_sel <- dat[dat$time > startup, ]
-  rCH4_ave <- (dat_sel$CH4_emis_cum[nrow(dat_sel)] - dat_sel$CH4_emis_cum[1])/
-                (dat_sel$time[nrow(dat_sel)] - dat_sel$time[1])
+  CH4_emis_cum <- dat_sel$CH4_emis_cum[nrow(dat_sel)] - dat_sel$CH4_emis_cum[1]
+  CH4_emis_rate <- CH4_emis_cum / (dat_sel$time[nrow(dat_sel)] - dat_sel$time[1])
+  # WIP NTS
+  CH4_emis_cum
 
   # Return results
   # Average only
-  if (value == 'ave') return(rCH4_ave)
+  if (value == 'sum') return(rCH4_ave)
   # ts = time series
   if (value == 'ts') return(dat)
   # tsel = time series after startup period

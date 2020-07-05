@@ -92,7 +92,7 @@ plot(CH4_emis_rate ~ time, data = pred1, type = 'l', xlab = 'Time (d)', ylab = e
 lines(CH4_emis_rate ~ time, data = pred2, type = 'l', col = 'red')
 ```
 
-Alternatively, the special `add_pars` argument can be used to specify just those parameters that will be changed from their defaults.
+Alternatively, the special `add_pars` argument can be used to specify just those parameters (or individual parameter elements) that will be changed from their defaults.
 
 ```{r}
 pred2b <- atm(365, 1, add_pars = list(pH = 6))
@@ -103,6 +103,26 @@ Note that the `man_pars` name is not needed for the `add_pars` option.
 
 Many arguments for the `atm()` function are named lists or vectors.
 These arguments--or even one element within them--can still be specified using `add_pars`.
+For example, to change only the VFA value for `conc_fresh` use the following call.
+
+
+```{r}
+pred3 <- atm(365, 1, add_pars = list(pH = 6, conc_fresh.VFA = 10))
+```
+
+This shortcut is referred to as the "par.element" approach, and the `.` is a special character used to separate parameter (here, `conc_fresh`) and element (here, `VFA`) names.
+(If desired, a different character can be selected with the `par_key` argument.)
+
+Of course, specifying all elements is always an option,
+
+```{r}
+pred3b <- atm(365, 1, add_pars = list(pH = 6, conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 10, Sp = 65, COD = 160))
+```
+
+as is specifying a complete argument of parameters (as in `pred2` above).
+
+
+
 
 
 

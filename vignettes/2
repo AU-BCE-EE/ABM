@@ -31,7 +31,7 @@ devtools::install_github('sashahafner/ATM99')
 
 And to use the ATM99 model, the package must be loaded.
 
-```{r,eval= FALSE}
+```{r}
 library(ATM99)
 ```
 
@@ -48,42 +48,42 @@ Fresh slurry is added continuously at a rate of 1000 kg d^-1^.
 Default values are included for all arguments, including the first two, which set the length of the simulation (365 d) and the time interval in the output (1 d).
 
 ```{r}
-out1 <- atm()
+pred1 <- atm()
 ```
 
 Output is, by default, a data frame with predicted variables over time.
 Typically the primary variable of interest is CH~4~ emission, which is returned as a total (g) and rate, overall or normalized to COD or VS mass:
 
 ```{r}
-names(out1[grepl('^CH4', names(out1))])
+names(pred1[grepl('^CH4', names(pred1))])
 ```
 
 Total cumulative emission (g) and emission rate (g/d) are plotted below.
 
 ```{r}
-plot(CH4_emis_cum ~ time, data = out1, type = 'l')
-plot(CH4_emis_rate ~ time, data = out1, type = 'l')
+plot(CH4_emis_cum ~ time, data = pred1, type = 'l')
+plot(CH4_emis_rate ~ time, data = pred1, type = 'l')
 ```
 
 Microbial biomass (g) is given in columns with the names set in the `grp_pars` argument.
 
 ```{r}
-matplot(out1$time, out1[, c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], type = 'l')
+matplot(pred1$time, pred1[, c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], type = 'l')
 ```
 
 Because of a default temperature of 23 (NTS: why so high???) methanogen `m3` dominates.
 Biomass concentrations (g/kg) may be more informative.
 
 ```{r}
-plot(m3_conc ~ time, data = out1, type = 'l')
+plot(m3_conc ~ time, data = pred1, type = 'l')
 ```
 
 Dynamics in production of CH~4~ are often related to VFA accumulation, and VFA mass (g) and concentration (g/kg) can be extracted.
 For more information on the many output variables returned by `atm()`, see the section on that topic below.
 
 ```{r}
-plot(VFA ~ time, data = out1, type = 'l')
-plot(VFA_conc ~ time, data = out1, type = 'l')
+plot(VFA ~ time, data = pred1, type = 'l')
+plot(VFA_conc ~ time, data = pred1, type = 'l')
 ```
 
 # Setting parameter values
@@ -106,21 +106,21 @@ man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.0, Sp 
 To simulate a lower pH then, the following call could be used:
 
 ```{r}
-out2 <- atm(365, 1, man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
+pred2 <- atm(365, 1, man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
                                                        VFA = 4.2, Sp = 65, COD = 160), 
                                      pH = 6))
 ```
 
 ```{r}
-plot(CH4_emis_rate ~ time, data = out1, type = 'l', xlab = 'Time (d)', ylab = expression('CH'[4]~'emission (g/d)'))
-lines(CH4_emis_rate ~ time, data = out2, type = 'l', col = 'red')
+plot(CH4_emis_rate ~ time, data = pred1, type = 'l', xlab = 'Time (d)', ylab = expression('CH'[4]~'emission (g/d)'))
+lines(CH4_emis_rate ~ time, data = pred2, type = 'l', col = 'red')
 ```
 
 Alternatively, the special `add_pars` argument can be used to specify just those parameters (or individual parameter elements) that will be changed from their defaults.
 
 ```{r}
-out2b <- atm(365, 1, add_pars = list(pH = 6))
-all.equal(out2, out2b)
+pred2b <- atm(365, 1, add_pars = list(pH = 6))
+all.equal(pred2, pred2b)
 ```
 
 Note that the `man_pars` name is not needed for the `add_pars` option.
@@ -131,7 +131,7 @@ For example, to change only the VFA value for `conc_fresh` use the following cal
 
 
 ```{r}
-out3 <- atm(365, 1, add_pars = list(pH = 6, conc_fresh.VFA = 10))
+pred3 <- atm(365, 1, add_pars = list(pH = 6, conc_fresh.VFA = 10))
 ```
 
 This shortcut is referred to as the "par.element" approach, and the `.` is a special character used to separate parameter (here, `conc_fresh`) and element (here, `VFA`) names.
@@ -140,10 +140,10 @@ This shortcut is referred to as the "par.element" approach, and the `.` is a spe
 Of course, specifying all elements is always an option,
 
 ```{r}
-out3b <- atm(365, 1, add_pars = list(pH = 6, conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 10, Sp = 65, COD = 160)))
+pred3b <- atm(365, 1, add_pars = list(pH = 6, conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 10, Sp = 65, COD = 160)))
 ```
 
-as is specifying a complete argument of parameters (as in `out2` above).
+as is specifying a complete argument of parameters (as in `pred2` above).
 
 Setting arguments is explored further in the section on defining microbial groups below.
 
@@ -152,8 +152,8 @@ By default, the `atm()` function returns a data frame with cumulative CH~4~ emis
 In total there are more than 300 columns---the first 20 are shown below.
 
 ```{r}
-out1 <- atm(365, 1)
-out1[1:3, 1:20]
+pred1 <- atm(365, 1)
+pred1[1:3, 1:20]
 ```
 
 Microbial biomass values (g COD) are present in the columns that directly follow time (d).
@@ -162,23 +162,23 @@ The fraction of loaded COD converted through methanogenesis, respiration, and su
 For example, fractional conversion of COD to CH~4~ based on instantaneous rates and cumulative values are shown in the plot below.
 
 ```{r}
-plot(f_COD_CH4_rate ~ time, data = out1, type = 'l', col = 'blue')
-lines(f_COD_CH4_cum ~ time, data = out1, col = 'red')
+plot(f_COD_CH4_rate ~ time, data = pred1, type = 'l', col = 'blue')
+lines(f_COD_CH4_cum ~ time, data = pred1, col = 'red')
 ```
 
 Overall results can be extracted by changing the `value` argument to `sum` (for summary).
 
 ```{r}
-out1s <- atm(365, 1, value = 'sum')
-out1s
+pred1s <- atm(365, 1, value = 'sum')
+pred1s
 ```
 
 And an arbitrary startup period can be excluded using the `startup` argument.
 For example, results are based on the last 165 days in the example below.
 
 ```{r}
-out1s <- atm(365, 1, value = 'sum', startup = 200)
-out1s
+pred1s <- atm(365, 1, value = 'sum', startup = 200)
+pred1s
 ```
 
 Set the `value` argument to `'all'` for time series data and the summary.
@@ -186,63 +186,9 @@ Set the `value` argument to `'all'` for time series data and the summary.
 # Defining microbial groups
 
 # Simulating reactors
-The ATM99 model inherently describes a reactor with continuous feeding and intermittent wasting.
-To approximate a continuous reactor (which typically has intermittent feeding and wasting in practice--but this is a seprate discussion) the `resid_frac` argument can be set to a high value, e.g. `0.95`.
-This provides frequent wasting of a small quantity. 
-The following example simulates the startup of a mesophilic completely mixed anaerobic digester fed cattle manure (based on defaults).
-
-```{r}
-out4 <- atm(365, 1, add_pars = list(temp_C = 35, resid_frac = 0.95, alpha_opt = 0.2, slurry_prod_rate = 500))
-
-```
-
-Due to the structure of the code, one drawback of this high `resid_frac` approach is a long evaluation time.
-
-```{r}
-plot(CH4_emis_cum_VS ~ time, data = out4, type = 'l')
-plot(22300 / 16 * CH4_emis_cum_VS ~ time, data = out4, type = 'l')
-plot(f_COD_CH4_rate ~ time, data = out4, type = 'l')
-
-matplot(out4$time, out4[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], type = 'l')
-legend('topleft', nn, col = 1:5, lty = 1)
-
-matplot(out4$time, out4[, c('Sp_conc', 'VFA_conc', 'COD_conc', 'dCOD_conc')], type = 'l')
-```
-
-
 
 # Temperature variation
-Predicting short- and long-term responses to temperature change was a central objective of the ATM99 model.
-Variable temperature is entered in a data frame with two columns.
-For example, gradual warming from 5&deg;C to 25&deg;C, a hold, and then a gradual cooling back to 5&deg;C can be specified as shown in the `temp_dat` data frame constructed below.
-
-
-```{r}
-temp_dat <- data.frame(time = 100 + c(0, 60, 220, 280), 
-                       temp_C =     c(5, 25, 25,  5)) 
-plot(temp_C ~ time, data = temp_dat, type = 'l')
-```
-
-The model can either interpolate (the default) or use constant temperatures between change points. 
-The temperature data can be supplied using the `mng_pars` argument or, more simply, with `add_pars`.
-
-```{r}
-out5 <- atm(500, 1, add_pars = list(temp_C = temp_dat))
-```
-
-```{r, echo = FALSE}
-plot(temp_C ~ time, type = 'l', col = 'red', data = out5)
-abline(v = temp_dat$time, lty = 2, col = 'gray45')
-
-matplot(out5$time, out5[, c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], type = 'l')
-abline(v = temp_dat$time, lty = 2, col = 'gray45')
-
-plot(CH4_emis_rate_VS ~ time, data = out5, type = 'l')
-abline(v = temp_dat$time, lty = 2, col = 'gray45')
-
-plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out5)
-abline(v = temp_dat$time, lty = 2, col = 'gray45')
-
+The 
 
 # Temperature shocks
 

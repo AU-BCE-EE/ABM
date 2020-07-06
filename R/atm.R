@@ -227,7 +227,6 @@ function(
   dat$CO2_emis_cum_VS <- dat$CO2_emis_cum / dat$VS_load_cum
   # Apparent COD conversion fraction
   dat$f_COD_CH4_rate <-  dat$CH4_emis_rate / pars$COD_conv[['CH4']] / dat$COD_load_rate
-  #dat$f_COD_CH4_cum <-  dat$CH4_emis_cum / pars$COD_conv[['CH4']] / dat$COD_load_cum
   dat$f_COD_CH4_cum <-  dat$COD_conv_cum_meth / dat$COD_load_cum
   dat$f_COD_respir_cum <-  dat$COD_conv_cum_respir / dat$COD_load_cum
   dat$f_COD_sr_cum <-  dat$COD_conv_cum_sr / dat$COD_load_cum
@@ -237,14 +236,41 @@ function(
 
   # Get averages (excluding startup period)
   dat_sel <- dat[dat$time > startup, ]
+
+  COD_load <- sum(dat_sel$COD_load_rate * delta_t)
+  dCOD_load <- sum(dat_sel$dCOD_load_rate * delta_t)
+  ndCOD_load <- sum(dat_sel$ndCOD_load_rate * delta_t)
+  VS_load <- sum(dat_sel$VS_load_rate * delta_t)
+
   CH4_emis_cum <- dat_sel$CH4_emis_cum[nrow(dat_sel)] - dat_sel$CH4_emis_cum[1]
   CH4_emis_rate <- CH4_emis_cum / (dat_sel$time[nrow(dat_sel)] - dat_sel$time[1])
-  # WIP NTS
-  CH4_emis_cum
+  CH4_emis_COD <- CH4_emis_cum / COD_load
+  CH4_emis_dCOD <- CH4_emis_cum / dCOD_load
+  CH4_emis_VS <- CH4_emis_cum / VS_load
+
+  CO2_emis_cum <- dat_sel$CO2_emis_cum[nrow(dat_sel)] - dat_sel$CO2_emis_cum[1]
+  CO2_emis_rate <- CO2_emis_cum / (dat_sel$time[nrow(dat_sel)] - dat_sel$time[1])
+  CO2_emis_COD <- CO2_emis_cum / COD_load
+  CO2_emis_dCOD <- CO2_emis_cum / dCOD_load
+  CO2_emis_VS <- CO2_emis_cum / VS_load
+
+  COD_conv_meth <- dat_sel$COD_conv_cum_meth[nrow(dat_sel)] - dat_sel$COD_conv_cum_meth[1]
+  COD_conv_respir <- dat_sel$COD_conv_cum_respir[nrow(dat_sel)] - dat_sel$COD_conv_cum_respir[1]
+  COD_conv_sr <- dat_sel$COD_conv_cum_sr[nrow(dat_sel)] - dat_sel$COD_conv_cum_sr[1]
+  f_COD_CH4 <- COD_conv_meth / COD_load
+  f_COD_respir <- COD_conv_respir / COD_load
+  f_COD_sr <- COD_conv_sr / COD_load
+
+  summ <- c(COD_load = COD_load, dCOD_load = dCOD_load, ndCOD_load = ndCOD_load, VS_load = VS_load,
+            CH4_emis_cum = CH4_emis_cum, CH4_emis_rate = CH4_emis_rate, CH4_emis_COD = CH4_emis_COD, CH4_emis_dCOD = CH4_emis_dCOD, CH4_emis_VS = CH4_emis_VS,
+            CO2_emis_cum = CO2_emis_cum, CO2_emis_rate = CO2_emis_rate, CO2_emis_COD = CO2_emis_COD, CO2_emis_dCOD = CO2_emis_dCOD, CO2_emis_VS = CO2_emis_VS,
+            COD_conv_meth = COD_conv_meth, COD_conv_respir = COD_conv_respir, COD_conv_sr = COD_conv_sr,
+            f_COD_CH4 = f_COD_CH4, f_COD_respir = f_COD_respir, f_COD_sr = f_COD_sr) 
+
 
   # Return results
   # Average only
-  if (value == 'sum') return(rCH4_ave)
+  if (value == 'sum') return(summ)
   # ts = time series
   if (value == 'ts') return(dat)
   # tsel = time series after startup period

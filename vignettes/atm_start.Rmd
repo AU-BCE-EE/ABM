@@ -13,12 +13,12 @@ options(width = 85)
 
 
 # Overview
-The ATM99 model predicts conversion of animal manure or other high-moisture organic wastes to methane (CH~4~) and carbon dioxide (CO~2~) under anaerobic conditions.
-The name comes from **a**naerobic **t**ransformation **m**odel, and 99 represents the unlimited number of microbial groups that can be included. 
-With multiple microbial groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change.
-Although it was storage of organic waste (animal manure) in unheated tanks that drove the initial development of the model, with its flexibility it is well-suited to simulate biogas production from organic waste in anaerobic digesters, particularly in the presence of temperature variation.
+The ATM99 model predicts conversion of animal manure or other (high-moisture) organic wastes to methane (CH~4~) and carbon dioxide (CO~2~) under anaerobic conditions.
+The name comes from **a**naerobic **t**ransformation **m**odel, and "99" represents the unlimited number of microbial groups that can be included. 
+With multiple microbial groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change and other perturbations.
+Although it was storage of organic waste (animal manure) in unheated tanks that drove the initial development of the model, with its flexibility it is well-suited to simulate biogas production from organic waste in anaerobic digesters, particularly in the presence of temperature variations.
 The purpose of this document is to demonstrate the use of the ATM99 R package, which is a flexible implementation of the model.
-The focus here is on the *use* of the `atm()` function; for a detailed description of the model itself, see Dalby et al. (2020a, 2020b).
+For a detailed description of the model itself, see Dalby et al. (2020a, 2020b).
 
 # Installation
 The ATM99 package is available on GitHub and so can be installed with the `install_github()` function from the devtools package, which must be installed first.
@@ -42,17 +42,20 @@ for (i in ff) source(i)
 ls()
 ```
 
-# A simple example
+# A simple example: methane emission from stored slurry
 By default, the `atm()` function simulates degradation of animal manure from a 33 m^3^ storage tank with a 30 day emptying interval.
 Fresh slurry is added continuously at a rate of 1000 kg d^-1^.
 Default values are included for all arguments, including the first two, which set the length of the simulation (365 d) and the time interval in the output (1 d).
+
+In this example, the model is used to predict dynamics of CH~4~ emission, microbial biomass, and VFA accumulation.
+The following call runs the ATM99 model with default argument values.
 
 ```{r}
 out1 <- atm()
 ```
 
-Output is, by default, a data frame with predicted variables over time.
-Typically the primary variable of interest is CH~4~ emission, which is returned as a total (g) and rate, overall or normalized to COD or VS mass:
+Output is, by default, a data frame with predicted variables over time (see Section X for alternatives).
+Typically the primary variable of interest is CH~4~ emission, which is returned as a total (g) and rate (g/d), overall or normalized to COD or VS loading:
 
 ```{r}
 names(out1[grepl('^CH4', names(out1))])
@@ -65,42 +68,53 @@ plot(CH4_emis_cum ~ time, data = out1, type = 'l')
 plot(CH4_emis_rate ~ time, data = out1, type = 'l')
 ```
 
-Microbial biomass (g) is given in columns with the names set in the `grp_pars` argument.
+Microbial biomass (g) is given in columns with names that match those used for the names of the groups (defaults shown below, set within the `grp_pars` argument).
 
 ```{r}
-matplot(out1$time, out1[, c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], type = 'l')
+matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], 
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (g)')
+legend('topleft', nn, col = 1:6, lty = 1)
 ```
 
-Because of a default temperature of 23 (NTS: why so high???) methanogen `m3` dominates.
-Biomass concentrations (g/kg) may be more informative.
+Because of a default temperature of 23 (NTS: why so high???) methanogen `m3` dominates under default conditions.
+Biomass concentrations (g per kg of slurry) may be more informative.
 
 ```{r}
 plot(m3_conc ~ time, data = out1, type = 'l')
 ```
 
 Dynamics in production of CH~4~ are often related to VFA accumulation, and VFA mass (g) and concentration (g/kg) can be extracted.
-For more information on the many output variables returned by `atm()`, see the section on that topic below.
 
 ```{r}
 plot(VFA ~ time, data = out1, type = 'l')
 plot(VFA_conc ~ time, data = out1, type = 'l')
 ```
+For more information on the many output variables returned by `atm()`, see the section on that topic below.
 
 # Setting parameter values
-Although the ATM99 model is relatively simple, explicitly simulating the activity of multiple microbial groups means there are a lot of parameters. 
-The complete list can be seen in the help file.
+Although the ATM99 model is relatively simple, explicitly simulating the activity of multiple microbial groups means there are many parameters. 
+The complete list and definitions can be seen in the help file, accessible with the following command.
 
 ```{r,eval=FALSE}
 ?atm
 ```
 
-Parameters are grouped to make changes easier (or to prevent mistakes) and to limit the number of parameter names that are needed.
-But there are also some shortcuts built into the `atm()` funtion to make small tweaks simple.
+Alternatively, use `args()` just to see the arguments and default values.
+
+```{r}
+args(atm)
+```
+
+Parameters are grouped to make changes easier (and to prevent input mistakes) and to limit the number of parameter names that are needed.
+The `mng_pars` argument contains parameters related to management; `man_pars` describes the incoming manure or feed; `grp_pars`, the most extensive argument, is used to define the microbial groups; `mic_pars` contains other microbial parameters that do not vary among groups; and `chem_pars` sets some chemical/physical parameters.
+But there are also some built-in shortcuts to make small tweaks simple.
+In particular, the `add_pars` argument makes life easy.
 
 As an example, the composition of the fresh slurry (influent, or feed) is set with the `man_pars` argument, which is a list of solute concentrations and pH.
 By default:
 ```
-man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.0, Sp = 65, COD = 170), 
+man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
+                                  VFA = 4.0, Sp = 65, COD = 170), 
                 pH = 7), ...
 ```
 To simulate a lower pH then, the following call could be used:
@@ -111,8 +125,11 @@ out2 <- atm(365, 1, man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN =
                                      pH = 6))
 ```
 
+Below CH~4~ emission rate is compared to the default predictions.
+
 ```{r}
-plot(CH4_emis_rate ~ time, data = out1, type = 'l', xlab = 'Time (d)', ylab = expression('CH'[4]~'emission (g/d)'))
+plot(CH4_emis_rate ~ time, data = out1, type = 'l', xlab = 'Time (d)', 
+     ylab = expression('CH'[4]~'emission (g/d)'))
 lines(CH4_emis_rate ~ time, data = out2, type = 'l', col = 'red')
 ```
 
@@ -120,6 +137,11 @@ Alternatively, the special `add_pars` argument can be used to specify just those
 
 ```{r}
 out2b <- atm(365, 1, add_pars = list(pH = 6))
+```
+
+These two approaches provide identical results:
+
+```{r}
 all.equal(out2, out2b)
 ```
 
@@ -127,25 +149,26 @@ Note that the `man_pars` name is not needed for the `add_pars` option.
 
 Many arguments for the `atm()` function are named lists or vectors.
 These arguments--or even one element within them--can still be specified using `add_pars`.
-For example, to change only the VFA value for `conc_fresh` use the following call.
-
+For example, to change only the VFA value for `conc_fresh` the following call provides a shortcut compared to specifying all elements within the `conc_fresh` vector (as in the `out2` example above).
 
 ```{r}
 out3 <- atm(365, 1, add_pars = list(pH = 6, conc_fresh.VFA = 10))
 ```
 
-This shortcut is referred to as the "par.element" approach, and the `.` is a special character used to separate parameter (here, `conc_fresh`) and element (here, `VFA`) names.
-(If desired, a different character can be selected with the `par_key` argument.)
+This shortcut is referred to as the "par.element" approach in the documentation, and the `.` is a special character used to separate parameter (here, `conc_fresh`) and element (here, `VFA`) names.
+(If desired, a different character can be set with the `par_key` argument.)
 
 Of course, specifying all elements is always an option,
 
 ```{r}
-out3b <- atm(365, 1, add_pars = list(pH = 6, conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 10, Sp = 65, COD = 160)))
+out3b <- atm(365, 1, add_pars = list(pH = 6, conc_fresh = list(S2 = 0.0, SO4 = 0.2, 
+                                                               TAN = 1.0, VFA = 10, 
+                                                               Sp = 65, COD = 160)))
 ```
 
 as is specifying a complete argument of parameters (as in `out2` above).
 
-Setting arguments is explored further in the section on defining microbial groups below.
+Setting arguments is explored further in the section on defining microbial groups below (Section X).
 
 # Output options
 By default, the `atm()` function returns a data frame with cumulative CH~4~ emission and other state variables, normalized in a variety of ways.
@@ -153,12 +176,12 @@ In total there are more than 300 columns---the first 20 are shown below.
 
 ```{r}
 out1 <- atm(365, 1)
-out1[1:3, 1:20]
+out1[365, 1:20]
 ```
 
 Microbial biomass values (g COD) are present in the columns that directly follow time (d).
-Emission of CH~4~ and CO~2~ are included as cumulative values (g), rates (g/d), and both types are also normalized by loading of COD, degradable COD (`dCOD`), and VS.
-The fraction of loaded COD converted through methanogenesis, respiration, and sulfate reduction is also given.
+Emission of CH~4~ and CO~2~ are included as cumulative values (g), rates (g/d), and both types are also normalized by loading of COD, degradable COD (`dCOD`), and VS (based on either instantaneous rates or cumulative values).
+The fraction of loaded COD converted through methanogenesis, respiration, and sulfate reduction is also given--these variables start with `f_`.
 For example, fractional conversion of COD to CH~4~ based on instantaneous rates and cumulative values are shown in the plot below.
 
 ```{r}
@@ -173,53 +196,76 @@ out1s <- atm(365, 1, value = 'sum')
 out1s
 ```
 
-And an arbitrary startup period can be excluded using the `startup` argument.
-For example, results are based on the last 165 days in the example below.
+And an arbitrary startup period can be excluded from these summary results using the `startup` argument.
+For example, the first 100 days are excluded in the example below.
 
 ```{r}
-out1s <- atm(365, 1, value = 'sum', startup = 200)
+out1s <- atm(365, 1, value = 'sum', startup = 100)
 out1s
 ```
 
-Set the `value` argument to `'all'` for time series data and the summary.
+Alternatively, set the `value` argument to `'all'` for time series data and the summary.
 
 # Defining microbial groups
+By default, the ATM99 model includes six microbial groups: five methanogens and one sulfate reducer.
+Each microbial group is characterized by 14 parameters that describe the rate of metabolism, biomass yield, decay rate, and the response to temperature, pH, and ammonia.
+Additionally, values are needed for biomass concentrations in fresh slurry and the storage.
+Lastly, an enrichment factor parameter is specified for each group.
+Unlike VFA consumption, the rate of the combined hydrolysis and fermentation step is controlled by a simple temperature-dependent first-order rate constant.
+Aerobic respiration is controlled by the mass transfer rate of O~2~ to the slurry surface.
+For these two processes then, there is no (explicit) associated microbial group.
+
+A central feature of the ATM99 model is the ability to specify any number of methanogenic groups. 
+To define a custom set, a single (albeit complex) argument `grp_pars` needs to be set (see Section X). 
+This task is straightforward if tedious--simply follow the default values shown in the help files--and no example is given here.
+A more common need is to tweak default parameters.
+Although this can also be done using `grp_pars`, it is more efficient to use `add_pars`.
+For example, to increase `qhat_optim` of group `p1` to 3 g/g-d (g substrate COD per g biomass COD per day) and the yield to 0.06 g/g, the following call could be used:
+
+```{r}
+out4 <- atm(365, 1, add_pars = list(qhat_opt.p1 = 3, yield.p1 = 0.06))
+plot(p1_conc ~ time, data = out4, type = 'l', ylab = 'Biomass concentration (g/kg)')
+lines(p1_conc ~ time, data = out1, type = 'l', col = 'red')
+```
+
+This change from the default values (2.77 and 0.04) has a drastic effect, which perhaps should not be too surprising because the yield change alone represents a 50% improvement in fitness.
+
 
 # Simulating reactors
 The ATM99 model inherently describes a reactor with continuous feeding and intermittent wasting.
-To approximate a continuous reactor (which typically has intermittent feeding and wasting in practice--but this is a seprate discussion) the `resid_frac` argument can be set to a high value, e.g. `0.95`.
+To approximate a continuous reactor (which is not actually "continuous" in practice but typically has intermittent feeding and wasting--but this is a seprate discussion) the `resid_frac` argument can be set to a high value, e.g. `0.95`.
 This provides frequent wasting of a small quantity. 
 The following example simulates the startup of a mesophilic completely mixed anaerobic digester fed cattle manure (based on defaults).
 
 ```{r}
-out4 <- atm(365, 1, add_pars = list(temp_C = 35, resid_frac = 0.95, alpha_opt = 0.2, slurry_prod_rate = 500))
+out5 <- atm(365, 1, add_pars = list(temp_C = 35, resid_frac = 0.95, alpha_opt = 0.2, 
+                                    slurry_mass = 0.95 * 33333, slurry_prod_rate = 500))
 
 ```
 
-Due to the structure of the code, one drawback of this high `resid_frac` approach is a long evaluation time.
+Due to the structure of the code (the ODE solver is called separately for each filling interval), a drawback of this high `resid_frac` approach is a long evaluation time.
 
 ```{r}
-plot(CH4_emis_cum_VS ~ time, data = out4, type = 'l')
-plot(22300 / 16 * CH4_emis_cum_VS ~ time, data = out4, type = 'l')
-plot(f_COD_CH4_rate ~ time, data = out4, type = 'l')
+plot(CH4_emis_cum_VS ~ time, data = out5, type = 'l')
+plot(22300 / 16 * CH4_emis_cum_VS ~ time, data = out5, type = 'l')
+plot(f_COD_CH4_rate ~ time, data = out5, type = 'l')
 
-matplot(out4$time, out4[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], type = 'l')
+matplot(out5$time, out5[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+        type = 'l', lty = 1)
 legend('topleft', nn, col = 1:5, lty = 1)
 
-matplot(out4$time, out4[, c('Sp_conc', 'VFA_conc', 'COD_conc', 'dCOD_conc')], type = 'l')
+matplot(out5$time, out5[, c('Sp_conc', 'VFA_conc', 'COD_conc', 'dCOD_conc')], 
+        type = 'l', lty = 1)
 ```
 
-
-
-# Temperature variation
+# Variable temperature
 Predicting short- and long-term responses to temperature change was a central objective of the ATM99 model.
 Variable temperature is entered in a data frame with two columns.
-For example, gradual warming from 5&deg;C to 25&deg;C, a hold, and then a gradual cooling back to 5&deg;C can be specified as shown in the `temp_dat` data frame constructed below.
-
+For example, gradual warming from 10&deg;C to 25&deg;C, a hold, and then a gradual cooling back to 10&deg;C can be specified as shown in the `temp_dat` data frame constructed below.
 
 ```{r}
 temp_dat <- data.frame(time = 100 + c(0, 60, 220, 280), 
-                       temp_C =     c(5, 25, 25,  5)) 
+                       temp_C =     c(10, 25,  25,   10)) 
 plot(temp_C ~ time, data = temp_dat, type = 'l')
 ```
 
@@ -227,28 +273,68 @@ The model can either interpolate (the default) or use constant temperatures betw
 The temperature data can be supplied using the `mng_pars` argument or, more simply, with `add_pars`.
 
 ```{r}
-out5 <- atm(500, 1, add_pars = list(temp_C = temp_dat))
+out6 <- atm(500, 1, add_pars = list(temp_C = temp_dat))
 ```
 
 ```{r, echo = FALSE}
-plot(temp_C ~ time, type = 'l', col = 'red', data = out5)
+plot(temp_C ~ time, type = 'l', col = 'red', data = out6)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
-matplot(out5$time, out5[, c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], type = 'l')
+matplot(out6$time, out6[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
+legend('topleft', nn, col = 1:5, lty = 1)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
-plot(CH4_emis_rate_VS ~ time, data = out5, type = 'l')
+plot(CH4_emis_rate_VS ~ time, data = out6, type = 'l')
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
-plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out5)
+plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out6)
+abline(v = temp_dat$time, lty = 2, col = 'gray45')
+```
+
+NTS: Really no development of a psychrophilic population?
+NTS: What does it take?
+
+Temperature data could be much higher resolution, e.g., daily values.
+
+For anaerobic digesters, the effect of both short- and long-term changes are of interest.
+In a controlled environment, temperature change is not always gradual, but can be (deliberately) rapid.
+The `approx_method_temp` argument can be used for this type of pattern, instead of the linear interpolation shown above (which is the default).
+The following data frame can be used to simulate a reactor initially running at 35&deg;C suddenly reduced to 25&deg;C for 5 days, followed by stabilization and finally a much longer temperature change.
+
+```{r}
+temp_dat <- data.frame(time = 300 + c(0,  1,  6, 100), 
+                       temp_C =    c(35, 25, 35,  25)) 
+plot(temp_C ~ time, data = temp_dat, type = 's')
+```
+
+```{r}
+out7 <- atm(600, 1, add_pars = list(temp_C = temp_dat, resid_frac = 0.95, 
+                                    slurry_mass = 0.95 * 33333, slurry_prod_rate = 500),
+            approx_method_temp = 'constant')
+
+```
+
+```{r, echo = FALSE}
+plot(temp_C ~ time, type = 'l', col = 'red', data = out7)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
+matplot(out7$time, out7[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
+legend('topleft', nn, col = 1:5, lty = 1)
+abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
-# Temperature shocks
+plot(CH4_emis_rate_VS ~ time, data = out7, type = 'l')
+abline(v = temp_dat$time, lty = 2, col = 'gray45')
+
+plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out7)
+abline(v = temp_dat$time, lty = 2, col = 'gray45')
+```
 
 # Acidification
 
-# Picking up where you left off
+# Model output as input
+NTS: This still needs work
 
 # 
 

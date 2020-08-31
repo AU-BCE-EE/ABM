@@ -8,4 +8,4 @@ With multiple microbial groups and group-specific parameters describing kinetics
 
 
 # Installation
-This R package is currently under development. Installation instructions will be added in mid-August 2020.
+This R package is currently under development.

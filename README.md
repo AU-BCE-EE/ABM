@@ -1,5 +1,5 @@
-# ATM99
-R model for anaerobic microbial degradation of organic matter with multiple microbial groups
+# ABM
+R model for anaerobic microbial degradation (biodegradation) of organic matter with multiple microbial groups
 
 # Description
 The ATM99 model predicts conversion of animal manure or other high-moisture organic wastes to methane and carbon dioxide under anaerobic conditions.

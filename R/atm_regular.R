@@ -1,5 +1,5 @@
 atm_regular <-
-function(days, delta_t, pars) {
+function(days, delta_t, pars, starting = NULL) {
 
   # Cannot have no slurry present because is used in all concentration calculations (NTS: could change this)
   if (pars$slurry_mass == 0) {
@@ -22,6 +22,13 @@ function(days, delta_t, pars) {
          sulfate = SO4_fun(0) * pars$slurry_mass, 
          sulfide = pars$conc_fresh[['S2']] * pars$slurry_mass, 
          CH4_emis_cum = 0, CO2_emis_cum = 0, COD_conv_cum = 0, COD_conv_cum_meth = 0, COD_conv_cum_respir = 0, COD_conv_cum_sr = 0)
+
+  if (!is.null(starting) & is.data.frame(starting)) {
+    y['Sp'] <- starting[nrow(starting), 'Sp']
+    y['VFA'] <- starting[nrow(starting), 'VFA']
+    y['sulfate'] <- starting[nrow(starting), 'sulfate']
+    y['sulfide'] <- starting[nrow(starting), 'sulfide']
+  }
 
   # Empty data frame for holding results
   dat <- NULL

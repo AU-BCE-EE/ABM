@@ -1,26 +1,26 @@
 ---
 title: "An introduction to the ATM99 model in R"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Put the title of your vignette here}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+output:
+  html_document:
+    toc: true
+    theme: united
 ---
 
-```{r}
+
+```{r,echo=FALSE}
 options(width = 85)
 ```
 
 
-# Overview
+# 1. Overview
 The ATM99 model predicts conversion of animal manure or other (high-moisture) organic wastes to methane (CH~4~) and carbon dioxide (CO~2~) under anaerobic conditions.
 The name comes from **a**naerobic **t**ransformation **m**odel, and "99" represents the unlimited number of microbial groups that can be included. 
 With multiple microbial groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change and other perturbations.
-Although it was storage of organic waste (animal manure) in unheated tanks that drove the initial development of the model, with its flexibility it is well-suited to simulate biogas production from organic waste in anaerobic digesters, particularly in the presence of temperature variations.
+Although it was storage of animal slurry (liquid manure) in unheated channels or tanks that drove the initial development of the model, with its flexibility it is well-suited to simulate CH~4~ emission or biogas production from other organic waste under a range of conditions, including in anaerobic digesters, particularly in the presence of temperature variations.
 The purpose of this document is to demonstrate the use of the ATM99 R package, which is a flexible implementation of the model.
 For a detailed description of the model itself, see Dalby et al. (2020a, 2020b).
 
-# Installation
+# 2. Installation
 The ATM99 package is available on GitHub and so can be installed with the `install_github()` function from the devtools package, which must be installed first.
 These steps must be carried out once to install both packages:
 
@@ -35,14 +35,12 @@ And to use the ATM99 model, the package must be loaded.
 library(ATM99)
 ```
 
-# REMOVE LATER
-```{r}
+```{r,echo=FALSE}
 ff <- list.files('../R', full.names = TRUE)
 for (i in ff) source(i)
-ls()
 ```
 
-# A simple example: methane emission from stored slurry
+# 3. A simple example: methane emission from stored slurry
 By default, the `atm()` function simulates degradation of animal manure from a 33 m^3^ storage tank with a 30 day emptying interval.
 Fresh slurry is added continuously at a rate of 1000 kg d^-1^.
 Default values are included for all arguments, including the first two, which set the length of the simulation (365 d) and the time interval in the output (1 d).
@@ -91,7 +89,7 @@ plot(VFA_conc ~ time, data = out1, type = 'l')
 ```
 For more information on the many output variables returned by `atm()`, see the section on that topic below.
 
-# Setting parameter values
+# 4. Setting parameter values
 Although the ATM99 model is relatively simple, explicitly simulating the activity of multiple microbial groups means there are many parameters. 
 The complete list and definitions can be seen in the help file, accessible with the following command.
 
@@ -170,7 +168,7 @@ as is specifying a complete argument of parameters (as in `out2` above).
 
 Setting arguments is explored further in the section on defining microbial groups below (Section X).
 
-# Output options
+# 5. Output options
 By default, the `atm()` function returns a data frame with cumulative CH~4~ emission and other state variables, normalized in a variety of ways.
 In total there are more than 300 columns---the first 20 are shown below.
 
@@ -206,7 +204,7 @@ out1s
 
 Alternatively, set the `value` argument to `'all'` for time series data and the summary.
 
-# Defining microbial groups
+# 6. Defining microbial groups
 By default, the ATM99 model includes six microbial groups: five methanogens and one sulfate reducer.
 Each microbial group is characterized by 14 parameters that describe the rate of metabolism, biomass yield, decay rate, and the response to temperature, pH, and ammonia.
 Additionally, values are needed for biomass concentrations in fresh slurry and the storage.
@@ -217,7 +215,7 @@ For these two processes then, there is no (explicit) associated microbial group.
 
 A central feature of the ATM99 model is the ability to specify any number of methanogenic groups. 
 To define a custom set, a single (albeit complex) argument `grp_pars` needs to be set (see Section X). 
-This task is straightforward if tedious--simply follow the default values shown in the help files--and no example is given here.
+This task is straightforward if tedious, and described after a description of tweaking parameters.
 A more common need is to tweak default parameters.
 Although this can also be done using `grp_pars`, it is more efficient to use `add_pars`.
 For example, to increase `qhat_optim` of group `p1` to 3 g/g-d (g substrate COD per g biomass COD per day) and the yield to 0.06 g/g, the following call could be used:
@@ -230,8 +228,34 @@ lines(p1_conc ~ time, data = out1, type = 'l', col = 'red')
 
 This change from the default values (2.77 and 0.04) has a drastic effect, which perhaps should not be too surprising because the yield change alone represents a 50% improvement in fitness.
 
+To define completely new microbial groups, the example of the default argument in the help file can be followed.
+The special keywords `all` and `default` make the task easier.
+All groups must be named individually in the `qhat_opt` parameter, which effectively identifies the groups.
+For other parameters though, use `all` if all groups have the same value (as in `xa_init` below).
+Or, use `default` if some groups have the same value (as in `xa_fresh` below).
 
-# Simulating reactors
+```{r}
+grp_pars <- list(yield = c(default = 0.04, sr1 = 0.065),
+                 xa_fresh = c(default = 0.001, sr1 = 0.001),
+                 xa_init = c(all = 0.01), 
+                 decay_rate = c(all = 0.02), 
+                 ks_coefficient = c(m1 = 0.5, m2 = 1.5, m3 = 1.0, p1 = 1.0, p2 = 1.0, sr1 = 0.4),
+                 resid_enrich = c(all = 0),
+                 qhat_opt = c(m1 = 8, m2 = 13.33, m3 = 5.75, p1 = 2.77, p2 = 0.72, sr1 = 8.3),    
+                 T_opt = c(m3 = 303, p1 = 293, p2 = 283, default = 313), 
+                 T_min = c(m1 = 295.31, m2 = 295.31, m3 = 285.31, p1 = 275.31, p2 = 265.31, sr1 = 273),
+                 T_max = c(m1 = 320.67, m2 = 320.67, m3 = 310.67, p1 = 300.67, p2 = 290.67, sr1 = 320.67),
+                 ki_NH3_min = c(m1 = 0.01, m2 = 0.015, m3 = 0.015, p1 = 0.015, p2 = 0.015, sr1 = 0.015),
+                 ki_NH3_max = c(m1 = 0.10, m2 = 0.131, m3 = 0.131, p1 = 0.131, p2 = 0.131, sr1 = 0.131),
+                 ki_NH4_min = c(m1 = 1.70, m2 = 2.714, m3 = 2.714, p1 = 2.714, p2 = 2.714, sr1 = 2.714),
+                 ki_NH4_max = c(m1 = 3.10, m2 = 4.764, m3 = 4.764, p1 = 4.764, p2 = 4.764, sr1 = 4.764),
+                 pH_upr = c(m1 = 8.0, m2 = 8.0, m3 = 8.0, p1 = 8.0, p2 = 8.0, sr1 = 8.0),
+                 pH_lwr = c(m1 = 6.5, m2 = 6.0, m3 = 6.5, p1 = 6.5, p2 = 6.5, sr1 = 6.0))
+
+out5 <- atm(365, 1, grp_pars = grp_pars)
+```
+
+# 7. Simulating reactors
 The ATM99 model inherently describes a reactor with continuous feeding and intermittent wasting.
 To approximate a continuous reactor (which is not actually "continuous" in practice but typically has intermittent feeding and wasting--but this is a seprate discussion) the `resid_frac` argument can be set to a high value, e.g. `0.95`.
 This provides frequent wasting of a small quantity. 
@@ -258,7 +282,7 @@ matplot(out5$time, out5[, c('Sp_conc', 'VFA_conc', 'COD_conc', 'dCOD_conc')],
         type = 'l', lty = 1)
 ```
 
-# Variable temperature
+# 8. Variable temperature
 Predicting short- and long-term responses to temperature change was a central objective of the ATM99 model.
 Variable temperature is entered in a data frame with two columns.
 For example, gradual warming from 10&deg;C to 25&deg;C, a hold, and then a gradual cooling back to 10&deg;C can be specified as shown in the `temp_dat` data frame constructed below.
@@ -315,7 +339,7 @@ out7 <- atm(600, 1, add_pars = list(temp_C = temp_dat, resid_frac = 0.95,
 
 ```
 
-```{r, echo = FALSE}
+```{r}
 plot(temp_C ~ time, type = 'l', col = 'red', data = out7)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
@@ -331,11 +355,95 @@ plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out7)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 ```
 
-# Acidification
+# 8. Acidification
+Acidification of slurry with sulfuric acid (H~2~SO~4~) is an effective approach for reducing CH~4~ emission.
+In the ATM99 model, there are a few options for how acidification can be specified.
+With data on slurry pH vs. time, the `pH` parameter can be used.
+As with temperature, both instant changes and linear interpolation can be used.
+The following data might come from a channel where acidification took effect over 30 days, was used for 100, and then stopped.
 
-# Model output as input
-NTS: This still needs work
+```{r}
+pH_dat <- data.frame(time = c(200, 230, 330, 360), pH = c(7.5, 5.0, 5.0, 7.5))
+plot(pH ~ time, data = pH_dat, type = 'l')
+```
 
-# 
+As with temperature, only the times that pH changes are needed--earlier and later times extend the nearest value.
 
+```{r}
+out8 <- atm(730, 1, add_pars = list(pH = pH_dat), approx_method_pH = 'linear')
+```
 
+```{r}
+plot(pH ~ time, type = 'l', col = 'red', data = out8)
+abline(v = pH_dat$time, lty = 2, col = 'gray45')
+
+matplot(out8$time, out8[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
+legend('topleft', nn, col = 1:5, lty = 1)
+abline(v = pH_dat$time, lty = 2, col = 'gray45')
+
+plot(CH4_emis_rate_VS ~ time, data = out8, type = 'l')
+abline(v = pH_dat$time, lty = 2, col = 'gray45')
+
+plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out8)
+abline(v = pH_dat$time, lty = 2, col = 'gray45')
+```
+
+Alternatively, pH can be calculated from the H~2~SO~4~ concentration (given as SO~4~^-2^).
+This approach is based on a titration curve for "typical" slurry.
+
+```{r}
+out9 <- atm(200, 1, add_pars = list(conc_fresh.SO4 = 1.3, pH = 'calc'))
+```
+
+```{r}
+plot(pH ~ time, type = 'l', col = 'red', data = out9)
+abline(v = pH_dat$time, lty = 2, col = 'gray45')
+
+matplot(out9$time, out9[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
+legend('topleft', nn, col = 1:5, lty = 1)
+abline(v = pH_dat$time, lty = 2, col = 'gray45')
+
+plot(CH4_emis_rate_VS ~ time, data = out9, type = 'l')
+abline(v = pH_dat$time, lty = 2, col = 'gray45')
+
+plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out9)
+abline(v = pH_dat$time, lty = 2, col = 'gray45')
+```
+
+NTS: This is a difficult approach and the titration curve needs another look.
+
+# 9. Model output as input
+Although the `atm()` function is quite flexible and can accommodate changes in inputs over time, there is plenty it cannot do.
+To partially address limitations, it is possible to specify output from one call as the starting conditions for a new call.
+This is done using the `starting` argument.
+In the following example, two calls are used to show the effect of an instant change in the substrate concentration in fresh slurry.
+
+```{r}
+out10 <- atm(365, 1, add_pars = list(conc_fresh.Sp = 100, conc_fresh.COD = 200, conc_fresh.VFA = 10))
+```
+
+```{r}
+out11 <- atm(365, 1, add_pars = list(conc_fresh.Sp = 10, conc_fresh.COD = 20, conc_fresh.VFA = 0),
+             starting = out10)
+```
+
+```{r}
+plot(Sp_conc ~ time, type = 'l', col = 'purple', data = out11)
+
+matplot(out11$time, out11[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
+legend('topleft', nn, col = 1:5, lty = 1)
+
+plot(CH4_emis_rate_VS ~ time, data = out11, type = 'l')
+
+plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out11)
+```
+
+# 10. More information
+Users can track development of the ATM99 package on GitHub: [https://github.com/sashahafner/ATM99](https://github.com/sashahafner/ATM99).
+To report bugs or request features, use the "Issues" page.
+For information about the model, see the references listed below.
+
+# References

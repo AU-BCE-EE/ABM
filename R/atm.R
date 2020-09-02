@@ -49,8 +49,10 @@ function(
   # If starting conditions are provided from a previous simulation, move to pars
   if (!is.null(starting) & is.data.frame(starting)) {
     message('Using starting conditions from `starting` argument')
-    grp_pars[['xa_init']] <- starting[nrow(starting), paste0(names(grp_pars[['qhat_opt']]), '_conc')]
+    grp_pars[['xa_init']] <- as.numeric(starting[nrow(starting), paste0(names(grp_pars[['qhat_opt']]), '_conc')])
     names(grp_pars[['xa_init']]) <- names(grp_pars[['qhat_opt']])
+
+    mng_pars['slurry_mass'] <- starting[nrow(starting), 'slurry_mass']
   }
 
   # Combine pars to make extraction and pass to rates() easier
@@ -152,7 +154,7 @@ function(
   # Figure out type of run - with constant rates or not
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- atm_regular(days = days, delta_t = delta_t, pars = pars)
+    dat <- atm_regular(days = days, delta_t = delta_t, pars = pars, starting = starting)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
     dat <- atm_variable(days = days, delta_t = delta_t, pars = pars, warn = warn)

@@ -1,4 +1,4 @@
-atm <-
+abm <-
 function(
   days = 365,                               # Number of days to run
   delta_t = 1,                              # Time step for output
@@ -154,10 +154,10 @@ function(
   # Figure out type of run - with constant rates or not
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- atm_regular(days = days, delta_t = delta_t, pars = pars, starting = starting)
+    dat <- abm_regular(days = days, delta_t = delta_t, pars = pars, starting = starting)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- atm_variable(days = days, delta_t = delta_t, pars = pars, warn = warn)
+    dat <- abm_variable(days = days, delta_t = delta_t, pars = pars, warn = warn)
   } 
 
   # Caculate concentrations where relevant

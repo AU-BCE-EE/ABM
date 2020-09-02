@@ -1,4 +1,4 @@
-atm_regular <-
+abm_regular <-
 function(days, delta_t, pars, starting = NULL) {
 
   # Cannot have no slurry present because is used in all concentration calculations (NTS: could change this)

@@ -86,7 +86,7 @@ function(t, y, parms) {
             H2S = -7.051 + exp(0.029 * (temp_K - temp_standard)))
 
   # Hard-wired Henry's law constants
-  kH_oxygen <- 0.0013*exp(1700*((1/temp_K)-(1/temp_standard)))*32*1000 # g/(m3*atm)
+  kH_oxygen <- 0.0013*exp(1700*((1/temp_K)-(1/temp_standard)))*32*1000 # g/(m3*abm)
   
   # Derived parameters
   # Hydrolysis rate

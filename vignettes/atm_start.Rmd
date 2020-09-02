@@ -1,5 +1,5 @@
 ---
-title: "An introduction to the ATM99 model in R"
+title: "An introduction to the ABM model in R"
 output:
   html_document:
     toc: true
@@ -13,26 +13,29 @@ options(width = 85)
 
 
 # 1. Overview
-The ATM99 model predicts conversion of animal manure or other (high-moisture) organic wastes to methane (CH~4~) and carbon dioxide (CO~2~) under anaerobic conditions.
-The name comes from **a**naerobic **t**ransformation **m**odel, and "99" represents the unlimited number of microbial groups that can be included. 
+The ABM model predicts conversion of animal manure or other (high-moisture) organic wastes to methane (CH~4~) and carbon dioxide (CO~2~) under anaerobic conditions.
+The name comes from **a**naerobic **b**iodegradation **m**odel.
 With multiple microbial groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change and other perturbations.
 Although it was storage of animal slurry (liquid manure) in unheated channels or tanks that drove the initial development of the model, with its flexibility it is well-suited to simulate CH~4~ emission or biogas production from other organic waste under a range of conditions, including in anaerobic digesters, particularly in the presence of temperature variations.
-The purpose of this document is to demonstrate the use of the ATM99 R package, which is a flexible implementation of the model.
+The purpose of this document is to demonstrate the use of the ABM R package, which is a flexible implementation of the model.
 For a detailed description of the model itself, see Dalby et al. (2020a, 2020b).
 
 # 2. Installation
-The ATM99 package is available on GitHub and so can be installed with the `install_github()` function from the devtools package, which must be installed first.
+Note: this package is not yet complete, so installation cannot be done as described below.
+Instead see README.md on GitHub.
+
+The ABM package is available on GitHub and so can be installed with the `install_github()` function from the devtools package, which must be installed first.
 These steps must be carried out once to install both packages:
 
 ```{r, eval=FALSE}
 install.packages('devtools')
-devtools::install_github('sashahafner/ATM99')
+devtools::install_github('sashahafner/ABM')
 ```
 
-And to use the ATM99 model, the package must be loaded.
+And to use the ABM model, the package must be loaded.
 
 ```{r,eval= FALSE}
-library(ATM99)
+library(ABM)
 ```
 
 ```{r,echo=FALSE}
@@ -41,15 +44,15 @@ for (i in ff) source(i)
 ```
 
 # 3. A simple example: methane emission from stored slurry
-By default, the `atm()` function simulates degradation of animal manure from a 33 m^3^ storage tank with a 30 day emptying interval.
-Fresh slurry is added continuously at a rate of 1000 kg d^-1^.
+By default, the `abm()` function simulates degradation of animal manure from a 33 m^3^ storage tank or channel with a 30 day emptying interval.
+Fresh slurry is added continuously at a rate of 1000 kg d^-1^, and when emptied a residual of 10% of the total manure mass is left in the storage.
 Default values are included for all arguments, including the first two, which set the length of the simulation (365 d) and the time interval in the output (1 d).
 
 In this example, the model is used to predict dynamics of CH~4~ emission, microbial biomass, and VFA accumulation.
-The following call runs the ATM99 model with default argument values.
+The following call runs the ABM model with default argument values.
 
 ```{r}
-out1 <- atm()
+out1 <- abm()
 ```
 
 Output is, by default, a data frame with predicted variables over time (see Section X for alternatives).
@@ -87,20 +90,20 @@ Dynamics in production of CH~4~ are often related to VFA accumulation, and VFA m
 plot(VFA ~ time, data = out1, type = 'l')
 plot(VFA_conc ~ time, data = out1, type = 'l')
 ```
-For more information on the many output variables returned by `atm()`, see the section on that topic below.
+For more information on the many output variables returned by `abm()`, see the section on that topic below.
 
 # 4. Setting parameter values
-Although the ATM99 model is relatively simple, explicitly simulating the activity of multiple microbial groups means there are many parameters. 
+Although the ABM model is relatively simple, explicitly simulating the activity of multiple microbial groups means there are many parameters. 
 The complete list and definitions can be seen in the help file, accessible with the following command.
 
 ```{r,eval=FALSE}
-?atm
+?abm
 ```
 
 Alternatively, use `args()` just to see the arguments and default values.
 
 ```{r}
-args(atm)
+args(abm)
 ```
 
 Parameters are grouped to make changes easier (and to prevent input mistakes) and to limit the number of parameter names that are needed.
@@ -118,7 +121,7 @@ man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0,
 To simulate a lower pH then, the following call could be used:
 
 ```{r}
-out2 <- atm(365, 1, man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
+out2 <- abm(365, 1, man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
                                                        VFA = 4.2, Sp = 65, COD = 160), 
                                      pH = 6))
 ```
@@ -134,7 +137,7 @@ lines(CH4_emis_rate ~ time, data = out2, type = 'l', col = 'red')
 Alternatively, the special `add_pars` argument can be used to specify just those parameters (or individual parameter elements) that will be changed from their defaults.
 
 ```{r}
-out2b <- atm(365, 1, add_pars = list(pH = 6))
+out2b <- abm(365, 1, add_pars = list(pH = 6))
 ```
 
 These two approaches provide identical results:
@@ -145,12 +148,12 @@ all.equal(out2, out2b)
 
 Note that the `man_pars` name is not needed for the `add_pars` option.
 
-Many arguments for the `atm()` function are named lists or vectors.
+Many arguments for the `abm()` function are named lists or vectors.
 These arguments--or even one element within them--can still be specified using `add_pars`.
 For example, to change only the VFA value for `conc_fresh` the following call provides a shortcut compared to specifying all elements within the `conc_fresh` vector (as in the `out2` example above).
 
 ```{r}
-out3 <- atm(365, 1, add_pars = list(pH = 6, conc_fresh.VFA = 10))
+out3 <- abm(365, 1, add_pars = list(pH = 6, conc_fresh.VFA = 10))
 ```
 
 This shortcut is referred to as the "par.element" approach in the documentation, and the `.` is a special character used to separate parameter (here, `conc_fresh`) and element (here, `VFA`) names.
@@ -159,7 +162,7 @@ This shortcut is referred to as the "par.element" approach in the documentation,
 Of course, specifying all elements is always an option,
 
 ```{r}
-out3b <- atm(365, 1, add_pars = list(pH = 6, conc_fresh = list(S2 = 0.0, SO4 = 0.2, 
+out3b <- abm(365, 1, add_pars = list(pH = 6, conc_fresh = list(S2 = 0.0, SO4 = 0.2, 
                                                                TAN = 1.0, VFA = 10, 
                                                                Sp = 65, COD = 160)))
 ```
@@ -169,11 +172,11 @@ as is specifying a complete argument of parameters (as in `out2` above).
 Setting arguments is explored further in the section on defining microbial groups below (Section X).
 
 # 5. Output options
-By default, the `atm()` function returns a data frame with cumulative CH~4~ emission and other state variables, normalized in a variety of ways.
+By default, the `abm()` function returns a data frame with cumulative CH~4~ emission and other state variables, normalized in a variety of ways.
 In total there are more than 300 columns---the first 20 are shown below.
 
 ```{r}
-out1 <- atm(365, 1)
+out1 <- abm(365, 1)
 out1[365, 1:20]
 ```
 
@@ -190,7 +193,7 @@ lines(f_COD_CH4_cum ~ time, data = out1, col = 'red')
 Overall results can be extracted by changing the `value` argument to `sum` (for summary).
 
 ```{r}
-out1s <- atm(365, 1, value = 'sum')
+out1s <- abm(365, 1, value = 'sum')
 out1s
 ```
 
@@ -198,14 +201,14 @@ And an arbitrary startup period can be excluded from these summary results using
 For example, the first 100 days are excluded in the example below.
 
 ```{r}
-out1s <- atm(365, 1, value = 'sum', startup = 100)
+out1s <- abm(365, 1, value = 'sum', startup = 100)
 out1s
 ```
 
 Alternatively, set the `value` argument to `'all'` for time series data and the summary.
 
 # 6. Defining microbial groups
-By default, the ATM99 model includes six microbial groups: five methanogens and one sulfate reducer.
+By default, the ABM model includes six microbial groups: five methanogens and one sulfate reducer.
 Each microbial group is characterized by 14 parameters that describe the rate of metabolism, biomass yield, decay rate, and the response to temperature, pH, and ammonia.
 Additionally, values are needed for biomass concentrations in fresh slurry and the storage.
 Lastly, an enrichment factor parameter is specified for each group.
@@ -213,7 +216,7 @@ Unlike VFA consumption, the rate of the combined hydrolysis and fermentation ste
 Aerobic respiration is controlled by the mass transfer rate of O~2~ to the slurry surface.
 For these two processes then, there is no (explicit) associated microbial group.
 
-A central feature of the ATM99 model is the ability to specify any number of methanogenic groups. 
+A central feature of the ABM model is the ability to specify any number of methanogenic groups. 
 To define a custom set, a single (albeit complex) argument `grp_pars` needs to be set (see Section X). 
 This task is straightforward if tedious, and described after a description of tweaking parameters.
 A more common need is to tweak default parameters.
@@ -221,7 +224,7 @@ Although this can also be done using `grp_pars`, it is more efficient to use `ad
 For example, to increase `qhat_optim` of group `p1` to 3 g/g-d (g substrate COD per g biomass COD per day) and the yield to 0.06 g/g, the following call could be used:
 
 ```{r}
-out4 <- atm(365, 1, add_pars = list(qhat_opt.p1 = 3, yield.p1 = 0.06))
+out4 <- abm(365, 1, add_pars = list(qhat_opt.p1 = 3, yield.p1 = 0.06))
 plot(p1_conc ~ time, data = out4, type = 'l', ylab = 'Biomass concentration (g/kg)')
 lines(p1_conc ~ time, data = out1, type = 'l', col = 'red')
 ```
@@ -252,17 +255,17 @@ grp_pars <- list(yield = c(default = 0.04, sr1 = 0.065),
                  pH_upr = c(m1 = 8.0, m2 = 8.0, m3 = 8.0, p1 = 8.0, p2 = 8.0, sr1 = 8.0),
                  pH_lwr = c(m1 = 6.5, m2 = 6.0, m3 = 6.5, p1 = 6.5, p2 = 6.5, sr1 = 6.0))
 
-out5 <- atm(365, 1, grp_pars = grp_pars)
+out5 <- abm(365, 1, grp_pars = grp_pars)
 ```
 
 # 7. Simulating reactors
-The ATM99 model inherently describes a reactor with continuous feeding and intermittent wasting.
+The ABM model inherently describes a reactor with continuous feeding and intermittent wasting.
 To approximate a continuous reactor (which is not actually "continuous" in practice but typically has intermittent feeding and wasting--but this is a seprate discussion) the `resid_frac` argument can be set to a high value, e.g. `0.95`.
 This provides frequent wasting of a small quantity. 
 The following example simulates the startup of a mesophilic completely mixed anaerobic digester fed cattle manure (based on defaults).
 
 ```{r}
-out5 <- atm(365, 1, add_pars = list(temp_C = 35, resid_frac = 0.95, alpha_opt = 0.2, 
+out5 <- abm(365, 1, add_pars = list(temp_C = 35, resid_frac = 0.95, alpha_opt = 0.2, 
                                     slurry_mass = 0.95 * 33333, slurry_prod_rate = 500))
 
 ```
@@ -283,7 +286,7 @@ matplot(out5$time, out5[, c('Sp_conc', 'VFA_conc', 'COD_conc', 'dCOD_conc')],
 ```
 
 # 8. Variable temperature
-Predicting short- and long-term responses to temperature change was a central objective of the ATM99 model.
+Predicting short- and long-term responses to temperature change was a central objective of the ABM model.
 Variable temperature is entered in a data frame with two columns.
 For example, gradual warming from 10&deg;C to 25&deg;C, a hold, and then a gradual cooling back to 10&deg;C can be specified as shown in the `temp_dat` data frame constructed below.
 
@@ -297,7 +300,7 @@ The model can either interpolate (the default) or use constant temperatures betw
 The temperature data can be supplied using the `mng_pars` argument or, more simply, with `add_pars`.
 
 ```{r}
-out6 <- atm(500, 1, add_pars = list(temp_C = temp_dat))
+out6 <- abm(500, 1, add_pars = list(temp_C = temp_dat))
 ```
 
 ```{r, echo = FALSE}
@@ -333,7 +336,7 @@ plot(temp_C ~ time, data = temp_dat, type = 's')
 ```
 
 ```{r}
-out7 <- atm(600, 1, add_pars = list(temp_C = temp_dat, resid_frac = 0.95, 
+out7 <- abm(600, 1, add_pars = list(temp_C = temp_dat, resid_frac = 0.95, 
                                     slurry_mass = 0.95 * 33333, slurry_prod_rate = 500),
             approx_method_temp = 'constant')
 
@@ -357,7 +360,7 @@ abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
 # 8. Acidification
 Acidification of slurry with sulfuric acid (H~2~SO~4~) is an effective approach for reducing CH~4~ emission.
-In the ATM99 model, there are a few options for how acidification can be specified.
+In the ABM model, there are a few options for how acidification can be specified.
 With data on slurry pH vs. time, the `pH` parameter can be used.
 As with temperature, both instant changes and linear interpolation can be used.
 The following data might come from a channel where acidification took effect over 30 days, was used for 100, and then stopped.
@@ -370,7 +373,7 @@ plot(pH ~ time, data = pH_dat, type = 'l')
 As with temperature, only the times that pH changes are needed--earlier and later times extend the nearest value.
 
 ```{r}
-out8 <- atm(730, 1, add_pars = list(pH = pH_dat), approx_method_pH = 'linear')
+out8 <- abm(730, 1, add_pars = list(pH = pH_dat), approx_method_pH = 'linear')
 ```
 
 ```{r}
@@ -393,7 +396,7 @@ Alternatively, pH can be calculated from the H~2~SO~4~ concentration (given as S
 This approach is based on a titration curve for "typical" slurry.
 
 ```{r}
-out9 <- atm(200, 1, add_pars = list(conc_fresh.SO4 = 1.3, pH = 'calc'))
+out9 <- abm(200, 1, add_pars = list(conc_fresh.SO4 = 1.3, pH = 'calc'))
 ```
 
 ```{r}
@@ -415,17 +418,17 @@ abline(v = pH_dat$time, lty = 2, col = 'gray45')
 NTS: This is a difficult approach and the titration curve needs another look.
 
 # 9. Model output as input
-Although the `atm()` function is quite flexible and can accommodate changes in inputs over time, there is plenty it cannot do.
+Although the `abm()` function is quite flexible and can accommodate changes in inputs over time, there is plenty it cannot do.
 To partially address limitations, it is possible to specify output from one call as the starting conditions for a new call.
 This is done using the `starting` argument.
 In the following example, two calls are used to show the effect of an instant change in the substrate concentration in fresh slurry.
 
 ```{r}
-out10 <- atm(365, 1, add_pars = list(conc_fresh.Sp = 100, conc_fresh.COD = 200, conc_fresh.VFA = 10))
+out10 <- abm(365, 1, add_pars = list(conc_fresh.Sp = 100, conc_fresh.COD = 200, conc_fresh.VFA = 10))
 ```
 
 ```{r}
-out11 <- atm(365, 1, add_pars = list(conc_fresh.Sp = 10, conc_fresh.COD = 20, conc_fresh.VFA = 0),
+out11 <- abm(365, 1, add_pars = list(conc_fresh.Sp = 10, conc_fresh.COD = 20, conc_fresh.VFA = 0),
              starting = out10)
 ```
 
@@ -442,7 +445,7 @@ plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out11)
 ```
 
 # 10. More information
-Users can track development of the ATM99 package on GitHub: [https://github.com/sashahafner/ATM99](https://github.com/sashahafner/ATM99).
+Users can track development of the ABM package on GitHub: [https://github.com/sashahafner/ABM](https://github.com/sashahafner/ABM).
 To report bugs or request features, use the "Issues" page.
 For information about the model, see the references listed below.
 

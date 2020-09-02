@@ -1,25 +1,25 @@
-\name{ATM99-package}
-\alias{ATM99-package}
-\alias{ATM99}
+\name{ABM-package}
+\alias{ABM-package}
+\alias{ABM}
 \docType{package}
 \title{
-\packageTitle{ATM99}
+\packageTitle{ABM}
 }
 \description{
-\packageDescription{ATM99}
+\packageDescription{ABM}
 }
 \details{
 
 The DESCRIPTION file:
-\packageDESCRIPTION{ATM99}
-\packageIndices{ATM99}
+\packageDESCRIPTION{ABM}
+\packageIndices{ABM}
 ~~ An overview of how to use the package, including the most important ~~
 ~~ functions ~~
 }
 \author{
-\packageAuthor{ATM99}
+\packageAuthor{ABM}
 
-Maintainer: \packageMaintainer{ATM99}
+Maintainer: \packageMaintainer{ABM}
 }
 \references{
 ~~ Literature or other references for background information ~~

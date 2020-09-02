@@ -1,4 +1,4 @@
-atm_variable <-
+abm_variable <-
 function(days, delta_t, pars, warn) {
 
   # Cannot have no slurry present because is used in all concentration calculations (NTS: could change this)

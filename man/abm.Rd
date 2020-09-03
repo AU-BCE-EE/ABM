@@ -63,6 +63,14 @@ mmm(days = 365,
 }
   \item{mng_pars}{
     List of management parameters.
+    
+    c(slurry_prod_rate) Slurry production rate (kg/day)
+    c(slurry_mass) Initial slurry mass in the system (kg)          
+    c(max_slurry_mass) Maximum slurry capacity of the system (kg)
+    c(resid_frac) Fraction of slurry retained in the system after being emptied
+    c(area) Surface area of the slurry in the system (m^2)
+    c(temp_C) Slurry temperature (°C)
+    
     % Should list elements
     % Add details here and for other parameter arguments
     Each element may be a length-one vector or, in some cases, a list.
@@ -70,15 +78,60 @@ mmm(days = 365,
 }
   \item{man_pars}{
     List of manure parameters.
+    
+    c(conc_fresh.S2) Concentration of total sulfide in the slurry entering the system (kg sulfide-sulfur/kg)
+    c(conc_fresh.SO4) Concentration of sulfate in the slurry entering the system (kg sulfate-sulfur/kg)
+    c(conc_fresh.TAN) Concentration of total ammonia nitrogen in the slurry entering the system and in the slurry in the system (completely conserved) (kg TAN-nitrogen/kg)
+    c(conc_fresh.VFA) Concentration of volatile fatty acids (protonated and unprotonated) (g COD/kg)
+    c(conc_fresh.Sp) Concentration of degradable particulate material in the slurry entering the system (g COD/kg)
+    c(conc_fresh.COD) Concentration of organic matter in the slurry entering the system (g COD/kg)
+    c(pH) pH of the slurry entering the system and in the slurry in the system
+    
+ #Note list not c() so SO4 can be data frame
 }
   \item{grp_pars}{
-    List containing parameter values for the microbial groups included in the model.
+   List containing parameter values for the microbial groups included in the model.
+   
+   c(yield) Growth yield of microbial groups (g COD-biomass / g COD-substrate) 
+   c(xa_fresh) Concentration of microbial groups in the slurry entering the system (g COD-biomass/kg)
+   c(xa_init) Initial concentration of microbial groups in the slurry (g COD-biomass/kg)
+   c(decay_rate) Deacay rate of microbial groups (1/day)
+   c(ks_coefficient) Coefficient used to tune the half saturation constant (g COD-substrate/kg)
+   c(resid_enrich) Enrichment of microbial groups in the slurry after being emptied 
+   c(qhat_opt) Maximum specific substrate utilization rate of microbial groups at their optimum growth temperature (g COD-substrate/g COD-biomass/day)
+   c(T_opt) Optimum growth temperature of microbial groups (°K)
+   c(T_min) Minimum viable growth temperature of microbial groups (°K)
+   c(T_max) Maximum vaible growth temperature of microbial groups (°K)
+   c(ki_NH3_min) NH3 concentration at which NH3 inhibition starts (g TAN-nitrogen/kg)
+   c(ki_NH3_max) NH3 concentration wher microbial groups are 100 percent inhibited (g TAN-nitrogen/kg)
+   c(ki_NH4_min) NH4 concentration at which NH3 inhibition starts (g TAN-nitrogen/kg)
+   c(ki_NH4_max) NH4 concentration wher microbial groups are 100 percent inhibited (g TAN-nitrogen/kg)
+   c(pH_upr) upper pH where 50 percent inhibition of microbial groups occurs 
+   c(pH_upr) lower pH where 50 percent inhibition of microbial groups occurs 
 }
   \item{mic_pars}{
     List of other microbial parameters.
+    
+    c(ks_SO4) Half sulfate saturation constant for sulfate reducers (g sulfate-sulfur/kg)
+    c(ki_H2S_meth) hydrogen sulfide concentration at which 100 percent inhibition of methanogen groups occur (g sulfide-sulfur/kg)
+    c(ki_H2S_sr) hydrogen sulfide concentration at which 100 percent inhibition of sulfate reducer groups occur (g sulfide-sulfur/kg)
+    c(alpha_opt) hydrolysis rate constant at the optimum hydrolysis temperature (1/day)
+    c(alpha_T_opt) optimum temperature for hydrolysis (°K)
+    c(alpha_T_min) minimum temperature where hydrolysis occurs (°K)
+    c(alpha_T_max) maximum temperature where hydrolysis occurs (°K)
 }
   \item{chem_pars}{
-    List of other microbial parameters.
+    List of other chemical parameters.
+    
+    c(COD_conv.CH4) Methane productivity coefficient (g CH4/g COD-substrate) 
+    c(COD_conv.S) Unit conversion factor from COD-substrate to sulfur (g sulfur/g COD-substrate) 
+    c(COD_conv.VS) Unit conversion factor from COD to volatile solids (VS) (g VS/g COD) 
+    c(COD_conv.CO2_anaer) Anaerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate)
+    c(COD_conv.CO2_aer) Aerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate)
+    c(COD_conv.CO2_sr) carbon dioxide productivity coefficient of sulfate reduction (g CO2/g COD-substrate)
+    c(kl.H2S) Mass transfer coefficient of hydrogen sulfide through the slurry surface (m/day)
+    c(kl.oxygen) Mass transfer coefficient of oxygen through the slurry surface (m/day) 
+    
 }
   \item{add_pars}{
     List of other additional parameters not set in other arguments, or to be modified from defaults.

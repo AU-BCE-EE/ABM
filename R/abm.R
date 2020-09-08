@@ -273,7 +273,7 @@ function(
 
   # Return results
   # Average only
-  if (value == 'sum') return(summ)
+  if (substring(value, 1, 3) == 'sum') return(summ)
   # ts = time series
   if (value == 'ts') return(dat)
   # tsel = time series after startup period

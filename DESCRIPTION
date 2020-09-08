@@ -1,11 +1,12 @@
 Package: ABM
 Type: Package
-Title: What the package does (short line)
+Title: Simulate Anaerobic Biodegradation
 Version: 1.0
-Date: 2020-07-03
+Date: 2020-09-07
 Author: Sasha D. Hafner and Frederik Dalby
-Maintainer: sasha@hafnerconsulting.com
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Maintainer: Sasha D. Hafner <sasha@hafnerconsulting.com>
+Depends: deSolve
+Description: A single high-level function implementing the ABM model for simulation of anaerobic biodegradation of high-moisture organic wastes, with a focus on methane emission.
+License: GPL-2
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr

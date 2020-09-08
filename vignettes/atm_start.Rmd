@@ -1,11 +1,8 @@
----
-title: "An introduction to the ABM model in R"
-output:
-  html_document:
-    toc: true
-    theme: united
----
-
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ABM_quick_start}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 
 ```{r,echo=FALSE}
 options(width = 85)

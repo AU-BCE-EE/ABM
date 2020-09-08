@@ -8,24 +8,25 @@
   An implementation of the ABM model for simulation of anaerobic biodegradation of organic substrates.
 }
 \usage{
-mmm(days = 365,                              
-    delta_t = 1,                             
-    mng_pars = list(slurry_prod_rate = 1000, 
-                   slurry_mass = 0,          
-                   max_slurry_mass = 33333,  
-                   resid_frac = 0.10,        
-                   area = 11,                
-                   temp_C = 23),
-    man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160),
-                   pH = 7), # Note list not c() so SO4 can be data frame
+abm(days = 365,
+    delta_t = 1,
+    mng_pars = 
+      list(slurry_prod_rate = 1000,
+           slurry_mass = 0,
+           max_slurry_mass = 33333,
+           resid_frac = 0.10,
+           area = 11,
+           temp_C = 23),
+    man_pars = 
+      list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160),
+           pH = 7),
     grp_pars = list(yield = c(default = 0.04, sr1 = 0.065),
                     xa_fresh = c(default = 0.001, sr1 = 0.001),
                     xa_init = c(m1 = 0.01, m2 = 0.01, m3 = 0.01, p1 = 0.01, p2 = 0.01, sr1 = 0.01),
                     decay_rate = c(m1 = 0.02, m2 = 0.02, m3 = 0.02, p1 = 0.02, p2 = 0.02, sr1 = 0.02),
                     ks_coefficient = c(m1 = 0.5, m2 = 1.5, m3 = 1.0, p1 = 1.0, p2 = 1.0, sr1 = 0.4),
-                    #resid_enrich = c(m1 = 0.5, m2 = 0.5, m3 = 0.5, p1 = 0.5, p2 = 0.5, sr1 = 0.5),
                     resid_enrich = c(m1 = 0.0, m2 = 0.0, m3 = 0.0, p1 = 0.0, p2 = 0.0, sr1 = 0.0),
-                    qhat_opt = c(m1 = 8, m2 = 13.33, m3 = 5.75, p1 = 2.77, p2 = 0.72, sr1 = 8.3),    
+                    qhat_opt = c(m1 = 8, m2 = 13.33, m3 = 5.75, p1 = 2.77, p2 = 0.72, sr1 = 8.3),
                     T_opt = c(m1 = 313, m2 = 313, m3 = 303, p1 = 293, p2 = 283, sr1 = 313),
                     T_min = c(m1 = 295.31, m2 = 295.31, m3 = 285.31, p1 = 275.31, p2 = 265.31, sr1 = 273),
                     T_max = c(m1 = 320.67, m2 = 320.67, m3 = 310.67, p1 = 300.67, p2 = 290.67, sr1 = 320.67),
@@ -42,7 +43,7 @@ mmm(days = 365,
                     alpha_T_opt = 313,
                     alpha_T_min = 273,
                     alpha_T_max = 320.67),
-    chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.57, CO2_aer = 1.3, CO2_sr = 1.3), kl = c(H2S = 0.032, oxygen = 0.415)),  
+    chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.57, CO2_aer = 1.3, CO2_sr = 1.3), kl = c(H2S = 0.032, oxygen = 0.415)),
     add_pars = NULL,
     startup = -Inf,
     starting = NULL,
@@ -62,79 +63,74 @@ mmm(days = 365,
     Time step in output (d).
 }
   \item{mng_pars}{
-    List of management parameters.
-    
-    c(slurry_prod_rate) Slurry production rate (kg/day)
-    c(slurry_mass) Initial slurry mass in the system (kg)          
-    c(max_slurry_mass) Maximum slurry capacity of the system (kg)
-    c(resid_frac) Fraction of slurry retained in the system after being emptied
-    c(area) Surface area of the slurry in the system (m^2)
-    c(temp_C) Slurry temperature (°C)
-    
-    % Should list elements
-    % Add details here and for other parameter arguments
+    List of management parameters including slurry production rate (kg/day) (\code{slurry_prod_rate}),
+    initial slurry mass in the system (kg) (\code{slurry_mass}),
+    maximum slurry capacity of the system (kg) (\code{max_slurry_mass}),
+    fraction of slurry retained in the system after being emptied (\code{resid_frac}),
+    surface area of the slurry in the system (m^2) (\code{area}),
+    slurry temperature (deg. C) (\code{temp_C}).
     Each element may be a length-one vector or, in some cases, a list.
     See usage, examples, and vignettes.
 }
   \item{man_pars}{
     List of manure parameters.
-    
-    c(conc_fresh.S2) Concentration of total sulfide in the slurry entering the system (kg sulfide-sulfur/kg)
-    c(conc_fresh.SO4) Concentration of sulfate in the slurry entering the system (kg sulfate-sulfur/kg)
-    c(conc_fresh.TAN) Concentration of total ammonia nitrogen in the slurry entering the system and in the slurry in the system (completely conserved) (kg TAN-nitrogen/kg)
-    c(conc_fresh.VFA) Concentration of volatile fatty acids (protonated and unprotonated) (g COD/kg)
-    c(conc_fresh.Sp) Concentration of degradable particulate material in the slurry entering the system (g COD/kg)
-    c(conc_fresh.COD) Concentration of organic matter in the slurry entering the system (g COD/kg)
-    c(pH) pH of the slurry entering the system and in the slurry in the system
-    
- #Note list not c() so SO4 can be data frame
+    Elements are:
+    \code{conc_fresh}, the concentration of slurry components in fresh slurry;
+    \code{pH}, pH of the slurry entering the system and in the slurry in the system.
+    The \code{conc_fresh} element is a list itself, with the following elements:
+    \code{S2} (sulfide), \code{SO4} (sulfate), \code{TAN} (ammonia nitrogen), \code{VFA} (volatile fatty acids), \code{Sp} (degradable, particulate, organic substrate), \code{COD} (total COD).
+    Concentrations are on an elemental basis (N and S) or else COD (organic components).
 }
   \item{grp_pars}{
    List containing parameter values for the microbial groups included in the model.
-   
-   c(yield) Growth yield of microbial groups (g COD-biomass / g COD-substrate) 
-   c(xa_fresh) Concentration of microbial groups in the slurry entering the system (g COD-biomass/kg)
-   c(xa_init) Initial concentration of microbial groups in the slurry (g COD-biomass/kg)
-   c(decay_rate) Deacay rate of microbial groups (1/day)
-   c(ks_coefficient) Coefficient used to tune the half saturation constant (g COD-substrate/kg)
-   c(resid_enrich) Enrichment of microbial groups in the slurry after being emptied 
-   c(qhat_opt) Maximum specific substrate utilization rate of microbial groups at their optimum growth temperature (g COD-substrate/g COD-biomass/day)
-   c(T_opt) Optimum growth temperature of microbial groups (°K)
-   c(T_min) Minimum viable growth temperature of microbial groups (°K)
-   c(T_max) Maximum vaible growth temperature of microbial groups (°K)
-   c(ki_NH3_min) NH3 concentration at which NH3 inhibition starts (g TAN-nitrogen/kg)
-   c(ki_NH3_max) NH3 concentration wher microbial groups are 100 percent inhibited (g TAN-nitrogen/kg)
-   c(ki_NH4_min) NH4 concentration at which NH3 inhibition starts (g TAN-nitrogen/kg)
-   c(ki_NH4_max) NH4 concentration wher microbial groups are 100 percent inhibited (g TAN-nitrogen/kg)
-   c(pH_upr) upper pH where 50 percent inhibition of microbial groups occurs 
-   c(pH_upr) lower pH where 50 percent inhibition of microbial groups occurs 
+   Elements are:
+   \code{yield}, Growth yield of microbial groups (g COD-biomass / g COD-substrate) ;
+   \code{xa_fresh}, Concentration of microbial groups in the slurry entering the system (g COD-biomass/kg);
+   \code{xa_init}, Initial concentration of microbial groups in the slurry (g COD-biomass/kg);
+   \code{decay_rate}, Deacay rate of microbial groups (1/day);
+   \code{ks_coefficient}, Coefficient used to tune the half saturation constant (g COD-substrate/kg);
+   \code{resid_enrich}, Enrichment of microbial groups in the slurry after being emptied ;
+   \code{qhat_opt}, Maximum specific substrate utilization rate of microbial groups at their optimum growth temperature (g COD-substrate/g COD-biomass/day);
+   \code{T_opt}, Optimum growth temperature of microbial groups (K);
+   \code{T_min}, Minimum viable growth temperature of microbial groups (K);
+   \code{T_max}, Maximum vaible growth temperature of microbial groups (K);
+   \code{ki_NH3_min}, NH3 concentration at which NH3 inhibition starts (g TAN-nitrogen/kg);
+   \code{ki_NH3_max}, NH3 concentration wher microbial groups are 100 percent inhibited (g TAN-nitrogen/kg);
+   \code{ki_NH4_min}, NH4 concentration at which NH3 inhibition starts (g TAN-nitrogen/kg);
+   \code{ki_NH4_max}, NH4 concentration wher microbial groups are 100 percent inhibited (g TAN-nitrogen/kg);
+   \code{pH_upr}, upper pH where 50 percent inhibition of microbial groups occurs;
+   \code{pH_upr}, lower pH where 50 percent inhibition of microbial groups occurs.
+   Each of these elements is a vector with a named element for each group.
+   See usage, examples, and vignettes.
 }
   \item{mic_pars}{
     List of other microbial parameters.
-    
-    c(ks_SO4) Half sulfate saturation constant for sulfate reducers (g sulfate-sulfur/kg)
-    c(ki_H2S_meth) hydrogen sulfide concentration at which 100 percent inhibition of methanogen groups occur (g sulfide-sulfur/kg)
-    c(ki_H2S_sr) hydrogen sulfide concentration at which 100 percent inhibition of sulfate reducer groups occur (g sulfide-sulfur/kg)
-    c(alpha_opt) hydrolysis rate constant at the optimum hydrolysis temperature (1/day)
-    c(alpha_T_opt) optimum temperature for hydrolysis (°K)
-    c(alpha_T_min) minimum temperature where hydrolysis occurs (°K)
-    c(alpha_T_max) maximum temperature where hydrolysis occurs (°K)
+    Elements are:
+    \code{ks_SO4}, Half sulfate saturation constant for sulfate reducers (g sulfate-sulfur/kg);
+    \code{ki_H2S_meth}, hydrogen sulfide concentration at which 100 percent inhibition of methanogen groups occur (g sulfide-sulfur/kg);
+    \code{ki_H2S_sr}, hydrogen sulfide concentration at which 100 percent inhibition of sulfate reducer groups occur (g sulfide-sulfur/kg);
+    \code{alpha_opt}, hydrolysis rate constant at the optimum hydrolysis temperature (1/day);
+    \code{alpha_T_opt}, optimum temperature for hydrolysis (K);
+    \code{alpha_T_min}, minimum temperature where hydrolysis occurs (K);
+    \code{alpha_T_max}, maximum temperature where hydrolysis occurs (K).
 }
   \item{chem_pars}{
     List of other chemical parameters.
-    
-    c(COD_conv.CH4) Methane productivity coefficient (g CH4/g COD-substrate) 
-    c(COD_conv.S) Unit conversion factor from COD-substrate to sulfur (g sulfur/g COD-substrate) 
-    c(COD_conv.VS) Unit conversion factor from COD to volatile solids (VS) (g VS/g COD) 
-    c(COD_conv.CO2_anaer) Anaerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate)
-    c(COD_conv.CO2_aer) Aerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate)
-    c(COD_conv.CO2_sr) carbon dioxide productivity coefficient of sulfate reduction (g CO2/g COD-substrate)
-    c(kl.H2S) Mass transfer coefficient of hydrogen sulfide through the slurry surface (m/day)
-    c(kl.oxygen) Mass transfer coefficient of oxygen through the slurry surface (m/day) 
-    
+    Elements are:
+    \code{kl.H2S}, Mass transfer coefficient of hydrogen sulfide through the slurry surface (m/day);
+    \code{kl.oxygen}, Mass transfer coefficient of oxygen through the slurry surface (m/day);
+    \code{COD_conv}, conversion factors for using a COD mass basis.
+    The first two elements are length-one vectors, but \code{COD_conv} is a vector with the following named elements:
+    \code{CH4}, Methane productivity coefficient (g CH4/g COD-substrate) ;
+    \code{S}, Unit conversion factor from COD-substrate to sulfur (g sulfur/g COD-substrate) ;
+    \code{VS}, Unit conversion factor from COD to volatile solids (VS) (g VS/g COD), ;
+    \code{CO2_anaer}, Anaerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate);
+    \code{CO2_aer}, Aerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate);
+    \code{CO2_sr}, carbon dioxide productivity coefficient of sulfate reduction (g CO2/g COD-substrate).
 }
   \item{add_pars}{
     List of other additional parameters not set in other arguments, or to be modified from defaults.
+    See vignette.
 }
   \item{startup}{
     A ``startup'' period that should be excluded from the results.
@@ -148,33 +144,44 @@ mmm(days = 365,
     Optional.
 }
   \item{approx_method_temp}{
-%%     ~~Describe \code{approx_method_temp} here~~
+    Sets type of interpolation when temperature is variable (\code{temp_c} is a data frame).
+    Passed directly to \code{\link{approxfun}}.
+    See vignette.
 }
   \item{approx_method_pH}{
-%%     ~~Describe \code{approx_method_pH} here~~
+    Sets type of interpolation when pH is variable (\code{pH} is a data frame).
+    Passed directly to \code{\link{approxfun}}.
+    See vignette.
 }
   \item{approx_method_SO4}{
-%%     ~~Describe \code{approx_method_SO4} here~~
+    Sets type of interpolation when sulfate is variable (\code{SO4} is a data frame).
+    Passed directly to \code{\link{approxfun}}.
+    See vignette.
 }
   \item{par_key}{
-%%     ~~Describe \code{par_key} here~~
+    Special character used to set individual nested elements within some arguments.
+    See vignette for examples.
 }
   \item{value}{
-%%     ~~Describe \code{value} here~~
+    Sets the type of output.
+    Default (\code{ts}) returns a data frame with the complete time series.
+    To exclude those rows before the end of \code{startup}, use \code{tsel}.
+    For a summary (after \code{startup} only), use (\code{summ}, \code{sum}, or \code{summary}).
 }
   \item{warn}{
-%%     ~~Describe \code{warn} here~~
+    Set to \code{FALSE} to suppress warnings.
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+  The function simulates anaerobic biodegradation.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+  By default, a data frame with most input and all output variables in a time series.
+  Each row is separated by the value set with \code{delta_t}.
+  Typically the primary variable of interest is methane emission, which is returned as a total (g) and rate (g/d), overall or normalized to COD or VS loading.
+  These columns all start with \code{CH4}.
+  Microbial biomass (g) is given in columns with names that match those used for the names of the groups.
+  For more details, see the Output section in the vignette.
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -192,11 +199,44 @@ mmm(days = 365,
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+# Simulation 1~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Run model with default parameter values and input variables
+out1 <- abm()
+
+# Plot cumulative CH4 emission (g) and emission rate (g/d)
+plot(CH4_emis_cum ~ time, data = out1, type = 'l')
+plot(CH4_emis_rate ~ time, data = out1, type = 'l')
+
+# Plot microbial biomass
+matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')],
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (g)')
+legend('topleft', nn, col = 1:6, lty = 1)
+
+# Simulation 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Anaerobic digester with variable temperature
+temp_dat <- data.frame(time = 300 + c(0,  1,  6, 100),
+                       temp_C =    c(35, 25, 35,  25))
+
+out2 <- abm(600, 1, add_pars = list(temp_C = temp_dat, resid_frac = 0.95,
+                                    slurry_mass = 0.95 * 33333, slurry_prod_rate = 500),
+            approx_method_temp = 'constant')
+
+# Plot results
+plot(temp_C ~ time, type = 'l', col = 'red', data = out2)
+abline(v = temp_dat$time, lty = 2, col = 'gray45')
+
+matplot(out2$time, out2[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')],
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
+legend('topleft', nn, col = 1:5, lty = 1)
+abline(v = temp_dat$time, lty = 2, col = 'gray45')
+
+plot(CH4_emis_rate_VS ~ time, data = out2, type = 'l')
+abline(v = temp_dat$time, lty = 2, col = 'gray45')
+
+plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out2)
+abline(v = temp_dat$time, lty = 2, col = 'gray45')
+}
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{misc}

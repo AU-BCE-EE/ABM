@@ -1,5 +1,5 @@
 rates <-
-function(t, y, parms) {
+function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
 
   y[y < 0] <- 0
 

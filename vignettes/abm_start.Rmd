@@ -38,6 +38,7 @@ library(ABM)
 ```{r,echo=FALSE}
 ff <- list.files('../R', full.names = TRUE)
 for (i in ff) source(i)
+remove.packages('ABM')
 ```
 
 # 3. A simple example: methane emission from stored slurry

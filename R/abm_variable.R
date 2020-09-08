@@ -1,5 +1,5 @@
 abm_variable <-
-function(days, delta_t, pars, warn) {
+function(days, delta_t, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
 
   # Cannot have no slurry present because is used in all concentration calculations (NTS: could change this)
   pars$slurry_mass[pars$slurry_mass[, 'slurry_mass'] == 0, 'slurry_mass'] <- 1E-6
@@ -97,7 +97,7 @@ function(days, delta_t, pars, warn) {
       pars$t_run <- t_run
 
       # Call up ODE solver
-      out <- deSolve::lsoda(y = y, times = times, rates, parms = pars)
+      out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
 
       # Extract new state variable vector from last row of lsoda output
       y <- out[nrow(out), 1:(length(pars$qhat_opt) + 11) + 1]

@@ -1,5 +1,5 @@
 abm_regular <-
-function(days, delta_t, pars, starting = NULL) {
+function(days, delta_t, pars, starting = NULL, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
 
   # Cannot have no slurry present because is used in all concentration calculations (NTS: could change this)
   if (pars$slurry_mass == 0) {
@@ -57,7 +57,7 @@ function(days, delta_t, pars, starting = NULL) {
 
     # Call up ODE solver
     #cat(t_rem, '\n')
-    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars)
+    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
 
     # Get number of microbial groups
     n_mic <- length(pars$qhat_opt)

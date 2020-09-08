@@ -125,39 +125,39 @@ function(
   if (is.data.frame(pars$temp_C)) {
     temp <- pars$temp_C$temp_C
     ttime <- pars$temp_C$time
-    temp_C_fun <<- approxfun(ttime, temp, method = approx_method_temp, 
+    temp_C_fun <- approxfun(ttime, temp, method = approx_method_temp, 
                             yleft = temp[1], yright = temp[length(temp)], rule = 2)
   } else {
-    temp_C_fun <<- function(x) return(pars$temp_C)
+    temp_C_fun <- function(x) return(pars$temp_C)
   }
 
   # Create pH function f(t) to allow for variable pH
   if (is.data.frame(pars$pH)) {
     tpH <- pars$pH$pH
     ttime <- pars$pH$time
-    pH_fun <<- approxfun(ttime, tpH, method = approx_method_pH, 
+    pH_fun <- approxfun(ttime, tpH, method = approx_method_pH, 
                             yleft = tpH[1], yright = tpH[length(tpH)], rule = 2)
   } else {
-    pH_fun <<- function(x) return(pars$pH)
+    pH_fun <- function(x) return(pars$pH)
   }
 
   # Create SO4-2 f(t) for variable acidification with H2SO4
   if (is.data.frame(pars$conc_fresh[['SO4']])) {
     tSO4 <- pars$conc_fres$SO4$SO4
     ttime <- pars$conc_fres$SO4$time
-    SO4_fun <<- approxfun(ttime, tSO4, method = approx_method_SO4, 
+    SO4_fun <- approxfun(ttime, tSO4, method = approx_method_SO4, 
                             yleft = tSO4[1], yright = tSO4[length(tSO4)], rule = 2)
   } else {
-    SO4_fun <<- function(x) return(pars$conc_fresh[['SO4']])
+    SO4_fun <- function(x) return(pars$conc_fresh[['SO4']])
   }
 
   # Figure out type of run - with constant rates or not
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, delta_t = delta_t, pars = pars, starting = starting)
+    dat <- abm_regular(days = days, delta_t = delta_t, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- abm_variable(days = days, delta_t = delta_t, pars = pars, warn = warn)
+    dat <- abm_variable(days = days, delta_t = delta_t, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
   } 
 
   # Caculate concentrations where relevant
@@ -279,6 +279,6 @@ function(
   # tsel = time series after startup period
   if (value == 'tsel') return(dat_sel)
   # Or everything
-  return(list(pars = pars, ts = dat, tsel = dat_sel, ave = rCH4_ave))
+  return(list(pars = pars, ts = dat, tsel = dat_sel, summ = summ))
 
 }

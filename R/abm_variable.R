@@ -86,7 +86,7 @@ function(days, delta_t, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO
     t_call <- min(t_ints[i], t_rem)
 
     # Get number of microbial groups
-    n_mic <- length(pars$qhat_opt)
+    n_mic <- length(pars$grps)
 
     # Call lsoda and advance if time changes (i.e., if there is not a removal)
     if (t_call > 1E-6) {

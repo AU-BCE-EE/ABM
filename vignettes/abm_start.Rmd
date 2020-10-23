@@ -38,7 +38,6 @@ library(ABM)
 ```{r,echo=FALSE}
 ff <- list.files('../R', full.names = TRUE)
 for (i in ff) source(i)
-remove.packages('ABM')
 ```
 
 # 3. A simple example: methane emission from stored slurry
@@ -229,14 +228,27 @@ lines(p1_conc ~ time, data = out1, type = 'l', col = 'red')
 
 This change from the default values (2.77 and 0.04) has a drastic effect, which perhaps should not be too surprising because the yield change alone represents a 50% improvement in fitness.
 
-To define completely new microbial groups, the example of the default argument in the help file can be followed.
-The special keywords `all` and `default` make the task easier.
-All groups must be named individually in the `qhat_opt` parameter, which effectively identifies the groups.
-For other parameters though, use `all` if all groups have the same value (as in `xa_init` below).
-Or, use `default` if some groups have the same value (as in `xa_fresh` below).
+The `all` keyword can be used in `add_pars` to make changes to all microbial groups. 
+For example, to completely turn off microbial decay, use the following call.
+
 
 ```{r}
-grp_pars <- list(yield = c(default = 0.04, sr1 = 0.065),
+out4a <- abm(365, 1, add_pars = list(decay_rate.all = 0))
+matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], 
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (g)')
+matlines(out4a$time, out4a[, nn <- c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], lty = 2)
+legend('topleft', nn, col = 1:6, lty = 1)
+```
+
+To define completely new microbial groups, the example of the default argument in the help file can be followed.
+The special keywords `all` and `default` make the task easier.
+All groups must be named individually in the `grps` parameter, which identifies the groups.
+For any numeric element, use `all` if all groups have the same value (as in `xa_init` below).
+Or, use `default` if some (unspecified) groups have the same value (as in `xa_fresh` below).
+
+```{r}
+grp_pars <- list(grps = c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1'),
+                 yield = c(default = 0.04, sr1 = 0.065),
                  xa_fresh = c(default = 0.001, sr1 = 0.001),
                  xa_init = c(all = 0.01), 
                  decay_rate = c(all = 0.02), 
@@ -254,6 +266,17 @@ grp_pars <- list(yield = c(default = 0.04, sr1 = 0.065),
                  pH_lwr = c(m1 = 6.5, m2 = 6.0, m3 = 6.5, p1 = 6.5, p2 = 6.5, sr1 = 6.0))
 
 out5 <- abm(365, 1, grp_pars = grp_pars)
+```
+
+If some groups should be removed, this can be done easily with the `grps` element.
+For example, to limit the groups to only `m1` and `p1`, use the following call.
+Sulfate reducers are currently required!
+
+```{r}
+out4b <- abm(365, 1, add_pars = list(grps = c('m1', 'p1', 'sr1')))
+head(out4b, 2)
+plot(p1_conc ~ time, data = out4a, type = 'l', ylab = 'Biomass concentration (g/kg)')
+lines(p1_conc ~ time, data = out1, type = 'l', col = 'red')
 ```
 
 # 7. Simulating reactors
@@ -280,6 +303,27 @@ matplot(out5$time, out5[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p
 legend('topleft', nn, col = 1:5, lty = 1)
 
 matplot(out5$time, out5[, c('Sp_conc', 'VFA_conc', 'COD_conc', 'dCOD_conc')], 
+        type = 'l', lty = 1)
+```
+
+Batch reactors can also be simulated.
+
+```{r}
+out5b <- abm(365, 1, add_pars = list(temp_C = 35, alpha_opt = 0.2, 
+                                    slurry_mass = 33333, slurry_prod_rate = 0))
+
+```
+
+```{r}
+head(out5b)
+plot(CH4_emis_cum ~ time, data = out5b, type = 'l')
+plot(22300 / 16 * CH4_emis_cum ~ time, data = out5b, type = 'l')
+
+matplot(out5b$time, out5b[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+        type = 'l', lty = 1)
+legend('topleft', nn, col = 1:5, lty = 1)
+
+matplot(out5b$time, out5b[, c('Sp_conc', 'VFA_conc', 'COD_conc', 'dCOD_conc')], 
         type = 'l', lty = 1)
 ```
 

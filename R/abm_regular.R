@@ -6,13 +6,20 @@ function(days, delta_t, pars, starting = NULL, temp_C_fun = temp_C_fun, pH_fun =
     pars$slurry_mass <- 1E-6
   }
 
-  # Emptying interval (d)
-  empty_int <- pars$max_slurry_mass * (1 - pars$resid_frac) / pars$slurry_prod_rate
-  # Time of first filling interval (first call may be longer or shorter than rest, storage may be empty or > resid.frac)
-  t_int_1 <- (pars$max_slurry_mass - pars$slurry_mass) / pars$slurry_prod_rate
-  # Number of filling intervals
-  # 1 extra interval for first interval (filling)
-  n_int <- ceiling(round((days - t_int_1) / empty_int, 4)) + 1
+  # Sort out emptying interval and related vars
+  if (pars$slurry_prod_rate > 0) {
+    # Emptying interval (d)
+    empty_int <- pars$max_slurry_mass * (1 - pars$resid_frac) / pars$slurry_prod_rate
+    # Time of first filling interval (first call may be longer or shorter than rest, storage may be empty or > resid.frac)
+    t_int_1 <- (pars$max_slurry_mass - pars$slurry_mass) / pars$slurry_prod_rate
+    # Number of filling intervals
+    # 1 extra interval for first interval (filling)
+    n_int <- ceiling(round((days - t_int_1) / empty_int, 4)) + 1
+  } else if (pars$slurry_prod_rate == 0) {
+    empty_int <- days
+    t_int_1 <- days
+    n_int <- 1
+  } else stop('slurry_prod_rate problem')
 
   # Initial state variable vector
   y <- c(xa = pars$xa_init * pars$slurry_mass, 

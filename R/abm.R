@@ -10,7 +10,8 @@ function(
                  temp_C = 23),
   man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160),
                  pH = 7), # Note list not c() so SO4 can be data frame
-  grp_pars = list(yield = c(default = 0.04, sr1 = 0.065),
+  grp_pars = list(grps = c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1'),
+                  yield = c(default = 0.04, sr1 = 0.065),
                   xa_fresh = c(default = 0.001, sr1 = 0.001),
                   xa_init = c(m1 = 0.01, m2 = 0.01, m3 = 0.01, p1 = 0.01, p2 = 0.01, sr1 = 0.01),
                   decay_rate = c(m1 = 0.02, m2 = 0.02, m3 = 0.02, p1 = 0.02, p2 = 0.02, sr1 = 0.02),
@@ -81,6 +82,7 @@ function(
     if (any(bad.names <- !names(add_pars) %in% names(pars))) {
       stop ('Some `add_pars` names not recognized as valid parameters: ', names(add_pars)[bad.names]) 
     }
+    # Add in pars (or replace existing elements unless it is time series data added)
     for (i in names(add_pars)) {
       if (!is.data.frame(add_pars[[i]]) && length(pars[[i]]) > 1) {
         pars[[i]][names(add_pars[[i]])] <- add_pars[[i]]
@@ -90,12 +92,19 @@ function(
     }
   }
 
+  # Unlike others, grps in add_pars *will* override default vector (i.e., can be used to remove groups)
+  if ('grps' %in% names(add_pars)) {
+    pars$grps <- add_pars$grps
+  }
 
   # Fill in default values for grp_pars if keyword name `default` or `all` is used
-  # Note: Microbial groups are defined by elements in qhat_opt
-  # Note: `default1 does *not* work with add_pars argument
-  grp_nms <- names(pars$qhat_opt)
-  for (i in names(grp_pars)) {
+  # Note: Microbial groups are defined by grps element
+  # Note: `default` does *not* work with add_pars argument because grps are already defined in defaults
+  # Note: But `all` *does* work
+  grp_nms <- pars$grps
+  grp_par_nms <- names(grp_pars)
+  grp_par_nms <- grp_par_nms[grp_par_nms != 'grps']
+  for (i in grp_par_nms) {
     ppo <- pars[[i]]
     p_nms <- names(pars[[i]])
     if (any(p_nms == 'default')) {
@@ -107,11 +116,14 @@ function(
     if (any(p_nms == 'all')) {
       pars[[i]][grp_nms] <- pars[[i]]['all']
     }
-     # Fix order, drop default element if present
+    # Fix order, drop default element if present, drop unused names
     pars[[i]] <- pars[[i]][grp_nms]
+    # Check for missing values
+    if (any(is.na(pars[[i]]))) stop('Missing grp_pars elements in ', i, '.')
   }
 
   # Check arguments, including order of element names in some pars
+  # After above block, this should be redundant
   if (!all.equal(names(pars$yield), names(pars$xa_fresh), names(pars$xa_init), names(pars$decay_rate),
                  names(pars$ks_coefficient), names(pars$resid_enrich), names(pars$qhat_opt), 
                  names(pars$T_opt), names(pars$T_min), names(pars$T_max), 
@@ -162,7 +174,7 @@ function(
 
   # Caculate concentrations where relevant
   #conc.names <- names(dat)[!grepl('conc|time|slurry_mass|inhib|qhat|CH4_emis_cum', names(dat))]
-  mic_names <- names(pars$qhat)
+  mic_names <- pars$grps
   conc.names <-  c('NH4', 'NH3', 'Sp', 'VFA', 'sulfide', 'sulfate', mic_names)
   dat_conc <- dat[, conc.names]/dat$slurry_mass
   names(dat_conc) <- paste0(names(dat_conc), '_conc')

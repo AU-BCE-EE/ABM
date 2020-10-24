@@ -95,6 +95,8 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
                                             (alpha_T_opt - alpha_T_max) * 
                                             (alpha_T_opt + alpha_T_min - 2*temp_K))
              )
+
+  if (alpha < 0) alpha <- 0
   
   # Microbial substrate utilization rate (vectorized calculation)
   qhat <- qhat_opt * ((temp_K - T_max) * (temp_K - T_min)^2) / 

@@ -315,7 +315,6 @@ out5b <- abm(365, 1, add_pars = list(temp_C = 35, alpha_opt = 0.2,
 ```
 
 ```{r}
-head(out5b)
 plot(CH4_emis_cum ~ time, data = out5b, type = 'l')
 plot(22300 / 16 * CH4_emis_cum ~ time, data = out5b, type = 'l')
 

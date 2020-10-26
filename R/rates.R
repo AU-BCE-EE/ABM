@@ -104,7 +104,9 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
                                 (T_opt - T_max) * (T_opt + T_min - 2*temp_K))
             )
   # Set to zero outside bounds
-  qhat[temp_K < T_min | temp_K > T_max] <- 0
+  ##qhat[temp_K < T_min | temp_K > T_max] <- 0
+  # NTS: A bit strange qhat goes < 0 even within range. So above does not always work. Or not???
+  qhat[qhat < 0] <- 0
   
   # Ks temperature dependence
   ks <- ks_coefficient*(0.8157*exp(-0.063*temp_C))#(71.3*exp(-0.175*temp_C))

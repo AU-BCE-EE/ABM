@@ -133,6 +133,11 @@ function(
     stop('Microbial groups, i.e., element names in `grp_pars`, must match.')
   }
 
+  # Convert temperature constants to K if needed
+  for (i in which(grepl('T_', names(pars)))) {
+    pars[[i]][pars[[i]] < 200] <- pars[[i]][pars[[i]] < 200] + 273.15
+  }
+
   # Create temperature function f(t) to allow for variable temperature
   if (is.data.frame(pars$temp_C)) {
     temp <- pars$temp_C$temp_C

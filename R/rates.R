@@ -147,6 +147,10 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   # Some checks for safety
   if (any(rut < 0)) stop('In rates() function rut < 0 or otherwise strange. Check qhat parameters (92gg7)')
 
+  # If there are no SRs. . .
+  rutsr <- rut[i_sr]
+  if (length(rutsr) == 0) rutsr <- 0
+
   # Derivatives, all in g/d except slurry_mass = kg/d
   # NTS: Some of these repeated calculations could be moved up
   derivatives <- c(
@@ -154,14 +158,14 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
     slurry_mass = slurry_prod_rate,
     Sp = slurry_prod_rate * conc_fresh[['Sp']] - alpha * Sp + sum(decay_rate * xa) - respiration,
     VFA = alpha * Sp - sum(rut) + slurry_prod_rate * conc_fresh[['VFA']],
-    sulfate = slurry_prod_rate * conc_fresh_SO4 - rut[i_sr] * COD_conv[['S']],
-    sulfide = slurry_prod_rate * conc_fresh[['S2']] + rut[i_sr] * COD_conv[['S']] - H2SEmissionRate,
+    sulfate = slurry_prod_rate * conc_fresh_SO4 - sum(rutsr) * COD_conv[['S']],
+    sulfide = slurry_prod_rate * conc_fresh[['S2']] + sum(rutsr) * COD_conv[['S']] - H2SEmissionRate,
     CH4_emis_cum = sum(rut[i_meth]) * COD_conv[['CH4']],
-    CO2_emis_cum =  sum(rut[i_meth]) * COD_conv[['CO2_anaer']] + rut[i_sr] * COD_conv[['CO2_sr']] + respiration * COD_conv[['CO2_aer']],
-    COD_conv_cum = sum(rut[i_meth]) + respiration + rut[i_sr],
+    CO2_emis_cum =  sum(rut[i_meth]) * COD_conv[['CO2_anaer']] + sum(rutsr) * COD_conv[['CO2_sr']] + respiration * COD_conv[['CO2_aer']],
+    COD_conv_cum = sum(rut[i_meth]) + respiration + sum(rutsr),
     COD_conv_cum_meth = sum(rut[i_meth]),
     COD_conv_cum_respir = respiration,
-    COD_conv_cum_sr = rut[i_sr]
+    COD_conv_cum_sr = rutsr
   )
 
   return(list(derivatives, c(NH4 = conc_fresh[['NH4']], NH3 = conc_fresh[['NH3']], 

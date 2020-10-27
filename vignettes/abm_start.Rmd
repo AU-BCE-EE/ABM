@@ -270,13 +270,17 @@ out5 <- abm(365, 1, grp_pars = grp_pars)
 
 If some groups should be removed, this can be done easily with the `grps` element.
 For example, to limit the groups to only `m1` and `p1`, use the following call.
-Sulfate reducers are currently required!
+Sulfate reducers are not required.
+And a single group can be used.
 
 ```{r}
 out4b <- abm(365, 1, add_pars = list(grps = c('m1', 'p1')))
 head(out4b, 2)
 plot(p1_conc ~ time, data = out4b, type = 'l', ylab = 'Biomass concentration (g/kg)')
 lines(p1_conc ~ time, data = out1, type = 'l', col = 'red')
+
+out4c <- abm(365, 1, add_pars = list(grps = 'm1'))
+traceback()
 ```
 
 # 7. Simulating reactors

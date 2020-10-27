@@ -217,7 +217,7 @@ function(
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
   # ndCOD is conserved, same everywhere always
   dat$ndCOD_conc <- ndCOD_conc <- pars$conc_fresh$COD - dat$dCOD_conc_fresh 
-  dat$dCOD_conc <- dCOD_conc <- dat$Sp_conc + dat$VFA_conc + rowSums(dat[, paste0(mic_names, '_', 'conc')])
+  dat$dCOD_conc <- dCOD_conc <- dat$Sp_conc + dat$VFA_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
   dat$COD_conc <- COD_conc <- ndCOD_conc + dCOD_conc
   dat$VS_conc <- pars$COD_conv[['VS']] * COD_conc
   # And flows in g/d

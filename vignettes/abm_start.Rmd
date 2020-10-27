@@ -280,7 +280,6 @@ plot(p1_conc ~ time, data = out4b, type = 'l', ylab = 'Biomass concentration (g/
 lines(p1_conc ~ time, data = out1, type = 'l', col = 'red')
 
 out4c <- abm(365, 1, add_pars = list(grps = 'm1'))
-traceback()
 ```
 
 # 7. Simulating reactors

@@ -210,6 +210,9 @@ function(
   dat$CO2_flux <- dat$CO2_emis_rate / pars$area
   ## NTS: Add others, e.g., mu
 
+  # Cut startup period before calculating cumulative flows
+  dat <- dat[dat$time > startup, ]
+
   # Calculate COD/VS flows
   # First concentrations in g/kg
   dat$dCOD_conc_fresh <- pars$conc_fresh$VFA + pars$conc_fresh$Sp + sum(pars$xa_fresh)
@@ -226,10 +229,10 @@ function(
   dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
   dat$VS_load_rate <- pars$COD_conv[['VS']] * dat$COD_load_rate
   # Cumulative flow in g
-  dat$COD_load_cum <- cumsum(dat$COD_load_rate * delta_t)
-  dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * delta_t)
-  dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * delta_t)
-  dat$VS_load_cum <- cumsum(dat$VS_load_rate * delta_t)
+  dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc * dat$slurry_mass
+  dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc * dat$slurry_mass
+  dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * c(0, diff(dat$time))) + dat$ndCOD_conc * dat$slurry_mass
+  dat$VS_load_cum <- cumsum(dat$VS_load_rate * c(0, diff(dat$time))) + dat$VS_conc * dat$slurry_mass
   # And relative emission
   # g CH4/g COD in
   dat$CH4_emis_rate_COD <- dat$CH4_emis_rate / dat$COD_load_rate
@@ -254,29 +257,26 @@ function(
   # Replace . in names with _
   names(dat) <- gsub('\\.', '_', names(dat))
 
-  # Get averages (excluding startup period)
-  dat_sel <- dat[dat$time > startup, ]
+  COD_load <- dat$COD_load_cum[nrow(dat)]
+  dCOD_load <- dat$dCOD_load_cum[nrow(dat)]
+  ndCOD_load <- dat$ndCOD_load_cum[nrow(dat)]
+  VS_load <- dat$VS_load_cum[nrow(dat)]
 
-  COD_load <- sum(dat_sel$COD_load_rate * delta_t)
-  dCOD_load <- sum(dat_sel$dCOD_load_rate * delta_t)
-  ndCOD_load <- sum(dat_sel$ndCOD_load_rate * delta_t)
-  VS_load <- sum(dat_sel$VS_load_rate * delta_t)
-
-  CH4_emis_cum <- dat_sel$CH4_emis_cum[nrow(dat_sel)] - dat_sel$CH4_emis_cum[1]
-  CH4_emis_rate <- CH4_emis_cum / (dat_sel$time[nrow(dat_sel)] - dat_sel$time[1])
+  CH4_emis_cum <- dat$CH4_emis_cum[nrow(dat)] - dat$CH4_emis_cum[1]
+  CH4_emis_rate <- CH4_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
   CH4_emis_COD <- CH4_emis_cum / COD_load
   CH4_emis_dCOD <- CH4_emis_cum / dCOD_load
   CH4_emis_VS <- CH4_emis_cum / VS_load
 
-  CO2_emis_cum <- dat_sel$CO2_emis_cum[nrow(dat_sel)] - dat_sel$CO2_emis_cum[1]
-  CO2_emis_rate <- CO2_emis_cum / (dat_sel$time[nrow(dat_sel)] - dat_sel$time[1])
+  CO2_emis_cum <- dat$CO2_emis_cum[nrow(dat)] - dat$CO2_emis_cum[1]
+  CO2_emis_rate <- CO2_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
   CO2_emis_COD <- CO2_emis_cum / COD_load
   CO2_emis_dCOD <- CO2_emis_cum / dCOD_load
   CO2_emis_VS <- CO2_emis_cum / VS_load
 
-  COD_conv_meth <- dat_sel$COD_conv_cum_meth[nrow(dat_sel)] - dat_sel$COD_conv_cum_meth[1]
-  COD_conv_respir <- dat_sel$COD_conv_cum_respir[nrow(dat_sel)] - dat_sel$COD_conv_cum_respir[1]
-  COD_conv_sr <- dat_sel$COD_conv_cum_sr[nrow(dat_sel)] - dat_sel$COD_conv_cum_sr[1]
+  COD_conv_meth <- dat$COD_conv_cum_meth[nrow(dat)] - dat$COD_conv_cum_meth[1]
+  COD_conv_respir <- dat$COD_conv_cum_respir[nrow(dat)] - dat$COD_conv_cum_respir[1]
+  COD_conv_sr <- dat$COD_conv_cum_sr[nrow(dat)] - dat$COD_conv_cum_sr[1]
   f_COD_CH4 <- COD_conv_meth / COD_load
   f_COD_respir <- COD_conv_respir / COD_load
   f_COD_sr <- COD_conv_sr / COD_load

@@ -41,8 +41,8 @@ CTM <- function(tt, topt, tmin, tmax, yopt = 1) {
   
   if (flip) {
     tt <- - tt
-    tmin <- - tmino
-    tmax <- - tmaxo
+    tmin <- tmino
+    tmax <- tmaxo
   }
   
   # Fix values outside (or close to) limits

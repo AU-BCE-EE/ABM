@@ -6,6 +6,11 @@ CTM <- function(tt, topt, tmin, tmax, yopt = 1) {
     stop('Length of topt and following arguments be be identical.')
   }
 
+  if (length(tt) > 1) {
+    tt <- tt[1]
+    warning('Multiple temperature (tt) values given but only first will be used')
+  }
+
   if (length(topt) > 1) {
     y <- NULL
     for (i in 1:length(topt)) {
@@ -46,7 +51,7 @@ CTM <- function(tt, topt, tmin, tmax, yopt = 1) {
   }
   
   # Fix values outside (or close to) limits
-  y[tt < tmin | tt > tmax] <- 0
+  y[tt <= tmin | tt >= tmax] <- 0
   y[y < 0] <- 0
 
   return(y)

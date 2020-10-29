@@ -130,7 +130,7 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   H2SEmissionRate <- (kl['H2S'] * area * H2S_frac * sulfide)
 
   # Sp consumption by aerobic respiration (g/d)
-  respiration <- (kl['oxygen'] * area * ((kH_oxygen * 0.208) - 0))
+  respiration <- (kl['oxygen'] * area * ((kH_oxygen * 0.208) - 0)) * (Sp > 0)
 
   # Some checks for safety
   if (any(rut < 0)) stop('In rates() function rut < 0 or otherwise strange. Check qhat parameters (92gg7)')

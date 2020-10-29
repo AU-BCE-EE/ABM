@@ -229,10 +229,10 @@ function(
   dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
   dat$VS_load_rate <- pars$COD_conv[['VS']] * dat$COD_load_rate
   # Cumulative flow in g
-  dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc * dat$slurry_mass
-  dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc * dat$slurry_mass
-  dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * c(0, diff(dat$time))) + dat$ndCOD_conc * dat$slurry_mass
-  dat$VS_load_cum <- cumsum(dat$VS_load_rate * c(0, diff(dat$time))) + dat$VS_conc * dat$slurry_mass
+  dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
+  dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc[1]* dat$slurry_mass[1]
+  dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * c(0, diff(dat$time))) + dat$ndCOD_conc[1]* dat$slurry_mass[1]
+  dat$VS_load_cum <- cumsum(dat$VS_load_rate * c(0, diff(dat$time))) + dat$VS_conc[1]* dat$slurry_mass[1]
   # And relative emission
   # g CH4/g COD in
   dat$CH4_emis_rate_COD <- dat$CH4_emis_rate / dat$COD_load_rate
@@ -262,7 +262,7 @@ function(
   ndCOD_load <- dat$ndCOD_load_cum[nrow(dat)]
   VS_load <- dat$VS_load_cum[nrow(dat)]
 
-  CH4_emis_cum <- dat$CH4_emis_cum[nrow(dat)] - dat$CH4_emis_cum[1]
+  CH4_emis_cum <- dat$CH4_emis_cum[nrow(dat)]
   CH4_emis_rate <- CH4_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
   CH4_emis_COD <- CH4_emis_cum / COD_load
   CH4_emis_dCOD <- CH4_emis_cum / dCOD_load

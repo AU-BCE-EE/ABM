@@ -77,7 +77,7 @@ function(days, delta_t, pars, starting = NULL, temp_C_fun = temp_C_fun, pH_fun =
     resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich)
 
     y[1:n_mic] <- resid_xa * y[1:n_mic]
-    y['slurry_mass'] <- max(resid_frac * y['slurry_mass'], 1E-10)
+    y['slurry_mass'] <- max(resid_frac * y['slurry_mass'],  1E-10)
     y['Sp'] <- resid_frac * y['Sp']
     y['VFA'] <- resid_frac * y['VFA']
     y['sulfate'] <- resid_frac * y['sulfate']

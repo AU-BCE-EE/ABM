@@ -10,31 +10,30 @@ function(
                  temp_C = 23),
   man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160),
                  pH = 7), # Note list not c() so SO4 can be data frame
-  grp_pars = list(grps = c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1'),
-                  yield = c(default = 0.04, sr1 = 0.065),
-                  xa_fresh = c(default = 0.001, sr1 = 0.001),
-                  xa_init = c(m1 = 0.01, m2 = 0.01, m3 = 0.01, p1 = 0.01, p2 = 0.01, sr1 = 0.01),
-                  decay_rate = c(m1 = 0.02, m2 = 0.02, m3 = 0.02, p1 = 0.02, p2 = 0.02, sr1 = 0.02),
-                  ks_coefficient = c(m1 = 0.5, m2 = 1.5, m3 = 1.0, p1 = 1.0, p2 = 1.0, sr1 = 0.4),
-                  #resid_enrich = c(m1 = 0.5, m2 = 0.5, m3 = 0.5, p1 = 0.5, p2 = 0.5, sr1 = 0.5),
-                  resid_enrich = c(m1 = 0.0, m2 = 0.0, m3 = 0.0, p1 = 0.0, p2 = 0.0, sr1 = 0.0),
-                  qhat_opt = c(m1 = 8, m2 = 13.33, m3 = 5.75, p1 = 2.77, p2 = 0.72, sr1 = 8.3),    
-                  T_opt = c(m1 = 313, m2 = 313, m3 = 303, p1 = 293, p2 = 283, sr1 = 313),
-                  T_min = c(m1 = 295.31, m2 = 295.31, m3 = 285.31, p1 = 275.31, p2 = 265.31, sr1 = 273),
-                  T_max = c(m1 = 320.67, m2 = 320.67, m3 = 310.67, p1 = 300.67, p2 = 290.67, sr1 = 320.67),
-                  ki_NH3_min = c(m1 = 0.01, m2 = 0.015, m3 = 0.015, p1 = 0.015, p2 = 0.015, sr1 = 0.015),
-                  ki_NH3_max = c(m1 = 0.10, m2 = 0.131, m3 = 0.131, p1 = 0.131, p2 = 0.131, sr1 = 0.131),
-                  ki_NH4_min = c(m1 = 1.70, m2 = 2.714, m3 = 2.714, p1 = 2.714, p2 = 2.714, sr1 = 2.714),
-                  ki_NH4_max = c(m1 = 3.10, m2 = 4.764, m3 = 4.764, p1 = 4.764, p2 = 4.764, sr1 = 4.764),
-                  pH_upr = c(m1 = 8.0, m2 = 8.0, m3 = 8.0, p1 = 8.0, p2 = 8.0, sr1 = 8.0),
-                  pH_lwr = c(m1 = 6.5, m2 = 6.0, m3 = 6.5, p1 = 6.5, p2 = 6.5, sr1 = 6.0)),
+  grp_pars = list(grps = c('m1', 'm2', 'm3', 'm4', 'm5'),
+                  yield = c(all = 0.04),
+                  xa_fresh = c(default = 0.001, m5 = 0.0001),
+                  xa_init = c(m1 = 0.01, m2 = 0.01, m3 = 0.1, m4 = 0.01, m5 = 0.01),
+                  decay_rate = c(all = 0.02),
+                  ks_coefficient = c(all = 0.5),
+                  resid_enrich = c(all = 0.0),
+                  qhat_opt = c(m1 = 3.6, m2 = 5.6 , m3 = 7.2, m4 = 8, m5 = 8),
+                  T_opt = c(m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55),
+                  T_min = c(m1 = 0, m2 = 8, m3 = 15, m4 = 26.25, m5 = 30),
+                  T_max = c(m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60),
+                  ki_NH3_min = c(all = 0.01),
+                  ki_NH3_max = c(all = 0.10),
+                  ki_NH4_min = c(all = 1.70),
+                  ki_NH4_max = c(all = 3.10),
+                  pH_upr = c(all = 8.0),
+                  pH_lwr = c(all = 6.5)),
   mic_pars = list(ks_SO4 = 0.0067,
                   ki_H2S_meth = 0.23,
                   ki_H2S_sr = 0.25,
-                  alpha_opt = 0.015,
-                  alpha_T_opt = 313,
-                  alpha_T_min = 273,
-                  alpha_T_max = 320.67),
+                  alpha_opt = 0.02,
+                  alpha_T_min = 0,
+                  alpha_T_opt = 50,
+                  alpha_T_max = 60),
   chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.57, CO2_aer = 1.3, CO2_sr = 1.3), kl = c(H2S = 0.032, oxygen = 0.415)),  
   add_pars = NULL,
   startup = -Inf,
@@ -78,6 +77,9 @@ function(
   }
 
   # If any additional parameters were added (or modified) using add_pars, update them in pars list here
+  # Needs to work in a case where default is all but e.g., m1 is given in add_pars (see def stuff below)
+  grp_par_nms <- names(grp_pars)
+  grp_par_nms <- grp_par_nms[grp_par_nms != 'grps']
   if (!is.null(add_pars) && length(add_pars) > 0) {
     if (any(bad.names <- !names(add_pars) %in% names(pars))) {
       stop ('Some `add_pars` names not recognized as valid parameters: ', names(add_pars)[bad.names]) 
@@ -87,7 +89,11 @@ function(
       if (!is.data.frame(add_pars[[i]]) && length(pars[[i]]) > 1) {
         pars[[i]][names(add_pars[[i]])] <- add_pars[[i]]
       } else {
+        def <- pars[[i]]['all']
         pars[[i]] <- add_pars[[i]]
+        if (i %in% grp_par_nms) {
+          pars[[i]]['default'] <- def
+        }
       }
     }
   }
@@ -102,8 +108,6 @@ function(
   # Note: `default` does *not* work with add_pars argument because grps are already defined in defaults
   # Note: But `all` *does* work
   grp_nms <- pars$grps
-  grp_par_nms <- names(grp_pars)
-  grp_par_nms <- grp_par_nms[grp_par_nms != 'grps']
   for (i in grp_par_nms) {
     ppo <- pars[[i]]
     p_nms <- names(pars[[i]])

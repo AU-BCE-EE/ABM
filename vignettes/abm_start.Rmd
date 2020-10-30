@@ -8,6 +8,7 @@ vignette: >
 options(width = 85)
 ```
 
+DRAFT VIGNETTE -- INCOMPLETE
 
 # 1. Overview
 The ABM model predicts conversion of animal manure or other (high-moisture) organic wastes to methane (CH~4~) and carbon dioxide (CO~2~) under anaerobic conditions.
@@ -18,9 +19,6 @@ The purpose of this document is to demonstrate the use of the ABM R package, whi
 For a detailed description of the model itself, see Dalby et al. (2020a, 2020b).
 
 # 2. Installation
-Note: this package is not yet complete, so installation cannot be done as described below.
-Instead see README.md on GitHub.
-
 The ABM package is available on GitHub and so can be installed with the `install_github()` function from the devtools package, which must be installed first.
 These steps must be carried out once to install both packages:
 
@@ -31,11 +29,11 @@ devtools::install_github('sashahafner/ABM')
 
 And to use the ABM model, the package must be loaded.
 
-```{r,eval= FALSE}
+```{r,eval= TRUE}
 library(ABM)
 ```
 
-```{r,echo=FALSE}
+```{r,eval = FALSE, echo=FALSE}
 ff <- list.files('../R', full.names = TRUE)
 for (i in ff) source(i)
 ```
@@ -69,7 +67,7 @@ plot(CH4_emis_rate ~ time, data = out1, type = 'l')
 Microbial biomass (g) is given in columns with names that match those used for the names of the groups (defaults shown below, set within the `grp_pars` argument).
 
 ```{r}
-matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], 
+matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'm4', 'm5')], 
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (g)')
 legend('topleft', nn, col = 1:6, lty = 1)
 ```
@@ -218,12 +216,12 @@ To define a custom set, a single (albeit complex) argument `grp_pars` needs to b
 This task is straightforward if tedious, and described after a description of tweaking parameters.
 A more common need is to tweak default parameters.
 Although this can also be done using `grp_pars`, it is more efficient to use `add_pars`.
-For example, to increase `qhat_optim` of group `p1` to 3 g/g-d (g substrate COD per g biomass COD per day) and the yield to 0.06 g/g, the following call could be used:
+For example, to increase `qhat_optim` of group `m1` to 3 g/g-d (g substrate COD per g biomass COD per day) and the yield to 0.06 g/g, the following call could be used:
 
 ```{r}
-out4 <- abm(365, 1, add_pars = list(qhat_opt.p1 = 3, yield.p1 = 0.06))
-plot(p1_conc ~ time, data = out4, type = 'l', ylab = 'Biomass concentration (g/kg)')
-lines(p1_conc ~ time, data = out1, type = 'l', col = 'red')
+out4 <- abm(365, 1, add_pars = list(qhat_opt.m1 = 3, yield.m1 = 0.06))
+plot(m1_conc ~ time, data = out4, type = 'l', ylab = 'Biomass concentration (g/kg)')
+lines(m1_conc ~ time, data = out1, type = 'l', col = 'red')
 ```
 
 This change from the default values (2.77 and 0.04) has a drastic effect, which perhaps should not be too surprising because the yield change alone represents a 50% improvement in fitness.
@@ -234,9 +232,9 @@ For example, to completely turn off microbial decay, use the following call.
 
 ```{r}
 out4a <- abm(365, 1, add_pars = list(decay_rate.all = 0))
-matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], 
+matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'm4', 'm5')], 
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (g)')
-matlines(out4a$time, out4a[, nn <- c('m1', 'm2', 'm3', 'p1', 'p2', 'sr1')], lty = 2)
+matlines(out4a$time, out4a[, nn <- c('m1', 'm2', 'm3', 'm4', 'm5')], lty = 2)
 legend('topleft', nn, col = 1:6, lty = 1)
 ```
 
@@ -269,15 +267,15 @@ out5 <- abm(365, 1, grp_pars = grp_pars)
 ```
 
 If some groups should be removed, this can be done easily with the `grps` element.
-For example, to limit the groups to only `m1` and `p1`, use the following call.
+For example, to limit the groups to only `m1` and `m4`, use the following call.
 Sulfate reducers are not required.
 And a single group can be used.
 
 ```{r}
-out4b <- abm(365, 1, add_pars = list(grps = c('m1', 'p1')))
+out4b <- abm(365, 1, add_pars = list(grps = c('m1', 'm4')))
 head(out4b, 2)
-plot(p1_conc ~ time, data = out4b, type = 'l', ylab = 'Biomass concentration (g/kg)')
-lines(p1_conc ~ time, data = out1, type = 'l', col = 'red')
+plot(m4_conc ~ time, data = out4b, type = 'l', ylab = 'Biomass concentration (g/kg)')
+lines(m4_conc ~ time, data = out1, type = 'l', col = 'red')
 
 out4c <- abm(365, 1, add_pars = list(grps = 'm1'))
 ```
@@ -301,7 +299,7 @@ plot(CH4_emis_cum_VS ~ time, data = out5, type = 'l')
 plot(22300 / 16 * CH4_emis_cum_VS ~ time, data = out5, type = 'l')
 plot(f_COD_CH4_rate ~ time, data = out5, type = 'l')
 
-matplot(out5$time, out5[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+matplot(out5$time, out5[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'm4_conc', 'm5_conc')], 
         type = 'l', lty = 1)
 legend('topleft', nn, col = 1:5, lty = 1)
 
@@ -321,7 +319,7 @@ out5b <- abm(365, 1, add_pars = list(temp_C = 35, alpha_opt = 0.2,
 plot(CH4_emis_cum ~ time, data = out5b, type = 'l')
 plot(22300 / 16 * CH4_emis_cum ~ time, data = out5b, type = 'l')
 
-matplot(out5b$time, out5b[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+matplot(out5b$time, out5b[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'm4_conc', 'm5_conc')], 
         type = 'l', lty = 1)
 legend('topleft', nn, col = 1:5, lty = 1)
 
@@ -351,7 +349,7 @@ out6 <- abm(500, 1, add_pars = list(temp_C = temp_dat))
 plot(temp_C ~ time, type = 'l', col = 'red', data = out6)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
-matplot(out6$time, out6[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+matplot(out6$time, out6[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'm4_conc', 'm5_conc')], 
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
 legend('topleft', nn, col = 1:5, lty = 1)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
@@ -390,7 +388,7 @@ out7 <- abm(600, 1, add_pars = list(temp_C = temp_dat, resid_frac = 0.95,
 plot(temp_C ~ time, type = 'l', col = 'red', data = out7)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
-matplot(out7$time, out7[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+matplot(out7$time, out7[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'm4_conc', 'm5_conc')], 
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
 legend('topleft', nn, col = 1:5, lty = 1)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
@@ -424,7 +422,7 @@ out8 <- abm(730, 1, add_pars = list(pH = pH_dat), approx_method_pH = 'linear')
 plot(pH ~ time, type = 'l', col = 'red', data = out8)
 abline(v = pH_dat$time, lty = 2, col = 'gray45')
 
-matplot(out8$time, out8[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+matplot(out8$time, out8[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'm4_conc', 'm5_conc')], 
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
 legend('topleft', nn, col = 1:5, lty = 1)
 abline(v = pH_dat$time, lty = 2, col = 'gray45')
@@ -447,7 +445,7 @@ out9 <- abm(200, 1, add_pars = list(conc_fresh.SO4 = 1.3, pH = 'calc'))
 plot(pH ~ time, type = 'l', col = 'red', data = out9)
 abline(v = pH_dat$time, lty = 2, col = 'gray45')
 
-matplot(out9$time, out9[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+matplot(out9$time, out9[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'm4_conc', 'm5_conc')], 
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
 legend('topleft', nn, col = 1:5, lty = 1)
 abline(v = pH_dat$time, lty = 2, col = 'gray45')
@@ -479,7 +477,7 @@ out11 <- abm(365, 1, add_pars = list(conc_fresh.Sp = 10, conc_fresh.COD = 20, co
 ```{r}
 plot(Sp_conc ~ time, type = 'l', col = 'purple', data = out11)
 
-matplot(out11$time, out11[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'p1_conc', 'p2_conc')], 
+matplot(out11$time, out11[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'm4_conc', 'm5_conc')], 
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
 legend('topleft', nn, col = 1:5, lty = 1)
 

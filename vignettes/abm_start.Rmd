@@ -289,7 +289,6 @@ The following example simulates the startup of a mesophilic completely mixed ana
 ```{r}
 out5 <- abm(365, 1, add_pars = list(temp_C = 35, resid_frac = 0.95, alpha_opt = 0.2, 
                                     slurry_mass = 0.95 * 33333, slurry_prod_rate = 500))
-
 ```
 
 Due to the structure of the code (the ODE solver is called separately for each filling interval), a drawback of this high `resid_frac` approach is a long evaluation time.

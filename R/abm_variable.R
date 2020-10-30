@@ -2,7 +2,7 @@ abm_variable <-
 function(days, delta_t, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
 
   # Cannot have no slurry present because is used in all concentration calculations (NTS: could change this)
-  pars$slurry_mass[pars$slurry_mass[, 'slurry_mass'] == 0, 'slurry_mass'] <- 1E-6
+  pars$slurry_mass[pars$slurry_mass[, 'slurry_mass'] == 0, 'slurry_mass'] <- 1E-10
 
   # Check for sorted time
   if (is.unsorted(pars$slurry_mass$time)) {
@@ -128,7 +128,7 @@ function(days, delta_t, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO
       resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich)
       
       y[1:n_mic] <- resid_xa * y[1:n_mic]
-      y['slurry_mass'] <- resid_frac * y['slurry_mass']
+      y['slurry_mass'] <- max(resid_frac * y['slurry_mass'], 1E-10)
       y['Sp'] <- resid_frac * y['Sp']
       y['VFA'] <- resid_frac * y['VFA']
       y['sulfate'] <- resid_frac * y['sulfate']

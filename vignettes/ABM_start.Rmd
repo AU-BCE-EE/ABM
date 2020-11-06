@@ -1,8 +1,13 @@
+---
+title: "Getting Started with the ABM Package in R"
+author: "Sasha D. Hafner and Frekerik Dalby"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{ABM_start}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  %\VignetteEncoding{UTF-8}
+---
 
 ```{r,echo=FALSE}
 options(width = 85)

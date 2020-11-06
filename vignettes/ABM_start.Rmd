@@ -2,6 +2,10 @@
 title: "Getting Started with the ABM Package in R"
 author: "Sasha D. Hafner and Frekerik Dalby"
 date: "`r Sys.Date()`"
+fig_width: 6 
+fig_height: 4 
+out_width: 6
+out_height: 4
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{ABM_start}

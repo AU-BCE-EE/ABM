@@ -38,6 +38,25 @@ ff <- list.files('../R', full.names = TRUE)
 for (i in ff) source(i)
 ```
 
+# 3. A demonstration
+A demonstration is presented in this section, with the objective of showing what the abm() function can do.
+For a more incremental introduction to the function, see the following sections.
+
+Let's assume a dairy farm produces manure at a rate of 1000 kg (fresh mass) per day.
+Manure composition is typical (volatile solids (VS) ca. of 11% of total mass).
+If the manure is transferred to an outdoor storage lagoon every day, we can ignore any minor emission that occurs from manure in the barn.
+Further, let's assume we have measurementst that show the temperature of stored manure ranges from a low of 3&degC in January to 22&degC in August, following the values shown below. 
+
+```{r}
+temp_dat <- data.frame(day = c(0, 250, 365), temp_C = c(3, 22, 3)) 
+plot(temp_C ~ time, data = temp_dat, type = 'l')
+```
+
+The lagoon is emptied twice per year, in March and September.
+So its capacity is :w
+
+
+
 # 3. A simple example: methane emission from stored slurry
 By default, the `abm()` function simulates degradation of animal manure accumulating in a 33 m^3^ storage tank or channel with a 30 day emptying interval.
 Fresh slurry is added continuously at a rate of 1000 kg d^-1^, and when emptied a residual of 10% of the total manure mass is left in the storage.

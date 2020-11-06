@@ -22,7 +22,7 @@ These steps should be carried out once to install both packages:
 
 ```{r, eval=FALSE}
 install.packages('devtools')
-devtools::install_github('sashahafner/ABM')
+devtools::install_github('sashahafner/ABM', build_vignettes = TRUE)
 ```
 
 And to use the ABM model, the package must be loaded.

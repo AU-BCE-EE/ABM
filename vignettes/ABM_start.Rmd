@@ -14,6 +14,7 @@ vignette: >
 ---
 
 ```{r,echo=FALSE}
+knitr::opts_chunk$set(fig.width=6, fig.height=4, out.width = 6, out.height = 4)
 options(width = 85)
 ```
 
@@ -38,6 +39,12 @@ And to use the ABM model, the package must be loaded.
 
 ```{r,eval= TRUE}
 library(ABM)
+```
+
+And to view this vignette, use:
+
+```{r}
+vignette('ABM_start')
 ```
 
 ```{r,eval = FALSE, echo=FALSE}

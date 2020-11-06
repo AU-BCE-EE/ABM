@@ -1,6 +1,6 @@
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ABM_quick_start}
+  %\VignetteIndexEntry{ABM_start}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 

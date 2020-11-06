@@ -11,16 +11,16 @@ options(width = 85)
 DRAFT VIGNETTE -- INCOMPLETE
 
 # 1. Overview
-The ABM model predicts conversion of animal manure or other (high-moisture) organic wastes to methane (CH~4~) and carbon dioxide (CO~2~) under anaerobic conditions.
+The ABM model predicts conversion of organic material in animal manure or other (high-moisture) organic wastes to methane (CH~4~) and carbon dioxide (CO~2~) under anaerobic conditions.
 The name comes from **a**naerobic **b**iodegradation **m**odel.
-With multiple microbial groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change and other perturbations.
-Although it was storage of animal slurry (liquid manure) in unheated channels or tanks that drove the initial development of the model, with its flexibility it is well-suited to simulate CH~4~ emission or biogas production from other organic waste under a range of conditions, including in anaerobic digesters, particularly in the presence of temperature variations.
+With multiple methanogen groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change and other perturbations.
+Although it was prediction of CH~4~ emission from stored animal slurry (liquid manure) in unheated channels or tanks that prompted development of the model, the model can be used to simulate CH~4~ emission or biogas production from other organic waste under a range of conditions, including in anaerobic digesters.
 The purpose of this document is to demonstrate the use of the ABM R package, which is a flexible implementation of the model.
 For a detailed description of the model itself, see Dalby et al. (2020a, 2020b).
 
 # 2. Installation
 The ABM package is available on GitHub and so can be installed with the `install_github()` function from the devtools package, which must be installed first.
-These steps must be carried out once to install both packages:
+These steps should be carried out once to install both packages:
 
 ```{r, eval=FALSE}
 install.packages('devtools')
@@ -39,7 +39,7 @@ for (i in ff) source(i)
 ```
 
 # 3. A simple example: methane emission from stored slurry
-By default, the `abm()` function simulates degradation of animal manure from a 33 m^3^ storage tank or channel with a 30 day emptying interval.
+By default, the `abm()` function simulates degradation of animal manure accumulating in a 33 m^3^ storage tank or channel with a 30 day emptying interval.
 Fresh slurry is added continuously at a rate of 1000 kg d^-1^, and when emptied a residual of 10% of the total manure mass is left in the storage.
 Default values are included for all arguments, including the first two, which set the length of the simulation (365 d) and the time interval in the output (1 d).
 
@@ -50,8 +50,9 @@ The following call runs the ABM model with default argument values.
 out1 <- abm()
 ```
 
-Output is, by default, a data frame with predicted variables over time (see Section X for alternatives).
-Typically the primary variable of interest is CH~4~ emission, which is returned as a total (g) and rate (g/d), overall or normalized to COD or VS loading:
+Output is, by default, a data frame with predicted variables over time (see Section 5 for alternatives).
+Typically the primary variable of interest is CH~4~ emission, which is returned as a total (g) and rate (g/d), overall or normalized to COD or VS loading.
+The complete list of these output variables are:
 
 ```{r}
 names(out1[grepl('^CH4', names(out1))])
@@ -60,11 +61,11 @@ names(out1[grepl('^CH4', names(out1))])
 Total cumulative emission (g) and emission rate (g/d) are plotted below.
 
 ```{r}
-plot(CH4_emis_cum ~ time, data = out1, type = 'l')
-plot(CH4_emis_rate ~ time, data = out1, type = 'l')
+plot(CH4_emis_cum ~ time, data = out1, type = 'l', ylab = 'Cumulative emission (g)')
+plot(CH4_emis_rate ~ time, data = out1, type = 'l', ylab = 'Emission rate (g/d)')
 ```
 
-Microbial biomass (g) is given in columns with names that match those used for the names of the groups (defaults shown below, set within the `grp_pars` argument).
+Microbial biomass (g) is given in columns with names that match those used for the names of the groups (defaults shown below, set within the `grp_pars` argument--see Section 6).
 
 ```{r}
 matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'm4', 'm5')], 
@@ -72,7 +73,7 @@ matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'm4', 'm5')],
 legend('topleft', nn, col = 1:6, lty = 1)
 ```
 
-Because of a default temperature of 23 (NTS: why so high???) methanogen `m3` dominates under default conditions.
+Because of a default temperature of 23&deg (NTS: why so high?) methanogen `m2` dominates under default conditions.
 Biomass concentrations (g per kg of slurry) may be more informative.
 
 ```{r}
@@ -164,7 +165,7 @@ out3b <- abm(365, 1, add_pars = list(pH = 6, conc_fresh = list(S2 = 0.0, SO4 = 0
 
 as is specifying a complete argument of parameters (as in `out2` above).
 
-Setting arguments is explored further in the section on defining microbial groups below (Section X).
+Setting arguments is explored further in the section on defining microbial groups below (Section 6).
 
 # 5. Output options
 By default, the `abm()` function returns a data frame with cumulative CH~4~ emission and other state variables, normalized in a variety of ways.
@@ -181,7 +182,7 @@ The fraction of loaded COD converted through methanogenesis, respiration, and su
 For example, fractional conversion of COD to CH~4~ based on instantaneous rates and cumulative values are shown in the plot below.
 
 ```{r}
-plot(f_COD_CH4_rate ~ time, data = out1, type = 'l', col = 'blue')
+plot(f_COD_CH4_rate ~ time, data = out1, type = 'l', col = 'blue', ylab = 'COD conversion to CH4, rate')
 lines(f_COD_CH4_cum ~ time, data = out1, col = 'red')
 ```
 
@@ -203,19 +204,25 @@ out1s
 Alternatively, set the `value` argument to `'all'` for time series data and the summary.
 
 # 6. Defining microbial groups
-By default, the ABM model includes six microbial groups: five methanogens and one sulfate reducer.
+By default, the ABM model includes five methanogen groups.
+Sulfate reducer groups can be included as well.
 Each microbial group is characterized by 14 parameters that describe the rate of metabolism, biomass yield, decay rate, and the response to temperature, pH, and ammonia.
 Additionally, values are needed for biomass concentrations in fresh slurry and the storage.
-Lastly, an enrichment factor parameter is specified for each group.
+Lastly, an enrichment factor parameter is specified for each group (default of 0 means no enrichment).
 Unlike VFA consumption, the rate of the combined hydrolysis and fermentation step is controlled by a simple temperature-dependent first-order rate constant.
 Aerobic respiration is controlled by the mass transfer rate of O~2~ to the slurry surface.
 For these two processes then, there is no (explicit) associated microbial group.
 
 A central feature of the ABM model is the ability to specify any number of methanogenic groups. 
-To define a custom set, a single (albeit complex) argument `grp_pars` needs to be set (see Section X). 
-This task is straightforward if tedious, and described after a description of tweaking parameters.
-A more common need is to tweak default parameters.
-Although this can also be done using `grp_pars`, it is more efficient to use `add_pars`.
+The default set of groups can be seen in the default values for the `grp_pars` argument.
+
+```
+
+```
+
+To define a custom set, a single (albeit complex) argument `grp_pars` needs to be set. 
+This task is straightforward if tedious (and is described later in this section).
+A more common need is to tweak default parameters, which can be done efficiently using the `add_pars` argument (for **add**itional **par**rameter**s**).
 For example, to increase `qhat_optim` of group `m1` to 3 g/g-d (g substrate COD per g biomass COD per day) and the yield to 0.06 g/g, the following call could be used:
 
 ```{r}

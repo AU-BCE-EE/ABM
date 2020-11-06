@@ -4,8 +4,6 @@ author: "Sasha D. Hafner and Frekerik Dalby"
 date: "`r Sys.Date()`"
 fig_width: 6 
 fig_height: 4 
-out_width: 6
-out_height: 4
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{ABM_start}
@@ -14,7 +12,7 @@ vignette: >
 ---
 
 ```{r,echo=FALSE}
-knitr::opts_chunk$set(fig.width=6, fig.height=4, out.width = 6, out.height = 4)
+knitr::opts_chunk$set(fig.width=6, fig.height=4)
 options(width = 85)
 ```
 

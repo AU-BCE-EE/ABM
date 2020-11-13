@@ -7,7 +7,7 @@ function(
                  max_slurry_mass = 33333,   # Maximum slurry mass (kg), default makes for 30 d cycle
                  resid_frac = 0.10,         # Residual slurry fraction after emptying
                  area = 11,                 # Based on 3 m depth (m2)
-                 temp_C = 23),
+                 temp_C = 20),
   man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160),
                  pH = 7), # Note list not c() so SO4 can be data frame
   grp_pars = list(grps = c('m1', 'm2', 'm3', 'm4', 'm5'),

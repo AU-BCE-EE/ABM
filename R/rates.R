@@ -1,5 +1,8 @@
 rates <-
 function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
+  
+  # Hard-wire NH4+ activity coefficient
+  g_NH4 <- 0.7
 
   y[y < 0] <- 0
 
@@ -100,7 +103,7 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   ks <- ks_coefficient*(0.8157*exp(-0.063*temp_C))#(71.3*exp(-0.175*temp_C))
 
   # Chemical speciation (in rates() because is pH dependent)
-  conc_fresh['NH3'] <- (1/(1 + 10^(- log_ka['NH3'] - pH))) * conc_fresh[['TAN']] # Free NH3 concentration (g N/kg)
+  conc_fresh['NH3'] <- (1/(1 + 10^(- log_ka['NH3'] + log10(g_NH4) - pH))) * conc_fresh[['TAN']] # Free NH3 concentration (g N/kg)
   conc_fresh['NH4'] <- conc_fresh[['TAN']] - conc_fresh[['NH3']]                 # (g N/kg)
   H2S_frac <- (1 - (1/(1 + 10^(- log_ka[['H2S']] - pH))))                        # H2S fraction of total sulfide
   pH_inhib <- (1 + 2*10^(0.5*(pH_lwr - pH_upr)))/(1 + 10^(pH - pH_upr) + 10^(pH_lwr - pH)) # pH inhibition factor

@@ -82,7 +82,7 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   }
 
   # Hard-wired equilibrium constants
-  log_ka <- c(NH3 = - 0.0905 - 2729.31/temp_K, 
+  log_ka <- c(NH3 = - 0.09046 - 2729.31/temp_K, 
             H2S = -7.051 + exp(0.029 * (temp_K - temp_standard)))
 
   # Hard-wired Henry's law constants

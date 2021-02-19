@@ -8,7 +8,9 @@ With multiple microbial groups and group-specific parameters describing kinetics
 
 # Installation and getting started
 This R package can be installed using `devtools::install_github("sashahafner/ABM", build_vignettes = TRUE)`.
-Load the package with `library(ABM)`, and open up the vignette with `vignette('ABM_start')`.
+Load the package with `library(ABM)`, and open up the vignette with `vignette("ABM_start")`.
+
+If you have trouble installing ABM or devtools, make sure that you are working with the latest version of R. If you have updated R but still have trouble, please contact us or submit a new issue, explaining the problem.
 
 # Problems?
 Report problems or ask questions using the Issues page.

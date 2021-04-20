@@ -88,12 +88,14 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   log_ka <- c(NH3 = - 0.09046 - 2729.31/temp_K, 
             H2S = -7.051 + exp(0.029 * (temp_K - temp_standard)))
 
-  # Hard-wired Henry's law constants
-  kH_oxygen <- 0.0013*exp(1700*((1/temp_K)-(1/temp_standard)))*32*1000 # g/(m3*abm)
+  # Hard-wired Henry's law constant
+  # g/(m3*atm)
+  # From NIST (g/(kg-bar originally)
+  # Assumes water density of 1000 kg/m3
+  kH_oxygen <- 0.0013*exp(1700*((1/temp_K)-(1/temp_standard))) * 32 * 1000
   
   # Derived parameters
   # Hydrolysis rate
-
   alpha <- CTM(temp_K, alpha_T_opt, alpha_T_min, alpha_T_max, alpha_opt)
   
   # Microbial substrate utilization rate (vectorized calculation)

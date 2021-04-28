@@ -34,7 +34,8 @@ function(
                   alpha_T_min = 0,
                   alpha_T_opt = 50,
                   alpha_T_max = 60),
-  chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.57, CO2_aer = 1.3, CO2_sr = 1.3), kl = c(H2S = 0.032, oxygen = 0.415)),  
+  chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.57, CO2_aer = 1.3, CO2_sr = 1.3), 
+                   kl = c(H2S = 0.02, oxygen = 0.5)),  
   add_pars = NULL,
   startup = -Inf,
   starting = NULL,
@@ -46,7 +47,7 @@ function(
   warn = TRUE
   ) {
 
-  # If starting conditions are provided from a previous simulation, move to pars
+  # If starting conditions are provided from a previous simulation, move them to pars
   if (!is.null(starting) & is.data.frame(starting)) {
     message('Using starting conditions from `starting` argument')
     grp_pars[['xa_init']] <- as.numeric(starting[nrow(starting), paste0(names(grp_pars[['qhat_opt']]), '_conc')])

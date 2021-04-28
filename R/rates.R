@@ -90,7 +90,7 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
 
   # Hard-wired Henry's law constant
   # g/(m3*atm)
-  # From NIST (g/(kg-bar originally)
+  # From NIST (mol/(kg-bar originally)
   # Assumes water density of 1000 kg/m3
   kH_oxygen <- 0.0013*exp(1700*((1/temp_K)-(1/temp_standard))) * 32 * 1000
   

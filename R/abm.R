@@ -35,7 +35,7 @@ function(
                   alpha_T_opt = 50,
                   alpha_T_max = 60),
   chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.57, CO2_aer = 1.3, CO2_sr = 1.3), 
-                   kl = c(H2S = 0.02, oxygen = 0.5)),  
+                   kl = c(H2S = 0.02, oxygen = 0.5)),  # kl = mass transfer coefficient (liquid phase units) in m/d
   add_pars = NULL,
   startup = -Inf,
   starting = NULL,

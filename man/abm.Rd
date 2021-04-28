@@ -42,7 +42,7 @@ abm(days = 365,
                     alpha_T_opt = 313,
                     alpha_T_min = 273,
                     alpha_T_max = 320.67),
-    chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.57, CO2_aer = 1.3, CO2_sr = 1.3), kl = c(H2S = 0.032, oxygen = 0.415)),
+    chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.57, CO2_aer = 1.3, CO2_sr = 1.3), kl = c(H2S = 0.02, oxygen = 0.5)),
     add_pars = NULL,
     startup = -Inf,
     starting = NULL,
@@ -116,16 +116,14 @@ abm(days = 365,
   \item{chem_pars}{
     List of other chemical parameters.
     Elements are:
-    \code{kl.H2S}, Mass transfer coefficient of hydrogen sulfide through the slurry surface (m/day);
-    \code{kl.oxygen}, Mass transfer coefficient of oxygen through the slurry surface (m/day);
-    \code{COD_conv}, conversion factors for using a COD mass basis.
-    The first two elements are length-one vectors, but \code{COD_conv} is a vector with the following named elements:
+    \code{kl}, Mass transfer coefficient of oxygen and hydrogen sulfide through the slurry/air interface, liquid-phase units (m/day);
+    \code{COD_conv}, conversion factors for using a COD mass basis with the following named elements:
     \code{CH4}, Methane productivity coefficient (g CH4/g COD-substrate) ;
-    \code{S}, Unit conversion factor from COD-substrate to sulfur (g sulfur/g COD-substrate) ;
-    \code{VS}, Unit conversion factor from COD to volatile solids (VS) (g VS/g COD), ;
+    \code{S}, COD-substrate to sulfur (g sulfur/g COD-substrate) ;
+    \code{VS}, COD to volatile solids (VS) (g VS/g COD), ;
     \code{CO2_anaer}, Anaerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate);
     \code{CO2_aer}, Aerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate);
-    \code{CO2_sr}, carbon dioxide productivity coefficient of sulfate reduction (g CO2/g COD-substrate).
+    \code{CO2_sr}, carbon dioxide productivity coefficient for sulfate reduction (g CO2/g COD-substrate).
 }
   \item{add_pars}{
     List of other additional parameters not set in other arguments, or to be modified from defaults.

@@ -11,7 +11,7 @@ function(
   man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160),
                  pH = 7), # Note list not c() so SO4 can be data frame
   grp_pars = list(grps = c('m1', 'm2', 'm3', 'm4', 'm5'),
-                  yield = c(all = 0.04),
+                  yield = c(all = 0.05),
                   xa_fresh = c(default = 0.001, m3 = 0.01),
                   xa_init = c(m1 = 0.01, m2 = 0.005, m3 = 0.005, m4 = 0.005, m5 = 0.001),
                   decay_rate = c(all = 0.02),

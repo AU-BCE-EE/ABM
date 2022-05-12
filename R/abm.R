@@ -1,32 +1,39 @@
-abm <-
-function(
+abm <- function(
   days = 365,                               # Number of days to run
   delta_t = 1,                              # Time step for output
   mng_pars = list(slurry_prod_rate = 1000,  # kg/d
-                 slurry_mass = 0,           # Initial slurry mass (kg)
-                 max_slurry_mass = 33333,   # Maximum slurry mass (kg), default makes for 30 d cycle
-                 resid_frac = 0.10,         # Residual slurry fraction after emptying
-                 area = 11,                 # Based on 3 m depth (m2)
-                 temp_C = 20),
-  man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160),
-                 pH = 7), # Note list not c() so SO4 can be data frame
-  grp_pars = list(grps = c('m1', 'm2', 'm3', 'm4', 'm5'),
-                  yield = c(all = 0.05),
-                  xa_fresh = c(default = 0.001, m3 = 0.01),
-                  xa_init = c(m1 = 0.01, m2 = 0.005, m3 = 0.005, m4 = 0.005, m5 = 0.001),
-                  decay_rate = c(all = 0.02),
-                  ks_coefficient = c(all = 1.0),
-                  resid_enrich = c(all = 0.0),
-                  qhat_opt = c(m1 = 3.6, m2 = 5.6 , m3 = 7.2, m4 = 8, m5 = 8),
-                  T_opt = c(m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55),
-                  T_min = c(m1 = 0, m2 = 8, m3 = 15, m4 = 26.25, m5 = 30),
-                  T_max = c(m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60),
+                  slurry_mass = 0,          # Initial slurry mass (kg)
+                  storage_depth = 0.4,      # Storge structure depth, assued to be maximum slurry depth (m)
+                  resid_depth = 0.035,      # Residual slurry depth after emptying (m)
+                  floor_area = 11,          # NTS: needs to be defined
+                  area = 11,                # Area (assume vertical sides) (m2)
+                  empty_int = 35,           # (d)
+                  temp_C = 20,              # (deg. C)
+                  wash_water = 0,           # (kg) 
+                  wash_int = NA,            # (d)
+                  rest_d = 0),              # (d)
+  man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
+                                    TS = 80, TSS = 60, 
+                                    VS = 50, VSS = 30, dsVS = 20, dVSS = 20),
+                  pH = 7, dens = 1000), # Note list not c() so SO4 can be data frame
+  #init_pars = list(conc = man_pars$conc_fresh), 
+  grp_pars = list(grps = c('m1','m2','m3', 'sr1'),
+                  yield = c(default = 0.05, sr1 = 0.065),
+                  xa_fresh = c(sr1 = 0, default = 0.02), # (g/kg)?
+                  xa_init = c(sr1 = 0, default = 0.02),  # (g/kg)?
+                  decay_rate = c(all = 0.02),            # (1/d)
+                  ks_coefficient = c(default = 3, sr1 = 1.2),
+                  resid_enrich = c(all = 1),
+                  qhat_opt = c(m1 = 4, m2 = 6, m3 = 8, sr1 = 8),  # (??)
+                  T_opt = c(m1 = 20, m2 = 30, m3 = 40, sr1 = 40), # 
+                  T_min = c(m1 = 8, m2 = 10, m3 = 20, sr1 = 0),
+                  T_max = c(m1 = 25, m2 = 35, m3 = 45, sr1 = 45),
                   ki_NH3_min = c(all = 0.015),
                   ki_NH3_max = c(all = 0.13),
                   ki_NH4_min = c(all = 2.7),
                   ki_NH4_max = c(all = 4.8),
                   pH_upr = c(all = 8.0),
-                  pH_lwr = c(all = 6.5)),
+                  pH_lwr = c(all = 6.0)),
   mic_pars = list(ks_SO4 = 0.0067,
                   ki_H2S_meth = 0.23,
                   ki_H2S_sr = 0.25,
@@ -47,6 +54,7 @@ function(
   warn = TRUE
   ) {
 
+  # NTS: fix!
   # If starting conditions are provided from a previous simulation, move them to pars
   if (!is.null(starting) & is.data.frame(starting)) {
     message('Using starting conditions from `starting` argument')
@@ -173,20 +181,78 @@ function(
     SO4_fun <- function(x) return(pars$conc_fresh[['SO4']])
   }
 
+  # Calculate fresh concentrations
+  # dsVS -> dsOM
+  # dVSS -> dpOM
+  # Rename a few 
+  pars$conc_fresh[['dpVS']] <- pars$conc_fresh[['dVSS']] 
+  pars$conc_fresh[['dsVS']] <- pars$conc_fresh[['dsVS']] 
+  pars$conc_fresh[['pVS']] <- pars$conc_fresh[['VSS']] 
+  # Calculate remainder by difference
+  pars$conc_fresh[['sVS']]  <- pars$conc_fresh[['VS']] - pars$conc_fresh[['pVS']]
+  pars$conc_fresh[['isVS']] <- pars$conc_fresh[['sVS']] - pars$conc_fresh[['dsVS']] 
+  pars$conc_fresh[['ipVS']] <- pars$conc_fresh[['pVS']] - pars$conc_fresh[['dpVS']] 
+
+  pars$conc_fresh[['iFS']] <- pars$conc_fresh[['TS']] - pars$conc_fresh[['VS']] 
+
+  # Convert to COD
+  pars$conc_fresh[['COD']]   <- pars$conc_fresh[['VS']]   / pars$COD_conv[['VS']]
+  pars$conc_fresh[['pCOD']]  <- pars$conc_fresh[['pVS']]  / pars$COD_conv[['VS']]
+  pars$conc_fresh[['dpCOD']] <- pars$conc_fresh[['dpVS']] / pars$COD_conv[['VS']]
+  pars$conc_fresh[['ipCOD']] <- pars$conc_fresh[['ipVS']] / pars$COD_conv[['VS']]
+  pars$conc_fresh[['sCOD']]  <- pars$conc_fresh[['sVS']]  / pars$COD_conv[['VS']]
+  pars$conc_fresh[['dsCOD']] <- pars$conc_fresh[['dsVS']] / pars$COD_conv[['VS']]
+  pars$conc_fresh[['isCOD']] <- pars$conc_fresh[['isVS']] / pars$COD_conv[['VS']]
+
+  # Convert some supplied parameters
+  # Maximum slurry mass in kg
+  pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
+  pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
+  
+  if(is.data.frame(pars$slurry_mass)){
+    slurry_mass_init <- pars$slurry_mass[1, 'slurry_mass']
+  } else {
+    slurry_mass_init <- pars$slurry_mass
+  }
+  
+  if (slurry_mass_init == 0) {
+    slurry_mass_init <- 1E-10
+  }
+ 
+  # Initial state variable vector
+  y <- c(xa = pars$xa_init, 
+         slurry_mass = 1, 
+         unlist(pars$conc_fresh[c('dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'iFS')]),
+         sulfate = SO4_fun(0), 
+         sulfide = pars$conc_fresh[['S2']]) 
+  # Convert to mass (g??)
+  y <- y * slurry_mass_init
+  # Add 0 for cumulative emission
+  zz <- c('CH4_emis_cum', 'CO2_emis_cum', 'COD_conv_cum', 'COD_conv_cum_meth', 
+          'COD_conv_cum_respir', 'COD_conv_cum_sr')
+  y[zz] <- 0
+
   # Figure out type of run - with constant rates or not
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, delta_t = delta_t, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- abm_variable(days = days, delta_t = delta_t, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+    dat <- abm_variable(days = days, delta_t = delta_t, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
   } 
 
-  # Caculate concentrations where relevant
-  #conc.names <- names(dat)[!grepl('conc|time|slurry_mass|inhib|qhat|CH4_emis_cum', names(dat))]
+  # Calculate totals
+  dat$COD <- dat$dpCOD + dat$ipCOD + dat$dsCOD + dat$isCOD
+  dat$VS <- pars$COD_conv[['VS']] * dat$COD
+  dat$TS <- dat$iFS + dat$VS
+
+  # Caculate concentrations where relevant (NTS: g/kg????)
   mic_names <- pars$grps
-  conc.names <-  c('NH4', 'NH3', 'Sp', 'VFA', 'sulfide', 'sulfate', mic_names)
-  dat_conc <- dat[, conc.names]/dat$slurry_mass
+  conc.names <-  c('NH4', 'NH3', 
+                   'COD', 'dpCOD', 'ipCOD', 'dsCOD', 'isCOD',
+                   'VS', 'TS',
+                   'sulfide', 'sulfate', mic_names)
+  dat_conc <- dat[, conc.names] / dat$slurry_mass
   names(dat_conc) <- paste0(names(dat_conc), '_conc')
   dat <- cbind(dat, dat_conc)
 
@@ -220,77 +286,78 @@ function(
 
   # Calculate COD/VS flows
   # First concentrations in g/kg
-  dat$dCOD_conc_fresh <- pars$conc_fresh$VFA + pars$conc_fresh$Sp + sum(pars$xa_fresh)
+  dat$dCOD_conc_fresh <- pars$conc_fresh$dsCOD + pars$conc_fresh$dpCOD + sum(pars$xa_fresh)
   dat$COD_conc_fresh <- pars$conc_fresh$COD
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
-  # ndCOD is conserved, same everywhere always
-  dat$ndCOD_conc <- ndCOD_conc <- pars$conc_fresh$COD - dat$dCOD_conc_fresh 
-  dat$dCOD_conc <- dCOD_conc <- dat$Sp_conc + dat$VFA_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
-  dat$COD_conc <- COD_conc <- ndCOD_conc + dCOD_conc
-  dat$VS_conc <- pars$COD_conv[['VS']] * COD_conc
-  # And flows in g/d
-  dat$COD_load_rate <- dat$COD_conc_fresh * dat$slurry_prod_rate
-  dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
-  dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
-  dat$VS_load_rate <- pars$COD_conv[['VS']] * dat$COD_load_rate
-  # Cumulative flow in g
-  dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
-  dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc[1]* dat$slurry_mass[1]
-  dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * c(0, diff(dat$time))) + dat$ndCOD_conc[1]* dat$slurry_mass[1]
-  dat$VS_load_cum <- cumsum(dat$VS_load_rate * c(0, diff(dat$time))) + dat$VS_conc[1]* dat$slurry_mass[1]
-  # And relative emission
-  # g CH4/g COD in
-  dat$CH4_emis_rate_COD <- dat$CH4_emis_rate / dat$COD_load_rate
-  dat$CH4_emis_rate_dCOD <- dat$CH4_emis_rate / dat$dCOD_load_rate
-  dat$CH4_emis_rate_VS <- dat$CH4_emis_rate / dat$VS_load_rate
-  dat$CH4_emis_cum_COD <- dat$CH4_emis_cum / dat$COD_load_cum
-  dat$CH4_emis_cum_dCOD <- dat$CH4_emis_cum / dat$dCOD_load_cum
-  dat$CH4_emis_cum_VS <- dat$CH4_emis_cum / dat$VS_load_cum
-  # Same for CO2
-  dat$CO2_emis_rate_COD <- dat$CO2_emis_rate / dat$COD_load_rate
-  dat$CO2_emis_rate_dCOD <- dat$CO2_emis_rate / dat$dCOD_load_rate
-  dat$CO2_emis_rate_VS <- dat$CO2_emis_rate / dat$VS_load_rate
-  dat$CO2_emis_cum_COD <- dat$CO2_emis_cum / dat$COD_load_cum
-  dat$CO2_emis_cum_dCOD <- dat$CO2_emis_cum / dat$dCOD_load_cum
-  dat$CO2_emis_cum_VS <- dat$CO2_emis_cum / dat$VS_load_cum
-  # Apparent COD conversion fraction
-  dat$f_COD_CH4_rate <-  dat$CH4_emis_rate / pars$COD_conv[['CH4']] / dat$COD_load_rate
-  dat$f_COD_CH4_cum <-  dat$COD_conv_cum_meth / dat$COD_load_cum
-  dat$f_COD_respir_cum <-  dat$COD_conv_cum_respir / dat$COD_load_cum
-  dat$f_COD_sr_cum <-  dat$COD_conv_cum_sr / dat$COD_load_cum
+  # NTS: update/revise/check these below
+  ### ndCOD is conserved, same everywhere always
+  ##dat$ndCOD_conc <- ndCOD_conc <- pars$conc_fresh$COD - dat$dCOD_conc_fresh 
+  ##dat$dCOD_conc <- dCOD_conc <- dat$dpCOD_conc + dat$dsCOD_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
+  ##dat$COD_conc <- COD_conc <- ndCOD_conc + dCOD_conc
+  ##dat$VS_conc <- pars$COD_conv[['VS']] * COD_conc
+  ### And flows in g/d
+  ##dat$COD_load_rate <- dat$COD_conc_fresh * dat$slurry_prod_rate
+  ##dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
+  ##dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
+  ##dat$VS_load_rate <- pars$COD_conv[['VS']] * dat$COD_load_rate
+  ### Cumulative flow in g
+  ##dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
+  ##dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc[1]* dat$slurry_mass[1]
+  ##dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * c(0, diff(dat$time))) + dat$ndCOD_conc[1]* dat$slurry_mass[1]
+  ##dat$VS_load_cum <- cumsum(dat$VS_load_rate * c(0, diff(dat$time))) + dat$VS_conc[1]* dat$slurry_mass[1]
+  ### And relative emission
+  ### g CH4/g COD in
+  ##dat$CH4_emis_rate_COD <- dat$CH4_emis_rate / dat$COD_load_rate
+  ##dat$CH4_emis_rate_dCOD <- dat$CH4_emis_rate / dat$dCOD_load_rate
+  ##dat$CH4_emis_rate_VS <- dat$CH4_emis_rate / dat$VS_load_rate
+  ##dat$CH4_emis_cum_COD <- dat$CH4_emis_cum / dat$COD_load_cum
+  ##dat$CH4_emis_cum_dCOD <- dat$CH4_emis_cum / dat$dCOD_load_cum
+  ##dat$CH4_emis_cum_VS <- dat$CH4_emis_cum / dat$VS_load_cum
+  ### Same for CO2
+  ##dat$CO2_emis_rate_COD <- dat$CO2_emis_rate / dat$COD_load_rate
+  ##dat$CO2_emis_rate_dCOD <- dat$CO2_emis_rate / dat$dCOD_load_rate
+  ##dat$CO2_emis_rate_VS <- dat$CO2_emis_rate / dat$VS_load_rate
+  ##dat$CO2_emis_cum_COD <- dat$CO2_emis_cum / dat$COD_load_cum
+  ##dat$CO2_emis_cum_dCOD <- dat$CO2_emis_cum / dat$dCOD_load_cum
+  ##dat$CO2_emis_cum_VS <- dat$CO2_emis_cum / dat$VS_load_cum
+  ### Apparent COD conversion fraction
+  ##dat$f_COD_CH4_rate <-  dat$CH4_emis_rate / pars$COD_conv[['CH4']] / dat$COD_load_rate
+  ##dat$f_COD_CH4_cum <-  dat$COD_conv_cum_meth / dat$COD_load_cum
+  ##dat$f_COD_respir_cum <-  dat$COD_conv_cum_respir / dat$COD_load_cum
+  ##dat$f_COD_sr_cum <-  dat$COD_conv_cum_sr / dat$COD_load_cum
 
   # Replace . in names with _
   names(dat) <- gsub('\\.', '_', names(dat))
 
-  COD_load <- dat$COD_load_cum[nrow(dat)]
-  dCOD_load <- dat$dCOD_load_cum[nrow(dat)]
-  ndCOD_load <- dat$ndCOD_load_cum[nrow(dat)]
-  VS_load <- dat$VS_load_cum[nrow(dat)]
+  #COD_load <- dat$COD_load_cum[nrow(dat)]
+  #dCOD_load <- dat$dCOD_load_cum[nrow(dat)]
+  #ndCOD_load <- dat$ndCOD_load_cum[nrow(dat)]
+  #VS_load <- dat$VS_load_cum[nrow(dat)]
 
-  CH4_emis_cum <- dat$CH4_emis_cum[nrow(dat)]
-  CH4_emis_rate <- CH4_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
-  CH4_emis_COD <- CH4_emis_cum / COD_load
-  CH4_emis_dCOD <- CH4_emis_cum / dCOD_load
-  CH4_emis_VS <- CH4_emis_cum / VS_load
+  #CH4_emis_cum <- dat$CH4_emis_cum[nrow(dat)]
+  #CH4_emis_rate <- CH4_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
+  #CH4_emis_COD <- CH4_emis_cum / COD_load
+  #CH4_emis_dCOD <- CH4_emis_cum / dCOD_load
+  #CH4_emis_VS <- CH4_emis_cum / VS_load
 
-  CO2_emis_cum <- dat$CO2_emis_cum[nrow(dat)] - dat$CO2_emis_cum[1]
-  CO2_emis_rate <- CO2_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
-  CO2_emis_COD <- CO2_emis_cum / COD_load
-  CO2_emis_dCOD <- CO2_emis_cum / dCOD_load
-  CO2_emis_VS <- CO2_emis_cum / VS_load
+  #CO2_emis_cum <- dat$CO2_emis_cum[nrow(dat)] - dat$CO2_emis_cum[1]
+  #CO2_emis_rate <- CO2_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
+  #CO2_emis_COD <- CO2_emis_cum / COD_load
+  #CO2_emis_dCOD <- CO2_emis_cum / dCOD_load
+  #CO2_emis_VS <- CO2_emis_cum / VS_load
 
-  COD_conv_meth <- dat$COD_conv_cum_meth[nrow(dat)] - dat$COD_conv_cum_meth[1]
-  COD_conv_respir <- dat$COD_conv_cum_respir[nrow(dat)] - dat$COD_conv_cum_respir[1]
-  COD_conv_sr <- dat$COD_conv_cum_sr[nrow(dat)] - dat$COD_conv_cum_sr[1]
-  f_COD_CH4 <- COD_conv_meth / COD_load
-  f_COD_respir <- COD_conv_respir / COD_load
-  f_COD_sr <- COD_conv_sr / COD_load
+  #COD_conv_meth <- dat$COD_conv_cum_meth[nrow(dat)] - dat$COD_conv_cum_meth[1]
+  #COD_conv_respir <- dat$COD_conv_cum_respir[nrow(dat)] - dat$COD_conv_cum_respir[1]
+  #COD_conv_sr <- dat$COD_conv_cum_sr[nrow(dat)] - dat$COD_conv_cum_sr[1]
+  #f_COD_CH4 <- COD_conv_meth / COD_load
+  #f_COD_respir <- COD_conv_respir / COD_load
+  #f_COD_sr <- COD_conv_sr / COD_load
 
-  summ <- c(COD_load = COD_load, dCOD_load = dCOD_load, ndCOD_load = ndCOD_load, VS_load = VS_load,
-            CH4_emis_cum = CH4_emis_cum, CH4_emis_rate = CH4_emis_rate, CH4_emis_COD = CH4_emis_COD, CH4_emis_dCOD = CH4_emis_dCOD, CH4_emis_VS = CH4_emis_VS,
-            CO2_emis_cum = CO2_emis_cum, CO2_emis_rate = CO2_emis_rate, CO2_emis_COD = CO2_emis_COD, CO2_emis_dCOD = CO2_emis_dCOD, CO2_emis_VS = CO2_emis_VS,
-            COD_conv_meth = COD_conv_meth, COD_conv_respir = COD_conv_respir, COD_conv_sr = COD_conv_sr,
-            f_COD_CH4 = f_COD_CH4, f_COD_respir = f_COD_respir, f_COD_sr = f_COD_sr) 
+  #summ <- c(COD_load = COD_load, dCOD_load = dCOD_load, ndCOD_load = ndCOD_load, VS_load = VS_load,
+  #          CH4_emis_cum = CH4_emis_cum, CH4_emis_rate = CH4_emis_rate, CH4_emis_COD = CH4_emis_COD, CH4_emis_dCOD = CH4_emis_dCOD, CH4_emis_VS = CH4_emis_VS,
+  #          CO2_emis_cum = CO2_emis_cum, CO2_emis_rate = CO2_emis_rate, CO2_emis_COD = CO2_emis_COD, CO2_emis_dCOD = CO2_emis_dCOD, CO2_emis_VS = CO2_emis_VS,
+  #          COD_conv_meth = COD_conv_meth, COD_conv_respir = COD_conv_respir, COD_conv_sr = COD_conv_sr,
+  #          f_COD_CH4 = f_COD_CH4, f_COD_respir = f_COD_respir, f_COD_sr = f_COD_sr) 
 
 
   # Return results

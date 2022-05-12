@@ -1,5 +1,7 @@
-abm_variable <-
-function(days, delta_t, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
+abm_variable <- function(days, delta_t, y, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
+
+  # NTS: check to see what this is used for!
+  pars$abm_regular <- FALSE
 
   # Cannot have no slurry present because is used in all concentration calculations (NTS: could change this)
   pars$slurry_mass[pars$slurry_mass[, 'slurry_mass'] == 0, 'slurry_mass'] <- 1E-10
@@ -61,15 +63,6 @@ function(days, delta_t, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO
 
   if (any(t_ints < 0)) stop('9x18347hhab')
 
-  # Initial state variable vector
-  y <- c(xa = pars$xa_init * pars$slurry_mass[1, 'slurry_mass'], 
-         slurry_mass = pars$slurry_mass[1, 'slurry_mass'], 
-         Sp = pars$conc_fresh[['Sp']] * pars$slurry_mass[1, 'slurry_mass'], 
-         VFA = pars$conc_fresh[['VFA']] * pars$slurry_mass[1, 'slurry_mass'],
-         sulfate = SO4_fun(0) * pars$slurry_mass[1, 'slurry_mass'], 
-         sulfide = pars$conc_fresh[['S2']] * pars$slurry_mass[1, 'slurry_mass'], 
-         CH4_emis_cum = 0, CO2_emis_cum = 0, COD_conv_cum = 0, COD_conv_cum_meth = 0, COD_conv_cum_respir = 0, COD_conv_cum_sr = 0)
-
   # Empty data frame for holding results
   dat <- NULL
 
@@ -123,16 +116,15 @@ function(days, delta_t, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO
       dat <- rbind(dat, out)
     } else {
       # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
-      # Note: Do not update out here before next iteration
+      # Note: Do not update `out` here before next iteration
+
       resid_frac <- 1 - removals[i] / y['slurry_mass']
-      resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich)
+      resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich * pars$scale['resid_enrich'])
       
       y[1:n_mic] <- resid_xa * y[1:n_mic]
       y['slurry_mass'] <- max(resid_frac * y['slurry_mass'], 1E-10)
-      y['Sp'] <- resid_frac * y['Sp']
-      y['VFA'] <- resid_frac * y['VFA']
-      y['sulfate'] <- resid_frac * y['sulfate']
-      y['sulfide'] <- resid_frac * y['sulfide']
+      y[!grepl('xa\\.|cum|slurry_mass', names(y))] <- sapply(y[!grepl('xa\\.|cum|slurry_mass', names(y))], function(x) resid_frac * x) # apply resid_frac to other state variables
+
     }
  
     # Update time remaining and total time run so far

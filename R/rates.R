@@ -60,10 +60,10 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   # Extract state variable values from y argument
   # Slurry mass (kg)
   slurry_mass <- y[['slurry_mass']]
-  # Particulate substrate mass Sp
-  Sp <- y[['Sp']]
-  # VFA mass
-  VFA <- y[['VFA']]
+  # Particulate substrate mass
+  dpCOD <- y[['dpCOD']]
+  # Soluble substrate mass
+  dsCOD <- y[['dsCOD']]
   # Xa mass (g)
   xa <- y[1:n_mic]
   # Sulfate mass (g)
@@ -121,21 +121,22 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   # rut has same elements as qhat--set here, calculated below
   rut <- NA * qhat
   
-  # VFA consumption rate by sulfate reducers (g/d)
-  rut[i_sr] <- ((qhat[i_sr] * VFA / slurry_mass * xa[i_sr] / slurry_mass) / (ks[i_sr] + VFA / slurry_mass)) * slurry_mass *
+  # dsCOD consumption rate by sulfate reducers (g/d)
+  rut[i_sr] <- ((qhat[i_sr] * dsCOD / slurry_mass * xa[i_sr] / slurry_mass) / (ks[i_sr] + dsCOD / slurry_mass)) * slurry_mass *
     (sulfate / slurry_mass) / (ks_SO4 + sulfate / slurry_mass) *
     NH3_inhib[i_sr] * NH4_inhib[i_sr] * H2S_inhib_sr * pH_inhib[i_sr] 
 
   # Substrate utilization rate by methanogen groups in g/d affected by inhibition terms
-  rut[i_meth] <- ((qhat[i_meth] * VFA / slurry_mass * xa[i_meth] / slurry_mass) / (ks[i_meth] + VFA / slurry_mass) * 
+  rut[i_meth] <- ((qhat[i_meth] * dsCOD / slurry_mass * xa[i_meth] / slurry_mass) / (ks[i_meth] + dsCOD / slurry_mass) * 
                   slurry_mass) *
                  NH3_inhib[i_meth] * NH4_inhib[i_meth] * H2S_inhib_meth * pH_inhib[i_meth] 
 
   # H2S emission
   H2SEmissionRate <- (kl['H2S'] * area * H2S_frac * sulfide)
 
-  # Sp consumption by aerobic respiration (g/d)
-  respiration <- (kl['oxygen'] * area * ((kH_oxygen * 0.208) - 0)) * (Sp > 0)
+  # dpCOD consumption by aerobic respiration (g/d)
+  # NTS: now 2nd-order reaction, ref = 100 g/kg substrate
+  respiration <- (kl['oxygen'] * area * ((kH_oxygen * 0.208) - 0)) * dpCOD / slurry_mass / 100
 
   # Some checks for safety
   if (any(rut < 0)) stop('In rates() function rut < 0 or otherwise strange. Check qhat parameters (92gg7)')
@@ -149,8 +150,11 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   derivatives <- c(
     xa = yield * rut + xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
     slurry_mass = slurry_prod_rate,
-    Sp = slurry_prod_rate * conc_fresh[['Sp']] - alpha * Sp + sum(decay_rate * xa) - respiration,
-    VFA = alpha * Sp - sum(rut) + slurry_prod_rate * conc_fresh[['VFA']],
+    dpCOD = slurry_prod_rate * conc_fresh[['dpCOD']] - alpha * dpCOD + sum(decay_rate * xa),
+    ipCOD = slurry_prod_rate * conc_fresh[['ipCOD']],
+    dsCOD = slurry_prod_rate * conc_fresh[['dsCOD']] + alpha * dpCOD - sum(rut) - respiration,
+    isCOD = slurry_prod_rate * conc_fresh[['isCOD']],
+    iFS  = slurry_prod_rate * conc_fresh[['iFS']],
     sulfate = slurry_prod_rate * conc_fresh_SO4 - sum(rutsr) * COD_conv[['S']],
     sulfide = slurry_prod_rate * conc_fresh[['S2']] + sum(rutsr) * COD_conv[['S']] - H2SEmissionRate,
     CH4_emis_cum = sum(rut[i_meth]) * COD_conv[['CH4']],

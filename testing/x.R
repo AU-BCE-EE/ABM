@@ -1,16 +1,13 @@
 
 rm(list = ls())
-
-ff <- list.files()
+ff <- list.files('../R', full.names = TRUE)
 ff <- ff[ff != 'x.R']
 for (i in ff) source(i)
 
 # Normal abm_regular
-out <- abm(365, 1)
-out2 <- abm(365, 1, starting = out)
-Q
-head(out)
-traceback()
+out <- abm(100, 1)
+
+head(out, 2)
 
 plot(slurry_mass ~ time, data = out, type = 'l')
 plot(slurry_mass ~ time, data = out2, type = 'l')

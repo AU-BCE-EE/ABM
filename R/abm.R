@@ -365,9 +365,7 @@ abm <- function(
   if (substring(value, 1, 3) == 'sum') return(summ)
   # ts = time series
   if (value == 'ts') return(dat)
-  # tsel = time series after startup period
-  if (value == 'tsel') return(dat_sel)
   # Or everything
-  return(list(pars = pars, ts = dat, tsel = dat_sel, summ = summ))
+  return(list(pars = pars, ts = dat, summ = summ))
 
 }

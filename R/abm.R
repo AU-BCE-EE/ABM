@@ -1,7 +1,8 @@
 abm <- function(
   days = 365,                               # Number of days to run
   delta_t = 1,                              # Time step for output
-  mng_pars = list(slurry_prod_rate = 1000,  # kg/d
+  mng_pars = list(slurry_prod_rate = 1000,  # (kg/d)
+                  slurry_rem_rate = 0,      # Constant removal rate (kg/d) 
                   slurry_mass = 0,          # Initial slurry mass (kg)
                   storage_depth = 0.4,      # Storge structure depth, assued to be maximum slurry depth (m)
                   resid_depth = 0.035,      # Residual slurry depth after emptying (m)

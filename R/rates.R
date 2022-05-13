@@ -15,6 +15,7 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   alpha_T_max <- parms$alpha_T_max
   
   slurry_prod_rate <- parms$slurry_prod_rate               
+  slurry_rem_rate <- parms$slurry_rem_rate               
   max_slurry_mass <- parms$ max_slurry_mass
   resid_frac <- parms$resid_frac
   area <- parms$area
@@ -62,8 +63,12 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   slurry_mass <- y[['slurry_mass']]
   # Particulate substrate mass
   dpCOD <- y[['dpCOD']]
+  ipCOD <- y[['ipCOD']]
   # Soluble substrate mass
   dsCOD <- y[['dsCOD']]
+  isCOD <- y[['isCOD']]
+  # Fixed solids
+  iFS <- y[['iFS']]
   # Xa mass (g)
   xa <- y[1:n_mic]
   # Sulfate mass (g)
@@ -148,15 +153,15 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   # Derivatives, all in g/d except slurry_mass = kg/d
   # NTS: Some of these repeated calculations could be moved up
   derivatives <- c(
-    xa = yield * rut + xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
-    slurry_mass = slurry_prod_rate,
-    dpCOD = slurry_prod_rate * conc_fresh[['dpCOD']] - alpha * dpCOD + sum(decay_rate * xa),
-    ipCOD = slurry_prod_rate * conc_fresh[['ipCOD']],
-    dsCOD = slurry_prod_rate * conc_fresh[['dsCOD']] + alpha * dpCOD - sum(rut) - respiration,
-    isCOD = slurry_prod_rate * conc_fresh[['isCOD']],
-    iFS  = slurry_prod_rate * conc_fresh[['iFS']],
-    sulfate = slurry_prod_rate * conc_fresh_SO4 - sum(rutsr) * COD_conv[['S']],
-    sulfide = slurry_prod_rate * conc_fresh[['S2']] + sum(rutsr) * COD_conv[['S']] - H2SEmissionRate,
+    xa = yield * rut + xa_fresh * slurry_prod_rate - xa * slurry_rem_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
+    slurry_mass = slurry_prod_rate - slurry_rem_rate,
+    dpCOD = slurry_prod_rate * conc_fresh[['dpCOD']] - dpCOD * slurry_rem_rate - alpha * dpCOD + sum(decay_rate * xa),
+    ipCOD = slurry_prod_rate * conc_fresh[['ipCOD']] - ipCOD * slurry_rem_rate,
+    dsCOD = slurry_prod_rate * conc_fresh[['dsCOD']] - dsCOD * slurry_rem_rate + alpha * dpCOD - sum(rut) - respiration,
+    isCOD = slurry_prod_rate * conc_fresh[['isCOD']] - isCOD * slurry_rem_rate,
+    iFS  = slurry_prod_rate * conc_fresh[['iFS']] - iFS * slurry_rem_rate,
+    sulfate = slurry_prod_rate * conc_fresh_SO4 - sulfate * slurry_rem_rate - sum(rutsr) * COD_conv[['S']],
+    sulfide = slurry_prod_rate * conc_fresh[['S2']] - sulfide * slurry_rem_rate + sum(rutsr) * COD_conv[['S']] - H2SEmissionRate,
     CH4_emis_cum = sum(rut[i_meth]) * COD_conv[['CH4']],
     CO2_emis_cum =  sum(rut[i_meth]) * COD_conv[['CO2_anaer']] + sum(rutsr) * COD_conv[['CO2_sr']] + respiration * COD_conv[['CO2_aer']],
     COD_conv_cum = sum(rut[i_meth]) + respiration + sum(rutsr),

@@ -4,8 +4,8 @@ abm <- function(
   mng_pars = list(slurry_prod_rate = 1000,  # (kg/d)
                   slurry_rem_rate = 0,      # Constant removal rate (kg/d) 
                   slurry_mass = 0,          # Initial slurry mass (kg)
-                  storage_depth = 0.4,      # Storge structure depth, assued to be maximum slurry depth (m)
-                  resid_depth = 0.035,      # Residual slurry depth after emptying (m)
+                  storage_depth = 3,        # Storge structure depth, assued to be maximum slurry depth (m)
+                  resid_depth = 0.2,        # Residual slurry depth after emptying (m)
                   floor_area = 11,          # NTS: needs to be defined
                   area = 11,                # Area (assume vertical sides) (m2)
                   empty_int = 35,           # (d)
@@ -324,6 +324,9 @@ abm <- function(
   dat$respir_cum_f_COD <-  dat$COD_conv_cum_respir / dat$COD_load_cum
   dat$sr_cum_f_COD <-  dat$COD_conv_cum_sr / dat$COD_load_cum
   dat$loss_cum_f_COD <-  dat$CH4_cum_f_COD + dat$respir_cum_f_COD + dat$sr_cum_f_COD
+
+  # Add slurry depth
+  dat$slurry_depth <- dat$slurry_mass / pars$dens / pars$area
 
   # Calculate totals for summary
   which.tot <- grep('cum', names(dat), value = TRUE)

@@ -52,10 +52,31 @@ abm <- function(
   approx_method_SO4 = 'linear',
   par_key = '\\.',
   value = 'ts',                              # Type of output
+  nsims = 1,
   warn = TRUE
   ) {
 
+  if (nsims > 1) {
+    out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,
+               mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = -Inf, starting = NULL,
+               approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, approx_method_SO4 = approx_method_SO4, 
+               par_key = par_key, value = value, nsims = 1, warn = warn)
+
+    cat('Repeating ')
+    for (i in 2:nsims) {
+      cat(i, ' ')
+      out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,
+                 mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = startup, starting = out,
+                 approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, approx_method_SO4 = approx_method_SO4, 
+                 par_key = par_key, value = value, nsims = 1, warn = warn)
+    }
+
+    # Return only final values
+    return(out)
+  }
+
   # NTS: fix!
+  # NTS: need starting concentrations!
   # If starting conditions are provided from a previous simulation, move them to pars
   if (!is.null(starting) & is.data.frame(starting)) {
     message('Using starting conditions from `starting` argument')
@@ -154,6 +175,9 @@ abm <- function(
 
   # Create temperature function f(t) to allow for variable temperature
   if (is.data.frame(pars$temp_C)) {
+    if (!all(names(pars$temp_C)[1:2] %in% c('time', 'temp_C'))) {
+      stop('Check names in temp_C data frame')
+    }
     temp <- pars$temp_C$temp_C
     ttime <- pars$temp_C$time
     temp_C_fun <- approxfun(ttime, temp, method = approx_method_temp, 

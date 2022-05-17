@@ -242,16 +242,19 @@ abm <- function(
     dat <- abm_variable(days = days, delta_t = delta_t, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
   } 
 
-  # Calculate totals
+  # Calculate totals etc.
   dat$COD <- dat$dpCOD + dat$ipCOD + dat$dsCOD + dat$isCOD
+  dat$pCOD <- dat$dpCOD + dat$ipCOD
+  dat$sCOD <- dat$dsCOD + dat$isCOD
   dat$VS <- pars$COD_conv[['VS']] * dat$COD
+  dat$VSS <- pars$COD_conv[['VS']] * dat$pCOD
   dat$TS <- dat$iFS + dat$VS
 
   # Caculate concentrations where relevant (NTS: g/kg????)
   mic_names <- pars$grps
   conc.names <-  c('NH4', 'NH3', 
-                   'COD', 'dpCOD', 'ipCOD', 'dsCOD', 'isCOD',
-                   'VS', 'TS',
+                   'COD', 'dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'pCOD', 'sCOD',
+                   'TS', 'VS', 'VSS',
                    'sulfide', 'sulfate', mic_names)
   dat_conc <- dat[, conc.names] / dat$slurry_mass
   names(dat_conc) <- paste0(names(dat_conc), '_conc')
@@ -297,6 +300,7 @@ abm <- function(
   dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
   dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
   dat$VS_load_rate <- dat$VS_conc_fresh * dat$slurry_prod_rate
+
   # Cumulative flow in g
   dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
   dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc[1]* dat$slurry_mass[1]

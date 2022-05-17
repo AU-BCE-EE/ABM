@@ -3,16 +3,26 @@ rm(list = ls())
 ff <- list.files('../R', full.names = TRUE)
 for (i in ff) source(i)
 
-# Define manure 
-man_pars <- list(conc_fresh = list(S2 = 0, SO4 = 0, TAN = 1.0, 
-                                   TS = 30, TSS = 20, 
-                                   VS = 20, VSS = 15, dsVS = 0, dVSS = 10),
+# Define influent composition
+# Set concentrations in g/kg
+conc_fresh <- list(S2 = 0, SO4 = 0, TAN = 1.0, 
+                   TS = 30, TSS = 20, 
+                   VS = 20, VSS = 15, 
+                   dsVS = 0, dVSS = 10)
+
+# pH of 7 and density of 1000 kg/m3
+man_pars <- list(conc_fresh = conc_fresh,
                  pH = 7, dens = 1000)
+
+# Set some other management parameters
+# Production (influent) rate in kg/d
+mng_pars <- list(slurry_prod_rate = 2E6, slurry_rem_rate = 1E6, 
+                 slurry_mass = 100, 
+                 storage_depth = 3, area = 1E5, resid_depth = 0.2,
+                 empty_int = 100)
+
 tsd <- abm(730, 1, man_pars = man_pars,
-           add_pars = list(slurry_prod_rate = 2E6, slurry_rem_rate = 1E6, 
-                           slurry_mass = 100, 
-                           storage_depth = 3, area = 1E5, resid_depth = 0.2,
-                           empty_int = 100))
+           add_pars = )
 
 plot(VS_conc ~ time, data = tsd, type = 'l')
 plot(VSS_conc ~ time, data = tsd, type = 'l')

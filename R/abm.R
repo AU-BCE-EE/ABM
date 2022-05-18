@@ -26,7 +26,7 @@ abm <- function(
                   xa_init = c(sr1 = 0, default = 0.02),  # (g/kg)?
                   decay_rate = c(all = 0.02),            # (1/d)
                   ks_coefficient = c(default = 3, sr1 = 1.2),
-                  resid_enrich = c(all = 1),
+                  resid_enrich = c(all = 0.1),
                   qhat_opt = c(m1 = 4, m2 = 6, m3 = 8, sr1 = 8),  # (??)
                   T_opt = c(m1 = 20, m2 = 30, m3 = 40, sr1 = 40), # 
                   T_min = c(m1 = 8, m2 = 10, m3 = 20, sr1 = 0),
@@ -40,7 +40,7 @@ abm <- function(
   mic_pars = list(ks_SO4 = 0.0067,
                   ki_H2S_meth = 0.23,
                   ki_H2S_sr = 0.25,
-                  alpha_opt = 0.02,
+                  alpha_opt = 0.01,
                   alpha_T_min = 0,
                   alpha_T_opt = 50,
                   alpha_T_max = 60),
@@ -180,34 +180,58 @@ abm <- function(
   # Unit conversion for inputs and outputs ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # NTS: double-check conversion factors
   # Conc to g/kg 
+  cf <- list(conc = 1, depth = 1, flow = 1, mass = 1, area = 1)
   if (pars$unts$conc == 'mg/L') {
-    pars$conc_fresh <- pars$conc_fresh / 1000 / (pars$dens / 1000)
+    cf$conc <- 0.001 / (pars$dens / 1000) # g/kg per mg/L 
   } else if (pars$unts$conc != 'g/kd') {
     stop('Error in input for unts$conc')
   }
 
   # Depth to m
   if (pars$unts$depth == 'ft') {
-    pars$storage_depth <- pars$storage_depth  / 3.28
-    pars$resid_depth <- pars$resid_depth      / 3.28
+    cf$depth <- 0.3048 # m per ft
   } else if (pars$unts$depth != 'm') {
     stop('Error in input for unts$depth')
   }
 
   # Flow to kg/d
   if (pars$unts$flow == 'mgd') {
-    pars$slurry_prod_rate <- pars$slurry_prod_rate  / 2.64E-7 * (pars$dens / 1000)
-    pars$slurry_rem_rate <- pars$slurry_rem_rate    / 2.64E-7 * (pars$dens / 1000)
+    cf$flow <- 1 * (pars$dens / 1000)
   } else if (pars$unts$flow == 'gpd') {
-    pars$slurry_prod_rate <- pars$slurry_prod_rate  / 2.64E-1 * (pars$dens / 1000)
-    pars$slurry_rem_rate <- pars$slurry_rem_rate    / 2.64E-1 * (pars$dens / 1000)
+    cf$flow <- 1 * (pars$dens / 1000)
   } else if (pars$unts$flow == 'gpm') {
-    pars$slurry_prod_rate <- pars$slurry_prod_rate  / 1.835E-4 * (pars$dens / 1000)
-    pars$slurry_rem_rate <- pars$slurry_rem_rate    / 1.835E-4 * (pars$dens / 1000)
+    cf$flow <- 5451 * (pars$dens / 1000) # kg/d per gal/min
   } else if (pars$unts$flow != 'kg/d') {
     stop('Error in input for unts$flow')
   }
 
+  if (pars$unts$mass == 't') {
+    cf$mass <- 1 / 1.102E-3
+  } else if (pars$unts$mass != 'kg') {
+    stop('Error in input for unts$mass')
+  }
+
+  if (pars$unts$area == 'sf') {
+    cf$area <- 1 / 10.764
+  } else if (pars$unts$area != 'kg') {
+    stop('Error in input for unts$area')
+  }
+
+  # Apply conversion factors
+  pars$conc_fresh <- pars$conc_fresh * cf$conc
+
+  pars$storage_depth <- pars$storage_depth * cf$depth
+  pars$resid_depth <- pars$resid_depth * cf$depth 
+
+  pars$slurry_prod_rate <- pars$slurry_prod_rate * cf$flow
+  pars$slurry_rem_rate <- pars$slurry_rem_rate * cf$flow
+
+  pars$slurry_mass <- pars$slurry_mass * cf$mass
+
+  pars$floor_area <- pars$floor_area * cf$area
+  pars$area <- pars$area * cf$area
+
+  # Temperature trickier
   if (pars$unts$temp == 'F') {
     if (is.data.frame(pars$temp)) {
       pars$temp$temp <- (pars$temp$temp - 32) * 5 / 9
@@ -216,19 +240,6 @@ abm <- function(
     }
   } else if (pars$unts$temp != 'C') {
     stop('Error in input for unts$temp')
-  }
-
-  if (pars$unts$mass == 't') {
-    pars$slurry_mass <- pars$slurry_mass  / 1.102E-3
-  } else if (pars$unts$mass != 'kg') {
-    stop('Error in input for unts$mass')
-  }
-
-  if (pars$unts$area == 'sf') {
-    pars$floor_area <- pars$floor_area  / 10.764
-    pars$area <- pars$area  / 10.764
-  } else if (pars$unts$area != 'kg') {
-    stop('Error in input for unts$area')
   }
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -419,6 +430,13 @@ abm <- function(
 
   # Add slurry depth
   dat$slurry_depth <- dat$slurry_mass / pars$dens / pars$area
+
+  # Convert units back to inputs
+  dat[, grep('conc', names(dat))] <- dat[, grep('conc', names(dat))] / cf$conc
+  dat[, grep('area', names(dat))] <- dat[, grep('area', names(dat))] / cf$area
+  dat[, grep('depth', names(dat))] <- dat[, grep('depth', names(dat))] / cf$depth
+  dat[, 'slurry_prod_rate'] <- dat[, 'slurry_prod_rate'] / cf$flow
+  dat[, 'slurry_mass'] <- dat[, 'slurry_mass'] / cf$mass
 
   # Calculate totals for summary
   which.tot <- grep('cum', names(dat), value = TRUE)

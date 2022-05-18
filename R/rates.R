@@ -1,5 +1,5 @@
 rates <-
-function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
+function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   
   # Hard-wire NH4+ activity coefficient
   g_NH4 <- 0.7
@@ -19,7 +19,7 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   max_slurry_mass <- parms$ max_slurry_mass
   resid_frac <- parms$resid_frac
   area <- parms$area
-  temp_C <- parms$temp_C
+  temp <- parms$temp
                   
   conc_fresh <- parms$conc_fresh
   
@@ -50,8 +50,8 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   temp_zero <- 273
 
   # Temp in K
-  temp_C <- temp_C_fun(t + t_run)
-  temp_K <- temp_C + 273.15
+  temp <- temp_fun(t + t_run)
+  temp_K <- temp + 273.15
 
   # Find methanogens
   i_meth <- which(grepl('^[mp]', names(qhat_opt)))
@@ -107,7 +107,7 @@ function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fu
   qhat <- CTM(temp_K, T_opt, T_min, T_max, qhat_opt)
   
   # Ks temperature dependence
-  ks <- ks_coefficient*(0.8157*exp(-0.063*temp_C))#(71.3*exp(-0.175*temp_C))
+  ks <- ks_coefficient*(0.8157*exp(-0.063*temp))#(71.3*exp(-0.175*temp))
 
   # Chemical speciation (in rates() because is pH dependent)
   conc_fresh['NH3'] <- (1/(1 + 10^(- log_ka['NH3'] + log10(g_NH4) - pH))) * conc_fresh[['TAN']] # Free NH3 concentration (g N/kg)

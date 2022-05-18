@@ -1,4 +1,4 @@
-abm_variable <- function(days, delta_t, y, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
+abm_variable <- function(days, delta_t, y, pars, warn, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
 
   # NTS: check to see what this is used for!
   pars$abm_regular <- FALSE
@@ -86,11 +86,11 @@ abm_variable <- function(days, delta_t, y, pars, warn, temp_C_fun = temp_C_fun, 
       # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
       times <- sort(unique(round(c(seq(0, t_call, by = min(t_rem, delta_t)), t_call), 5)))
 
-      # Add run time to pars so rates() can use actual time to calculate temp_C and pH
+      # Add run time to pars so rates() can use actual time to calculate temp and pH
       pars$t_run <- t_run
 
       # Call up ODE solver
-      out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+      out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
 
       # Extract new state variable vector from last row of lsoda output
       y <- out[nrow(out), 1:(length(pars$qhat_opt) + 11) + 1]

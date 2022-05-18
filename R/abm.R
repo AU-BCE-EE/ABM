@@ -9,14 +9,16 @@ abm <- function(
                   floor_area = 11,          # NTS: needs to be defined
                   area = 11,                # Area (assume vertical sides) (m2)
                   empty_int = 35,           # (d)
-                  temp_C = 20,              # (deg. C)
+                  temp = 20,                # (deg. C)
                   wash_water = 0,           # (kg) 
                   wash_int = NA,            # (d)
                   rest_d = 0),              # (d)
-  man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
-                                    TS = 80, TSS = 60, 
-                                    VS = 50, VSS = 30, dsVS = 20, dVSS = 20),
-                  pH = 7, dens = 1000), # Note list not c() so SO4 can be data frame
+  man_pars = list(conc_fresh = c(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
+                                 TS = 80, TSS = 60, 
+                                 VS = 50, VSS = 30, dsVS = 20, dVSS = 20),
+                  pH = 7, dens = 1000), # SO4 cannot be data frame
+  #unit_conv = list(conc = '1000 mg/L / g/kg', depth = '0.3048 ft / m', 
+  #                 flow = '2.64E-7 mgd / kg/d', temp = '
   #init_pars = list(conc = man_pars$conc_fresh), 
   grp_pars = list(grps = c('m1','m2','m3', 'sr1'),
                   yield = c(default = 0.05, sr1 = 0.065),
@@ -43,7 +45,9 @@ abm <- function(
                   alpha_T_opt = 50,
                   alpha_T_max = 60),
   chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.53, CO2_aer = 1.1, CO2_sr = 1.2), 
-                   kl = c(H2S = 0.02, oxygen = 0.5)),  # kl = mass transfer coefficient (liquid phase units) in m/d
+                   kl = c(H2S = 0.02, oxygen = 0.5), 
+                   unts = list(conc = 'mg/L', depth = 'ft', flow = 'gpm', temp = 'F', mass = 't', area = 'sf')
+                  ),  # kl = mass transfer coefficient (liquid phase units) in m/d
   add_pars = NULL,
   startup = -Inf,
   starting = NULL,
@@ -173,17 +177,73 @@ abm <- function(
     pars[[i]][pars[[i]] < 200] <- pars[[i]][pars[[i]] < 200] + 273.15
   }
 
-  # Create temperature function f(t) to allow for variable temperature
-  if (is.data.frame(pars$temp_C)) {
-    if (!all(names(pars$temp_C)[1:2] %in% c('time', 'temp_C'))) {
-      stop('Check names in temp_C data frame')
+  # Unit conversion for inputs and outputs ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # NTS: double-check conversion factors
+  # Conc to g/kg 
+  if (pars$unts$conc == 'mg/L') {
+    pars$conc_fresh <- pars$conc_fresh / 1000 / (pars$dens / 1000)
+  } else if (pars$unts$conc != 'g/kd') {
+    stop('Error in input for unts$conc')
+  }
+
+  # Depth to m
+  if (pars$unts$depth == 'ft') {
+    pars$storage_depth <- pars$storage_depth  / 3.28
+    pars$resid_depth <- pars$resid_depth      / 3.28
+  } else if (pars$unts$depth != 'm') {
+    stop('Error in input for unts$depth')
+  }
+
+  # Flow to kg/d
+  if (pars$unts$flow == 'mgd') {
+    pars$slurry_prod_rate <- pars$slurry_prod_rate  / 2.64E-7 * (pars$dens / 1000)
+    pars$slurry_rem_rate <- pars$slurry_rem_rate    / 2.64E-7 * (pars$dens / 1000)
+  } else if (pars$unts$flow == 'gpd') {
+    pars$slurry_prod_rate <- pars$slurry_prod_rate  / 2.64E-1 * (pars$dens / 1000)
+    pars$slurry_rem_rate <- pars$slurry_rem_rate    / 2.64E-1 * (pars$dens / 1000)
+  } else if (pars$unts$flow == 'gpm') {
+    pars$slurry_prod_rate <- pars$slurry_prod_rate  / 1.835E-4 * (pars$dens / 1000)
+    pars$slurry_rem_rate <- pars$slurry_rem_rate    / 1.835E-4 * (pars$dens / 1000)
+  } else if (pars$unts$flow != 'kg/d') {
+    stop('Error in input for unts$flow')
+  }
+
+  if (pars$unts$temp == 'F') {
+    if (is.data.frame(pars$temp)) {
+      pars$temp$temp <- (pars$temp$temp - 32) * 5 / 9
+    } else {
+      pars$temp <- (pars$temp - 32) * 5 / 9
     }
-    temp <- pars$temp_C$temp_C
-    ttime <- pars$temp_C$time
-    temp_C_fun <- approxfun(ttime, temp, method = approx_method_temp, 
+  } else if (pars$unts$temp != 'C') {
+    stop('Error in input for unts$temp')
+  }
+
+  if (pars$unts$mass == 't') {
+    pars$slurry_mass <- pars$slurry_mass  / 1.102E-3
+  } else if (pars$unts$mass != 'kg') {
+    stop('Error in input for unts$mass')
+  }
+
+  if (pars$unts$area == 'sf') {
+    pars$floor_area <- pars$floor_area  / 10.764
+    pars$area <- pars$area  / 10.764
+  } else if (pars$unts$area != 'kg') {
+    stop('Error in input for unts$area')
+  }
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+  # Create temperature function f(t) to allow for variable temperature
+  if (is.data.frame(pars$temp)) {
+    if (!all(names(pars$temp)[1:2] %in% c('time', 'temp'))) {
+      stop('Check names in temp data frame')
+    }
+    temp <- pars$temp$temp
+    ttime <- pars$temp$time
+    temp_fun <- approxfun(ttime, temp, method = approx_method_temp, 
                             yleft = temp[1], yright = temp[length(temp)], rule = 2)
   } else {
-    temp_C_fun <- function(x) return(pars$temp_C)
+    temp_fun <- function(x) return(pars$temp)
   }
 
   # Create pH function f(t) to allow for variable pH
@@ -197,6 +257,8 @@ abm <- function(
   }
 
   # Create SO4-2 f(t) for variable acidification with H2SO4
+  # NTS: no longer an option now with unit conversion!
+  # Need to remove!
   if (is.data.frame(pars$conc_fresh[['SO4']])) {
     tSO4 <- pars$conc_fres$SO4$SO4
     ttime <- pars$conc_fres$SO4$time
@@ -205,6 +267,7 @@ abm <- function(
   } else {
     SO4_fun <- function(x) return(pars$conc_fresh[['SO4']])
   }
+
 
   # Calculate fresh concentrations
   # dsVS -> dsOM
@@ -247,7 +310,7 @@ abm <- function(
   # Initial state variable vector
   y <- c(xa = pars$xa_init, 
          slurry_mass = 1, 
-         unlist(pars$conc_fresh[c('dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'iFS')]),
+         unlist(pars$conc_fresh[c('dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'iFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
          sulfate = SO4_fun(0), 
          sulfide = pars$conc_fresh[['S2']]) 
   # Convert to mass (g??)
@@ -260,10 +323,10 @@ abm <- function(
   # Figure out type of run - with constant rates or not
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- abm_variable(days = days, delta_t = delta_t, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+    dat <- abm_variable(days = days, delta_t = delta_t, y = y, pars = pars, warn = warn, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
   } 
 
   # Calculate totals etc.
@@ -285,7 +348,7 @@ abm <- function(
   dat <- cbind(dat, dat_conc)
 
   # Add temperature and pH
-  dat$temp_C <- temp_C_fun(dat$time)
+  dat$temp <- temp_fun(dat$time)
   if (is.numeric(pars$pH) | is.data.frame(pars$pH)) {
     dat$pH <- pH_fun(dat$time)
   } else if (pars$pH == 'calc'){
@@ -295,6 +358,7 @@ abm <- function(
   }
 
   # Add fresh concentrations
+  # NTS: Simpler now that input is vector not list
   conc_fresh <- unlist(pars$conc_fresh)
   names(conc_fresh) <- paste0(names(conc_fresh), '_conc_fresh')
   dat <- cbind(dat, t(conc_fresh))
@@ -314,8 +378,8 @@ abm <- function(
 
   # Calculate COD/VS flows
   # First concentrations in g/kg
-  dat$dCOD_conc_fresh <- pars$conc_fresh$dsCOD + pars$conc_fresh$dpCOD + sum(pars$xa_fresh)
-  dat$COD_conc_fresh <- pars$conc_fresh$COD
+  dat$dCOD_conc_fresh <- pars$conc_fresh['dsCOD'] + pars$conc_fresh['dpCOD'] + sum(pars$xa_fresh)
+  dat$COD_conc_fresh <- pars$conc_fresh['COD']
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
 
   # Loading 

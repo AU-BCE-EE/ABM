@@ -68,7 +68,8 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   dsCOD <- y[['dsCOD']]
   isCOD <- y[['isCOD']]
   # Fixed solids
-  iFS <- y[['iFS']]
+  ipFS <- y[['ipFS']]
+  isFS <- y[['isFS']]
   # Xa mass (g)
   xa <- y[1:n_mic]
   # Sulfate mass (g)
@@ -159,7 +160,8 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
     ipCOD = slurry_prod_rate * conc_fresh[['ipCOD']] - ipCOD / slurry_mass * slurry_rem_rate,
     dsCOD = slurry_prod_rate * conc_fresh[['dsCOD']] - dsCOD / slurry_mass * slurry_rem_rate + alpha * dpCOD - sum(rut) - respiration,
     isCOD = slurry_prod_rate * conc_fresh[['isCOD']] - isCOD / slurry_mass * slurry_rem_rate,
-    iFS  = slurry_prod_rate * conc_fresh[['iFS']] - iFS / slurry_mass * slurry_rem_rate,
+    ipFS  = slurry_prod_rate * conc_fresh[['ipFS']] - ipFS / slurry_mass * slurry_rem_rate,
+    isFS  = slurry_prod_rate * conc_fresh[['isFS']] - isFS / slurry_mass * slurry_rem_rate,
     sulfate = slurry_prod_rate * conc_fresh_SO4 - sulfate / slurry_mass * slurry_rem_rate - sum(rutsr) * COD_conv[['S']],
     sulfide = slurry_prod_rate * conc_fresh[['S2']] - sulfide / slurry_mass * slurry_rem_rate + sum(rutsr) * COD_conv[['S']] - H2SEmissionRate,
     CH4_emis_cum = sum(rut[i_meth]) * COD_conv[['CH4']],

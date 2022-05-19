@@ -102,7 +102,9 @@ abm <- function(
     pe.pars <- add_pars[ii]
     sa.pars <- add_pars[!ii]
     apnames <- names(pe.pars)
-    pe.pars <- as.numeric(pe.pars)
+    if (!is.na(as.numeric(pe.pars))) { 
+      pe.pars <- as.numeric(pe.pars)
+    }
     split.pars <- strsplit(apnames, par_key)
     pnames <- sapply(split.pars, '[[', 1)
     enames <- sapply(split.pars, '[[', 2)
@@ -293,6 +295,8 @@ abm <- function(
   pars$conc_fresh[['ipVS']] <- pars$conc_fresh[['pVS']] - pars$conc_fresh[['dpVS']] 
 
   pars$conc_fresh[['iFS']] <- pars$conc_fresh[['TS']] - pars$conc_fresh[['VS']] 
+  pars$conc_fresh[['ipFS']] <- pars$conc_fresh[['TSS']] - pars$conc_fresh[['VSS']] 
+  pars$conc_fresh[['isFS']] <- pars$conc_fresh[['iFS']] - pars$conc_fresh[['ipFS']] 
 
   # Convert to COD
   pars$conc_fresh[['COD']]   <- pars$conc_fresh[['VS']]   / pars$COD_conv[['VS']]
@@ -321,7 +325,7 @@ abm <- function(
   # Initial state variable vector
   y <- c(xa = pars$xa_init, 
          slurry_mass = 1, 
-         unlist(pars$conc_fresh[c('dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'iFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
+         unlist(pars$conc_fresh[c('dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'ipFS', 'isFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
          sulfate = SO4_fun(0), 
          sulfide = pars$conc_fresh[['S2']]) 
   # Convert to mass (g??)
@@ -346,13 +350,15 @@ abm <- function(
   dat$sCOD <- dat$dsCOD + dat$isCOD
   dat$VS <- pars$COD_conv[['VS']] * dat$COD
   dat$VSS <- pars$COD_conv[['VS']] * dat$pCOD
-  dat$TS <- dat$iFS + dat$VS
+  dat$FS <- dat$ipFS + dat$isFS
+  dat$TS <- dat$FS + dat$VS
+  dat$TSS <- dat$VSS + dat$ipFS
 
   # Caculate concentrations where relevant (NTS: g/kg????)
   mic_names <- pars$grps
   conc.names <-  c('NH4', 'NH3', 
                    'COD', 'dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'pCOD', 'sCOD',
-                   'TS', 'VS', 'VSS',
+                   'TS', 'FS', 'VS', 'TSS', 'VSS',
                    'sulfide', 'sulfate', mic_names)
   dat_conc <- dat[, conc.names] / dat$slurry_mass
   names(dat_conc) <- paste0(names(dat_conc), '_conc')

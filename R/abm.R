@@ -69,7 +69,7 @@ abm <- function(
       cat(i, ' ')
       browser()
       names(out)
-      man_pars$conc_init <- out[nrow(out), names(man_pars$conc_fresh)]
+      man_pars$conc_init <- out[nrow(out), paste0(names(man_pars$conc_fresh), '_conc')]
       grp_pars$xa_init <- as.numeric(starting[nrow(sout), paste0(names(grp_pars[['qhat_opt']]), '_conc')])
 
       out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,

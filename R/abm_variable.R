@@ -93,7 +93,7 @@ abm_variable <- function(days, delta_t, y, pars, warn, temp_fun = temp_fun, pH_f
       out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
 
       # Extract new state variable vector from last row of lsoda output
-      y <- out[nrow(out), 1:(length(pars$qhat_opt) + 11) + 1]
+      y <- out[nrow(out), 1:(length(y)) + 1]
 
       # Change format of output and drop first (time 0) row (duplicated in last row of previous)
       if (i == 1) {
@@ -119,7 +119,7 @@ abm_variable <- function(days, delta_t, y, pars, warn, temp_fun = temp_fun, pH_f
       # Note: Do not update `out` here before next iteration
 
       resid_frac <- 1 - removals[i] / y['slurry_mass']
-      resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich * pars$scale['resid_enrich'])
+      resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich)
       
       y[1:n_mic] <- resid_xa * y[1:n_mic]
       y['slurry_mass'] <- max(resid_frac * y['slurry_mass'], 1E-10)

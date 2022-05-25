@@ -225,10 +225,13 @@ abm <- function(
   pars$storage_depth <- pars$storage_depth * cf$depth
   pars$resid_depth <- pars$resid_depth * cf$depth 
 
-  pars$slurry_prod_rate <- pars$slurry_prod_rate * cf$flow
-  pars$slurry_rem_rate <- pars$slurry_rem_rate * cf$flow
-
-  pars$slurry_mass <- pars$slurry_mass * cf$mass
+  if (is.data.frame(pars$slurry_mass)) {
+    pars$slurry_mass$slurry_mass <- pars$slurry_mass$slurry_mass * cf$mass
+  } else {
+    pars$slurry_prod_rate <- pars$slurry_prod_rate * cf$flow
+    pars$slurry_rem_rate <- pars$slurry_rem_rate * cf$flow
+    pars$slurry_mass <- pars$slurry_mass * cf$mass
+  }
 
   pars$floor_area <- pars$floor_area * cf$area
   pars$area <- pars$area * cf$area
@@ -443,7 +446,9 @@ abm <- function(
   dat[, grep('depth', names(dat))] <- dat[, grep('depth', names(dat))] / cf$depth
   dat[, 'slurry_prod_rate'] <- dat[, 'slurry_prod_rate'] / cf$flow
   dat[, 'slurry_mass'] <- dat[, 'slurry_mass'] / cf$mass
-
+  if (pars$unts$temp == 'F') {
+    dat$temp <- dat$temp * 9 / 5 + 32
+  } 
   # Calculate totals for summary
   which.tot <- grep('cum', names(dat), value = TRUE)
   summ <- unlist(dat[nrow(dat), which.tot])

@@ -16,10 +16,8 @@ abm <- function(
   man_pars = list(conc_fresh = c(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
                                  TS = 80, TSS = 60, 
                                  VS = 50, VSS = 30, dsVS = 20, dVSS = 20),
+                  conc_init = NA,
                   pH = 7, dens = 1000), # SO4 cannot be data frame
-  #unit_conv = list(conc = '1000 mg/L / g/kg', depth = '0.3048 ft / m', 
-  #                 flow = '2.64E-7 mgd / kg/d', temp = '
-  #init_pars = list(conc = man_pars$conc_fresh), 
   grp_pars = list(grps = c('m1','m2','m3', 'sr1'),
                   yield = c(default = 0.05, sr1 = 0.065),
                   xa_fresh = c(sr1 = 0, default = 0.02), # (g/kg)?
@@ -314,6 +312,8 @@ abm <- function(
   # Maximum slurry mass in kg
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
   pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
+
+  # Get initial values
   
   if(is.data.frame(pars$slurry_mass)){
     slurry_mass_init <- pars$slurry_mass[1, 'slurry_mass']
@@ -324,11 +324,16 @@ abm <- function(
   if (slurry_mass_init == 0) {
     slurry_mass_init <- 1E-10
   }
+
+  if (is.na(pars$conc_init)) {
+    pars$conc_init <- pars$conc_fresh
+  }
+
  
   # Initial state variable vector
   y <- c(xa = pars$xa_init, 
          slurry_mass = 1, 
-         unlist(pars$conc_fresh[c('dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'ipFS', 'isFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
+         unlist(pars$conc_init[c('dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'ipFS', 'isFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
          sulfate = SO4_fun(0), 
          sulfide = pars$conc_fresh[['S2']]) 
   # Convert to mass (g??)

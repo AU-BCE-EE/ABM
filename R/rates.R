@@ -13,6 +13,8 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   alpha_T_opt <- parms$alpha_T_opt
   alpha_T_min <- parms$alpha_T_min
   alpha_T_max <- parms$alpha_T_max
+
+  sett_rate <- parms$sett_rate # Settling rate (1/d)
   
   slurry_prod_rate <- parms$slurry_prod_rate               
   slurry_rem_rate <- parms$slurry_rem_rate               
@@ -156,11 +158,11 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   derivatives <- c(
     xa = yield * rut + xa_fresh * slurry_prod_rate - xa / slurry_mass * slurry_rem_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
     slurry_mass = slurry_prod_rate - slurry_rem_rate,
-    dpCOD = slurry_prod_rate * conc_fresh[['dpCOD']] - dpCOD / slurry_mass * slurry_rem_rate - alpha * dpCOD + sum(decay_rate * xa),
-    ipCOD = slurry_prod_rate * conc_fresh[['ipCOD']] - ipCOD / slurry_mass * slurry_rem_rate,
+    dpCOD = slurry_prod_rate * conc_fresh[['dpCOD']] - dpCOD / slurry_mass * slurry_rem_rate - alpha * dpCOD + sum(decay_rate * xa) - sett_rate * dpCOD,
+    ipCOD = slurry_prod_rate * conc_fresh[['ipCOD']] - ipCOD / slurry_mass * slurry_rem_rate - sett_rate * ipCOD,
     dsCOD = slurry_prod_rate * conc_fresh[['dsCOD']] - dsCOD / slurry_mass * slurry_rem_rate + alpha * dpCOD - sum(rut) - respiration,
     isCOD = slurry_prod_rate * conc_fresh[['isCOD']] - isCOD / slurry_mass * slurry_rem_rate,
-    ipFS  = slurry_prod_rate * conc_fresh[['ipFS']] - ipFS / slurry_mass * slurry_rem_rate,
+    ipFS  = slurry_prod_rate * conc_fresh[['ipFS']] - ipFS / slurry_mass * slurry_rem_rate - sett_rate * ipFS,
     isFS  = slurry_prod_rate * conc_fresh[['isFS']] - isFS / slurry_mass * slurry_rem_rate,
     SO4 = slurry_prod_rate * conc_fresh_SO4 - SO4 / slurry_mass * slurry_rem_rate - sum(rutsr) * COD_conv[['S']],
     S2 = slurry_prod_rate * conc_fresh[['S2']] - S2 / slurry_mass * slurry_rem_rate + sum(rutsr) * COD_conv[['S']] - H2SEmissionRate,

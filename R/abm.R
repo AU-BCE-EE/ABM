@@ -44,6 +44,7 @@ abm <- function(
                   alpha_T_max = 60),
   chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.53, CO2_aer = 1.1, CO2_sr = 1.2), 
                    kl = c(H2S = 0.02, oxygen = 0.5), 
+                   sett_rate = 0.05,               # Solids settling rate (1/d)
                    unts = list(conc = 'mg/L', depth = 'ft', flow = 'gpm', temp = 'F', mass = 't', area = 'sf')
                   ),  # kl = mass transfer coefficient (liquid phase units) in m/d
   add_pars = NULL,

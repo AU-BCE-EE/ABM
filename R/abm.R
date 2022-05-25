@@ -57,20 +57,22 @@ abm <- function(
   warn = TRUE
   ) {
 
+  # If startup repetitions are requested, repeat some number of times before returning results
   if (startup > 0) {
     out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,
                mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0, starting = NULL,
                approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, approx_method_SO4 = approx_method_SO4, 
                par_key = par_key, value = value, warn = warn)
 
-
     cat('Repeating ')
     for (i in 1:startup) {
-      cat(i, ' ')
-      browser()
-      names(out)
-      man_pars$conc_init <- out[nrow(out), paste0(names(man_pars$conc_fresh), '_conc')]
-      grp_pars$xa_init <- as.numeric(starting[nrow(sout), paste0(names(grp_pars[['qhat_opt']]), '_conc')])
+      cat(i, 'x ')
+
+      # Pull starting *concentrations* only from previous sim
+      man_pars$conc_init <- unlist(out[nrow(out), paste0(names(man_pars$conc_fresh), '_conc')])
+      names(man_pars$conc_init) <- names(man_pars$conc_fresh)
+      grp_pars$xa_init <- unlist(out[nrow(out), paste0(grp_pars$grps, '_conc')])
+      names(grp_pars$xa_init) <- grp_pars$grps
 
       out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,
                  mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0, starting = out,
@@ -80,17 +82,6 @@ abm <- function(
 
     # Return only final values
     return(out)
-  }
-
-  # NTS: fix!
-  # NTS: need starting concentrations!
-  # If starting conditions are provided from a previous simulation, move them to pars
-  if (!is.null(starting) & is.data.frame(starting)) {
-    message('Using starting conditions from `starting` argument')
-    grp_pars[['xa_init']] <- as.numeric(starting[nrow(starting), paste0(names(grp_pars[['qhat_opt']]), '_conc')])
-    names(grp_pars[['xa_init']]) <- names(grp_pars[['qhat_opt']])
-
-    mng_pars['slurry_mass'] <- starting[nrow(starting), 'slurry_mass']
   }
 
   # Combine pars to make extraction and pass to rates() easier
@@ -224,6 +215,7 @@ abm <- function(
 
   # Apply conversion factors
   pars$conc_fresh <- pars$conc_fresh * cf$conc
+  pars$conc_init <- pars$conc_init * cf$conc
 
   pars$storage_depth <- pars$storage_depth * cf$depth
   pars$resid_depth <- pars$resid_depth * cf$depth 
@@ -287,31 +279,14 @@ abm <- function(
     SO4_fun <- function(x) return(pars$conc_fresh[['SO4']])
   }
 
+  # Pull initial concentrations from fresh if missing
+  if (is.na(pars$conc_init[1])) {
+    pars$conc_init <- pars$conc_fresh
+  }
 
-  # Calculate fresh concentrations
-  # dsVS -> dsOM
-  # dVSS -> dpOM
-  # Rename a few 
-  pars$conc_fresh[['dpVS']] <- pars$conc_fresh[['dVSS']] 
-  pars$conc_fresh[['dsVS']] <- pars$conc_fresh[['dsVS']] 
-  pars$conc_fresh[['pVS']] <- pars$conc_fresh[['VSS']] 
-  # Calculate remainder by difference
-  pars$conc_fresh[['sVS']]  <- pars$conc_fresh[['VS']] - pars$conc_fresh[['pVS']]
-  pars$conc_fresh[['isVS']] <- pars$conc_fresh[['sVS']] - pars$conc_fresh[['dsVS']] 
-  pars$conc_fresh[['ipVS']] <- pars$conc_fresh[['pVS']] - pars$conc_fresh[['dpVS']] 
-
-  pars$conc_fresh[['iFS']] <- pars$conc_fresh[['TS']] - pars$conc_fresh[['VS']] 
-  pars$conc_fresh[['ipFS']] <- pars$conc_fresh[['TSS']] - pars$conc_fresh[['VSS']] 
-  pars$conc_fresh[['isFS']] <- pars$conc_fresh[['iFS']] - pars$conc_fresh[['ipFS']] 
-
-  # Convert to COD
-  pars$conc_fresh[['COD']]   <- pars$conc_fresh[['VS']]   / pars$COD_conv[['VS']]
-  pars$conc_fresh[['pCOD']]  <- pars$conc_fresh[['pVS']]  / pars$COD_conv[['VS']]
-  pars$conc_fresh[['dpCOD']] <- pars$conc_fresh[['dpVS']] / pars$COD_conv[['VS']]
-  pars$conc_fresh[['ipCOD']] <- pars$conc_fresh[['ipVS']] / pars$COD_conv[['VS']]
-  pars$conc_fresh[['sCOD']]  <- pars$conc_fresh[['sVS']]  / pars$COD_conv[['VS']]
-  pars$conc_fresh[['dsCOD']] <- pars$conc_fresh[['dsVS']] / pars$COD_conv[['VS']]
-  pars$conc_fresh[['isCOD']] <- pars$conc_fresh[['isVS']] / pars$COD_conv[['VS']]
+  # Sort out VS/COD concentrations
+  pars$conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']])
+  pars$conc_init <- VS2COD(pars$conc_init, cf = pars$COD_conv[['VS']])
 
   # Convert some supplied parameters
   # Maximum slurry mass in kg
@@ -330,19 +305,15 @@ abm <- function(
     slurry_mass_init <- 1E-10
   }
 
-  if (is.na(pars$conc_init)) {
-    pars$conc_init <- pars$conc_fresh
-  }
-
- 
   # Initial state variable vector
   y <- c(xa = pars$xa_init, 
          slurry_mass = 1, 
          unlist(pars$conc_init[c('dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'ipFS', 'isFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
-         sulfate = SO4_fun(0), 
-         sulfide = pars$conc_fresh[['S2']]) 
+         SO4 = SO4_fun(0), 
+         S2 = pars$conc_fresh[['S2']]) 
   # Convert to mass (g??)
   y <- y * slurry_mass_init
+
   # Add 0 for cumulative emission
   zz <- c('CH4_emis_cum', 'CO2_emis_cum', 'COD_conv_cum', 'COD_conv_cum_meth', 
           'COD_conv_cum_respir', 'COD_conv_cum_sr')
@@ -361,18 +332,30 @@ abm <- function(
   dat$COD <- dat$dpCOD + dat$ipCOD + dat$dsCOD + dat$isCOD
   dat$pCOD <- dat$dpCOD + dat$ipCOD
   dat$sCOD <- dat$dsCOD + dat$isCOD
+  dat$dCOD <- dat$dpCOD + dat$dsCOD
   dat$VS <- pars$COD_conv[['VS']] * dat$COD
   dat$VSS <- pars$COD_conv[['VS']] * dat$pCOD
   dat$FS <- dat$ipFS + dat$isFS
   dat$TS <- dat$FS + dat$VS
   dat$TSS <- dat$VSS + dat$ipFS
 
+  # A few are needed for startup argument repeating, not so interesting in output
+  dat$dsVS <- pars$COD_conv[['VS']] * dat$dsCOD
+  dat$dpVS <- pars$COD_conv[['VS']] * dat$dpCOD
+  dat$dVSS <- dat$dpVS
+  dat$dVS <- pars$COD_conv[['VS']] * dat$dCOD
+
+  # Conserve TAN
+  # NTS: Should add as state variable at least for evaporation later
+  dat$TAN_conc <- pars$conc_fresh['TAN']
+
   # Caculate concentrations where relevant (NTS: g/kg????)
   mic_names <- pars$grps
   conc.names <-  c('NH4', 'NH3', 
-                   'COD', 'dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'pCOD', 'sCOD',
-                   'TS', 'FS', 'VS', 'TSS', 'VSS',
-                   'sulfide', 'sulfate', mic_names)
+                   'COD', 'dCOD', 'dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'pCOD', 'sCOD',
+                   'TS', 'FS', 'VS', 'dsVS', 'dpVS', 'dVSS', 'TSS', 'VSS',
+                   'S2', 'SO4', mic_names)
+  conc.names[!conc.names %in% names(dat)]
   dat_conc <- dat[, conc.names] / dat$slurry_mass
   names(dat_conc) <- paste0(names(dat_conc), '_conc')
   dat <- cbind(dat, dat_conc)
@@ -382,7 +365,7 @@ abm <- function(
   if (is.numeric(pars$pH) | is.data.frame(pars$pH)) {
     dat$pH <- pH_fun(dat$time)
   } else if (pars$pH == 'calc'){
-    dat$pH <- H2SO4_titrat(dat$sulfate_conc)
+    dat$pH <- H2SO4_titrat(dat$SO4_conc)
   } else {
     stop('Problem with pH input (bee721)')
   }
@@ -451,7 +434,10 @@ abm <- function(
   dat$slurry_depth <- dat$slurry_mass / pars$dens / pars$area
 
   # Convert units back to inputs
-  dat[, grep('conc', names(dat))] <- dat[, grep('conc', names(dat))] / cf$conc
+  concnames <- grep('conc', names(dat), value = TRUE)
+  # Exclude microbial biomass
+  concnames <- grep('^[^ms]', concnames, value = TRUE)
+  dat[, concnames] <- dat[, concnames] / cf$conc
   dat[, grep('area', names(dat))] <- dat[, grep('area', names(dat))] / cf$area
   dat[, grep('depth', names(dat))] <- dat[, grep('depth', names(dat))] / cf$depth
   dat[, 'slurry_prod_rate'] <- dat[, 'slurry_prod_rate'] / cf$flow

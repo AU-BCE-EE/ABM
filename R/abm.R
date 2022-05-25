@@ -47,30 +47,35 @@ abm <- function(
                    unts = list(conc = 'mg/L', depth = 'ft', flow = 'gpm', temp = 'F', mass = 't', area = 'sf')
                   ),  # kl = mass transfer coefficient (liquid phase units) in m/d
   add_pars = NULL,
-  startup = -Inf,
+  startup = 0,
   starting = NULL,
   approx_method_temp = 'linear',
   approx_method_pH = 'linear',
   approx_method_SO4 = 'linear',
   par_key = '\\.',
   value = 'ts',                              # Type of output
-  nsims = 1,
   warn = TRUE
   ) {
 
-  if (nsims > 1) {
+  if (startup > 0) {
     out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,
-               mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = -Inf, starting = NULL,
+               mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0, starting = NULL,
                approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, approx_method_SO4 = approx_method_SO4, 
-               par_key = par_key, value = value, nsims = 1, warn = warn)
+               par_key = par_key, value = value, warn = warn)
+
 
     cat('Repeating ')
-    for (i in 2:nsims) {
+    for (i in 1:startup) {
       cat(i, ' ')
+      browser()
+      names(out)
+      man_pars$conc_init <- out[nrow(out), names(man_pars$conc_fresh)]
+      grp_pars$xa_init <- as.numeric(starting[nrow(sout), paste0(names(grp_pars[['qhat_opt']]), '_conc')])
+
       out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,
-                 mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = startup, starting = out,
+                 mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0, starting = out,
                  approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, approx_method_SO4 = approx_method_SO4, 
-                 par_key = par_key, value = value, nsims = 1, warn = warn)
+                 par_key = par_key, value = value, warn = warn)
     }
 
     # Return only final values

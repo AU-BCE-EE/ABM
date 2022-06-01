@@ -10,12 +10,14 @@ abm <- function(
                   area = 11,                # Area (assume vertical sides) (m2)
                   empty_int = 35,           # (d)
                   temp = 20,                # (deg. C)
+                  mix = TRUE,               # Mix before emptying event?
                   wash_water = 0,           # (kg) 
                   wash_int = NA,            # (d)
                   rest_d = 0),              # (d)
   man_pars = list(conc_fresh = c(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
                                  TS = 80, TSS = 60, 
                                  VS = 50, VSS = 30, dsVS = 20, dVSS = 20),
+                  sett_frac = 0,           # Fixed fraction that settles in the lagoon
                   conc_init = NA,
                   pH = 7, dens = 1000), # SO4 cannot be data frame
   grp_pars = list(grps = c('m1','m2','m3', 'sr1'),
@@ -44,7 +46,6 @@ abm <- function(
                   alpha_T_max = 60),
   chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.53, CO2_aer = 1.1, CO2_sr = 1.2), 
                    kl = c(H2S = 0.02, oxygen = 0.5), 
-                   sett_rate = 0.05,               # Solids settling rate (1/d)
                    unts = list(conc = 'mg/L', depth = 'ft', flow = 'gpm', temp = 'F', mass = 't', area = 'sf')
                   ),  # kl = mass transfer coefficient (liquid phase units) in m/d
   add_pars = NULL,
@@ -65,7 +66,7 @@ abm <- function(
                approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, approx_method_SO4 = approx_method_SO4, 
                par_key = par_key, value = value, warn = warn)
 
-    cat('Repeating ')
+    cat('\nRepeating ')
     for (i in 1:startup) {
       cat(i, 'x ')
 
@@ -286,8 +287,9 @@ abm <- function(
   }
 
   # Sort out VS/COD concentrations
-  pars$conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']])
-  pars$conc_init <- VS2COD(pars$conc_init, cf = pars$COD_conv[['VS']])
+  # Note that initial concentrations (in lagoon) have already experienced settling, so sf = 0
+  pars$conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = pars$sett_frac)
+  pars$conc_init <- VS2COD(pars$conc_init, cf = pars$COD_conv[['VS']], sf = 0)
 
   # Convert some supplied parameters
   # Maximum slurry mass in kg
@@ -309,7 +311,7 @@ abm <- function(
   # Initial state variable vector
   y <- c(xa = pars$xa_init, 
          slurry_mass = 1, 
-         unlist(pars$conc_init[c('dpCOD', 'ipCOD', 'dsCOD', 'isCOD', 'ipFS', 'isFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
+         unlist(pars$conc_init[c('dpCOD', 'dpCODsed', 'ipCOD', 'dsCOD', 'isCOD', 'ipFS', 'isFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
          SO4 = SO4_fun(0), 
          S2 = pars$conc_fresh[['S2']]) 
   # Convert to mass (g??)

@@ -71,13 +71,22 @@ abm <- function(
       cat(i, 'x ')
 
       # Pull starting *concentrations* only from previous sim
-      man_pars$conc_init <- unlist(out[nrow(out), paste0(names(man_pars$conc_fresh), '_conc')])
+      if (value == 'all') {
+        tso <- out$ts
+      } else if (value == 'ts') {
+	tso <- out
+      } else {
+        stop('Value must be all or ts for startup > 0')
+      }
+
+      # NTS: is this _par stuff needed now that starting argument has been updated?
+      man_pars$conc_init <- unlist(tso[nrow(tso), paste0(names(man_pars$conc_fresh), '_conc')])
       names(man_pars$conc_init) <- names(man_pars$conc_fresh)
-      grp_pars$xa_init <- unlist(out[nrow(out), paste0(grp_pars$grps, '_conc')])
+      grp_pars$xa_init <- unlist(tso[nrow(tso), paste0(grp_pars$grps, '_conc')])
       names(grp_pars$xa_init) <- grp_pars$grps
 
       out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,
-                 mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0, starting = out,
+                 mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0, starting = tso,
                  approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, approx_method_SO4 = approx_method_SO4, 
                  par_key = par_key, value = value, warn = warn)
     }

@@ -31,8 +31,10 @@ abm_variable <- function(days, delta_t, y, pars, warn, temp_fun = temp_fun, pH_f
     warning('Non-instant removals given in `slurry_mass` were changed to instant.')
   }
 
+  # NTS: might still have a problem here where data seem to show removal but are actually fixed rem_rate
+
   # Determine variable slurry production rate for each time interval
-  slurry_prod_rate_t <- c(diff(pars$slurry_mass[, 'slurry_mass']) / diff(pars$slurry_mass[, 'time']), 0)
+  slurry_prod_rate_t <- c(diff(pars$slurry_mass[, 'slurry_mass']) / diff(pars$slurry_mass[, 'time']), 0) + pars$slurry_rem_rate
   slurry_prod_rate_t[slurry_prod_rate_t < 0] <- 0
   slurry_prod_rate_t[!is.finite(slurry_prod_rate_t)] <- 0
 

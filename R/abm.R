@@ -226,9 +226,9 @@ abm <- function(
     pars$slurry_mass$slurry_mass <- pars$slurry_mass$slurry_mass * cf$mass
   } else {
     pars$slurry_prod_rate <- pars$slurry_prod_rate * cf$flow
-    pars$slurry_rem_rate <- pars$slurry_rem_rate * cf$flow
     pars$slurry_mass <- pars$slurry_mass * cf$mass
   }
+  pars$slurry_rem_rate <- pars$slurry_rem_rate * cf$flow
 
   pars$floor_area <- pars$floor_area * cf$area
   pars$area <- pars$area * cf$area

@@ -311,7 +311,7 @@ abm <- function(
   # Initial state variable vector
   y <- c(xa = pars$xa_init, 
          slurry_mass = 1, 
-         unlist(pars$conc_init[c('dpCOD', 'dpCODsed', 'ipCOD', 'dsCOD', 'isCOD', 'ipFS', 'isFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
+         unlist(pars$conc_init[c('dpCOD', 'dpCODsed', 'ipCOD', 'ipCODsed', 'dsCOD', 'isCOD', 'ipFS', 'isFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
          SO4 = SO4_fun(0), 
          S2 = pars$conc_fresh[['S2']]) 
   # Convert to mass (g??)

@@ -25,6 +25,10 @@ VS2COD <- function(x, cf, sf = 0) {
   # Calculate settling component of degradable (sediment layer)
   x[['dpVS']] <- (1 - sf) * x[['dpVS']] 
   x[['dpVSsed']] <- sf * x[['dpVS']] 
+  x[['ipVS']] <- (1 - sf) * x[['ipVS']] 
+  x[['ipVSsed']] <- sf * x[['ipVS']] 
+  x[['ipFS']] <- (1 - sf) * x[['ipFS']] 
+  x[['ipFSsed']] <- sf * x[['ipFS']] 
 
   # Convert to COD
   x[['COD']]   <-    x[['VS']]      / cf
@@ -32,6 +36,7 @@ VS2COD <- function(x, cf, sf = 0) {
   x[['dpCOD']] <-    x[['dpVS']]    / cf
   x[['dpCODsed']] <- x[['dpVSsed']] / cf
   x[['ipCOD']] <-    x[['ipVS']]    / cf
+  x[['ipCODsed']] <- x[['ipVSsed']] / cf
   x[['sCOD']]  <-    x[['sVS']]     / cf
   x[['dsCOD']] <-    x[['dsVS']]    / cf
   x[['isCOD']] <-    x[['isVS']]    / cf

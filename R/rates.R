@@ -162,6 +162,7 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
     dpCOD = slurry_prod_rate * conc_fresh[['dpCOD']] - dpCOD / slurry_mass * slurry_rem_rate - alpha * dpCOD + sum(decay_rate * xa),
     dpCODsed = slurry_prod_rate * conc_fresh[['dpCODsed']],
     ipCOD = slurry_prod_rate * conc_fresh[['ipCOD']] - ipCOD / slurry_mass * slurry_rem_rate,
+    ipCODsed = slurry_prod_rate * conc_fresh[['ipCODsed']],
     dsCOD = slurry_prod_rate * conc_fresh[['dsCOD']] - dsCOD / slurry_mass * slurry_rem_rate + alpha * dpCOD - sum(rut) - respiration,
     isCOD = slurry_prod_rate * conc_fresh[['isCOD']] - isCOD / slurry_mass * slurry_rem_rate,
     ipFS  = slurry_prod_rate * conc_fresh[['ipFS']] - ipFS / slurry_mass * slurry_rem_rate,

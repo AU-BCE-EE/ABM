@@ -153,11 +153,14 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   rutsr <- rut[i_sr]
   if (length(rutsr) == 0) rutsr <- 0
 
+  # Enrichment for microbes
+  resid_xa <- (1 - logistic(parms$resid_enrich))
+
   # Derivatives, all in g/d except slurry_mass = kg/d
   # NTS: Some of these repeated calculations could be moved up
   # dpCODsed is not degraded in sediments
   derivatives <- c(
-    xa = yield * rut + xa_fresh * slurry_prod_rate - xa / slurry_mass * slurry_rem_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
+    xa = yield * rut + xa_fresh * slurry_prod_rate - xa / slurry_mass * resid_xa * slurry_rem_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
     slurry_mass = slurry_prod_rate - slurry_rem_rate,
     dpCOD = slurry_prod_rate * conc_fresh[['dpCOD']] - dpCOD / slurry_mass * slurry_rem_rate - alpha * dpCOD + sum(decay_rate * xa),
     dpCODsed = slurry_prod_rate * conc_fresh[['dpCODsed']],

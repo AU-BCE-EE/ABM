@@ -331,6 +331,13 @@ abm <- function(
     dat <- abm_variable(days = days, delta_t = delta_t, y = y, pars = pars, warn = warn, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
   } 
 
+  # Add slurry removal rate to output
+  # Production rate already added in abm_*
+  dat$slurry_rem_rate <- pars$slurry_rem_rate
+
+  # Approximate retention time
+  dat$HRT <- dat$slurry_mass / dat$slurry_prod_rate
+
   # Calculate totals etc.
   dat$COD <- dat$dpCOD + dat$ipCOD + dat$dsCOD + dat$isCOD
   dat$pCOD <- dat$dpCOD + dat$ipCOD
@@ -444,6 +451,7 @@ abm <- function(
   dat[, grep('area', names(dat))] <- dat[, grep('area', names(dat))] / cf$area
   dat[, grep('depth', names(dat))] <- dat[, grep('depth', names(dat))] / cf$depth
   dat[, 'slurry_prod_rate'] <- dat[, 'slurry_prod_rate'] / cf$flow
+  dat[, 'slurry_rem_rate'] <- dat[, 'slurry_rem_rate'] / cf$flow
   dat[, 'slurry_mass'] <- dat[, 'slurry_mass'] / cf$mass
   if (pars$unts$temp == 'F') {
     dat$temp <- dat$temp * 9 / 5 + 32

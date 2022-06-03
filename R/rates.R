@@ -15,6 +15,7 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   alpha_T_max <- parms$alpha_T_max
 
   sett_rate <- parms$sett_rate # Settling rate (1/d)
+  xa_retent <- parms$xa_retent # Xa retention during outflow
   
   slurry_prod_rate <- parms$slurry_prod_rate               
   slurry_rem_rate <- parms$slurry_rem_rate               
@@ -65,7 +66,9 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   slurry_mass <- y[['slurry_mass']]
   # Particulate substrate mass
   dpCOD <- y[['dpCOD']]
+  dpCODsed <- y[['dpCODsed']]
   ipCOD <- y[['ipCOD']]
+  ipCODsed <- y[['ipCODsed']]
   # Soluble substrate mass
   dsCOD <- y[['dsCOD']]
   isCOD <- y[['isCOD']]
@@ -154,19 +157,19 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   if (length(rutsr) == 0) rutsr <- 0
 
   # Enrichment for microbes
-  resid_xa <- (1 - logistic(parms$resid_enrich))
+ ## resid_xa <- (1 - logistic(parms$resid_enrich))
 
   # Derivatives, all in g/d except slurry_mass = kg/d
   # NTS: Some of these repeated calculations could be moved up
   # dpCODsed is not degraded in sediments
   derivatives <- c(
-    xa = yield * rut + xa_fresh * slurry_prod_rate - xa / slurry_mass * resid_xa * slurry_rem_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
+    xa = yield * rut + xa_fresh * slurry_prod_rate - (1 - xa_retent) * xa / slurry_mass * slurry_rem_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
     slurry_mass = slurry_prod_rate - slurry_rem_rate,
-    dpCOD = slurry_prod_rate * conc_fresh[['dpCOD']] - dpCOD / slurry_mass * slurry_rem_rate - alpha * dpCOD + sum(decay_rate * xa),
-    dpCODsed = slurry_prod_rate * conc_fresh[['dpCODsed']],
+    dpCOD = slurry_prod_rate * conc_fresh[['dpCOD']] - dpCOD / slurry_mass * slurry_rem_rate - alpha * dpCOD,
+    dpCODsed = slurry_prod_rate * conc_fresh[['dpCODsed']] + sum(decay_rate * xa) - alpha * dpCODsed,
     ipCOD = slurry_prod_rate * conc_fresh[['ipCOD']] - ipCOD / slurry_mass * slurry_rem_rate,
     ipCODsed = slurry_prod_rate * conc_fresh[['ipCODsed']],
-    dsCOD = slurry_prod_rate * conc_fresh[['dsCOD']] - dsCOD / slurry_mass * slurry_rem_rate + alpha * dpCOD - sum(rut) - respiration,
+    dsCOD = slurry_prod_rate * conc_fresh[['dsCOD']] - dsCOD / slurry_mass * slurry_rem_rate + alpha * (dpCOD + dpCODsed) - sum(rut) - respiration,
     isCOD = slurry_prod_rate * conc_fresh[['isCOD']] - isCOD / slurry_mass * slurry_rem_rate,
     ipFS  = slurry_prod_rate * conc_fresh[['ipFS']] - ipFS / slurry_mass * slurry_rem_rate,
     isFS  = slurry_prod_rate * conc_fresh[['isFS']] - isFS / slurry_mass * slurry_rem_rate,

@@ -11,6 +11,7 @@ abm <- function(
                   empty_int = 35,           # (d)
                   temp = 20,                # (deg. C)
                   mix = TRUE,               # Mix before emptying event?
+                  xa_retent = 1,            # Fraction of active biomass in sediment (versus suspended)
                   wash_water = 0,           # (kg) 
                   wash_int = NA,            # (d)
                   rest_d = 0),              # (d)

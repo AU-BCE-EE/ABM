@@ -297,6 +297,8 @@ abm <- function(
 
   # Sort out VS/COD concentrations
   # Note that initial concentrations (in lagoon) have already experienced settling, so sf = 0
+  # _ns is for not settled, for adding to output df
+  conc_fresh_ns <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = 0)
   pars$conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = pars$sett_frac)
   pars$conc_init <- VS2COD(pars$conc_init, cf = pars$COD_conv[['VS']], sf = 0)
 
@@ -306,7 +308,6 @@ abm <- function(
   pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
 
   # Get initial values
-  
   if(is.data.frame(pars$slurry_mass)){
     slurry_mass_init <- pars$slurry_mass[1, 'slurry_mass']
   } else {
@@ -391,7 +392,7 @@ abm <- function(
 
   # Add fresh concentrations
   # NTS: Simpler now that input is vector not list
-  conc_fresh <- unlist(pars$conc_fresh)
+  conc_fresh <- conc_fresh_ns
   names(conc_fresh) <- paste0(names(conc_fresh), '_conc_fresh')
   dat <- cbind(dat, t(conc_fresh))
 

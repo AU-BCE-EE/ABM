@@ -119,13 +119,20 @@ abm_variable <- function(days, delta_t, y, pars, warn, temp_fun = temp_fun, pH_f
     } else {
       # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
       # Note: Do not update `out` here before next iteration
+      # Settled solids (sed$) and biomass is removed only if mixing occurs
 
       resid_frac <- 1 - removals[i] / y['slurry_mass']
-      resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich)
       
-      y[1:n_mic] <- resid_xa * y[1:n_mic]
       y['slurry_mass'] <- max(resid_frac * y['slurry_mass'], 1E-10)
-      y[!grepl('xa\\.|cum|slurry_mass', names(y))] <- sapply(y[!grepl('xa\\.|cum|slurry_mass', names(y))], function(x) resid_frac * x) # apply resid_frac to other state variables
+
+      if (pars$mix) {
+        empty_names <- grep('^xa\\.|cum|slurry_mass', names(y), value = TRUE, invert = TRUE)
+        resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich)
+        y[1:n_mic] <- resid_xa * y[1:n_mic]
+      } else {
+        empty_names <- grep('^xa\\.|cum|slurry_mass|sed$', names(y), value = TRUE, invert = TRUE)
+      }
+      y[empty_names] <- sapply(y[empty_names], function(x) resid_frac * x) # apply resid_frac to other state variables
 
     }
  

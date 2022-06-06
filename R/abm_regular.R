@@ -81,16 +81,24 @@ abm_regular <- function(days, delta_t, y, pars, temp_fun = temp_fun, pH_fun = pH
         resid_frac <- pars$resid_mass / y['slurry_mass']
         resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich)
 
-        y[1:n_mic] <- resid_xa * y[1:n_mic]
-        y['slurry_mass'] <- max(resid_frac * y['slurry_mass'],  1E-10)
-        # Apply resid_frac to other state variables
-        y[!grepl('xa\\.|cum|slurry_mass', names(y))] <- sapply(y[!grepl('xa\\.|cum|slurry_mass', names(y))], function(x) resid_frac * x)
+        y['slurry_mass'] <- max(resid_frac * y['slurry_mass'], 1E-10)
+
+        if (pars$mix) {
+          empty_names <- grep('^xa\\.|cum|slurry_mass', names(y), value = TRUE, invert = TRUE)
+          resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich)
+          y[1:n_mic] <- resid_xa * y[1:n_mic]
+        } else {
+          empty_names <- grep('^xa\\.|cum|slurry_mass|sed$', names(y), value = TRUE, invert = TRUE)
+        }
+        y[empty_names] <- sapply(y[empty_names], function(x) resid_frac * x) # apply resid_frac to other state variables
+
       } else {
         warning('Emptying skipped because of low slurry level.')
       }
     }
    
     # Washing, increase slurry mass
+    # NTS: needs some work for xa and mix????
     if (wash[i]) {
       y['slurry_mass'] <- y['slurry_mass'] + pars$wash_water
 

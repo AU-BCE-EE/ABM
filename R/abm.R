@@ -10,17 +10,17 @@ abm <- function(
                   area = 11,                # Area (assume vertical sides) (m2)
                   empty_int = 35,           # (d)
                   temp = 20,                # (deg. C)
-                  mix = TRUE,               # Mix before emptying event?
-                  xa_retent = 1,            # Fraction of active biomass in sediment (versus suspended)
                   wash_water = 0,           # (kg) 
                   wash_int = NA,            # (d)
-                  rest_d = 0),              # (d)
+                  rest_d = 0,               # (d)
+                  xa_retent = 1,            # Fraction of active biomass in sediment (versus suspended)
+                  sett_frac = 0,            # Fixed fraction that settles in the lagoon
+                  mix = TRUE),              # Mix before emptying event?
   man_pars = list(conc_fresh = c(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
                                  TS = 80, TSS = 60, 
                                  VS = 50, VSS = 30, dsVS = 20, dVSS = 20),
-                  sett_frac = 0,           # Fixed fraction that settles in the lagoon
                   conc_init = NA,
-                  pH = 7, dens = 1000), # SO4 cannot be data frame
+                  pH = 7, dens = 1000),     # SO4 cannot be data frame
   grp_pars = list(grps = c('m1','m2','m3', 'sr1'),
                   yield = c(default = 0.05, sr1 = 0.065),
                   xa_fresh = c(sr1 = 0, default = 0.02), # (g/kg)?

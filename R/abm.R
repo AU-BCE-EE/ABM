@@ -279,29 +279,41 @@ abm <- function(
     pH_fun <- function(x) return(pars$pH)
   }
 
-  # Create SO4-2 f(t) for variable acidification with H2SO4
-  # NTS: no longer an option now with unit conversion!
-  # Need to remove!
-  if (is.data.frame(pars$conc_fresh[['SO4']])) {
-    tSO4 <- pars$conc_fres$SO4$SO4
-    ttime <- pars$conc_fres$SO4$time
-    SO4_fun <- approxfun(ttime, tSO4, method = approx_method_SO4, 
-                            yleft = tSO4[1], yright = tSO4[length(tSO4)], rule = 2)
+  # Sort out VS/COD concentrations
+  # Note that initial concentrations (in lagoon) have already experienced settling, so sf = 0
+  # _ns is for not settled, for adding to output df
+  # NTS: problem with conc_fresh_ns
+  #conc_fresh_ns <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = 0)
+  pars$conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = pars$sett_frac)
+
+  # Create function for time-variable conc_fresh
+  if (is.data.frame(pars$conc_fresh)) {
+    cffuns <- list()
+    ttime <- pars$conc_fresh$time
+    for (i in names(pars$conc_fresh)[-1]) {
+      yin <- pars$conc_fresh[, i]
+      cffuns[[i]] <- approxfun(ttime, yin, method = 'linear',
+                               yleft = yin[1], yright = yin[length(yin)], 
+                               rule = 2)
+    }
+    conc_fresh_fun <- function(x) {
+      out <- data.frame(time = x)
+      for (i in names(cffuns)) {
+        out[, i] <- cffuns[[i]](x)
+      }
+      out$time <- NULL
+      return(unlist(out))
+    }
   } else {
-    SO4_fun <- function(x) return(pars$conc_fresh[['SO4']])
+    conc_fresh_fun <- function(x) return(pars$conc_fresh)
   }
 
   # Pull initial concentrations from fresh if missing
   if (is.na(pars$conc_init[1])) {
-    pars$conc_init <- pars$conc_fresh
+    pars$conc_init <- conc_fresh_fun(0)
+  } else {
+    pars$conc_init <- VS2COD(pars$conc_init, cf = pars$COD_conv[['VS']], sf = 0)
   }
-
-  # Sort out VS/COD concentrations
-  # Note that initial concentrations (in lagoon) have already experienced settling, so sf = 0
-  # _ns is for not settled, for adding to output df
-  conc_fresh_ns <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = 0)
-  pars$conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = pars$sett_frac)
-  pars$conc_init <- VS2COD(pars$conc_init, cf = pars$COD_conv[['VS']], sf = 0)
 
   # Convert some supplied parameters
   # Maximum slurry mass in kg
@@ -322,9 +334,7 @@ abm <- function(
   # Initial state variable vector
   y <- c(xa = pars$xa_init, 
          slurry_mass = 1, 
-         unlist(pars$conc_init[c('dpCOD', 'dpCODsed', 'ipCOD', 'ipCODsed', 'dsCOD', 'isCOD', 'ipFS', 'isFS')]), # NTS: unlist prob not needed now that conc_fresh is vector
-         SO4 = SO4_fun(0), 
-         S2 = pars$conc_fresh[['S2']]) 
+         unlist(pars$conc_init[c('dpCOD', 'dpCODsed', 'ipCOD', 'ipCODsed', 'dsCOD', 'isCOD', 'ipFS', 'isFS', 'SO4', 'S2')])) # NTS: unlist prob not needed now that conc_fresh is vector
   # Convert to mass (g??)
   y <- y * slurry_mass_init
 
@@ -336,10 +346,10 @@ abm <- function(
   # Figure out type of run - with constant rates or not
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- abm_variable(days = days, delta_t = delta_t, y = y, pars = pars, warn = warn, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+    dat <- abm_variable(days = days, delta_t = delta_t, y = y, pars = pars, conc_fresh_fun = conc_fresh_fun, warn = warn, temp_fun = temp_fun, pH_fun = pH_fun)
   } 
 
   # Add slurry removal rate to output
@@ -368,7 +378,7 @@ abm <- function(
 
   # Conserve TAN
   # NTS: Should add as state variable at least for evaporation later
-  dat$TAN_conc <- pars$conc_fresh['TAN']
+  #dat$TAN_conc <- pars$conc_fresh['TAN']
 
   # Caculate concentrations where relevant (NTS: g/kg????)
   mic_names <- pars$grps
@@ -393,9 +403,10 @@ abm <- function(
 
   # Add fresh concentrations
   # NTS: Simpler now that input is vector not list
-  conc_fresh <- conc_fresh_ns
-  names(conc_fresh) <- paste0(names(conc_fresh), '_conc_fresh')
-  dat <- cbind(dat, t(conc_fresh))
+  # NTS: need to fix and add back in!
+  #conc_fresh <- conc_fresh_ns
+  #names(conc_fresh) <- paste0(names(conc_fresh), '_conc_fresh')
+  #dat <- cbind(dat, t(conc_fresh))
 
   # Calculate rates etc. for ouput, from state variables
   dat$rCH4 <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
@@ -410,18 +421,19 @@ abm <- function(
   # Cut startup period before calculating cumulative flows
   dat <- dat[dat$time > startup, ]
 
-  # Calculate COD/VS flows
-  # First concentrations in g/kg
-  dat$dCOD_conc_fresh <- pars$conc_fresh['dsCOD'] + pars$conc_fresh['dpCOD'] + sum(pars$xa_fresh)
-  dat$COD_conc_fresh <- pars$conc_fresh['COD']
-  dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
+  ## Calculate COD/VS flows
+  ## First concentrations in g/kg
+  browser()
+  #dat$dCOD_conc_fresh <- pars$conc_fresh['dsCOD'] + pars$conc_fresh['dpCOD'] + sum(pars$xa_fresh)
+  #dat$COD_conc_fresh <- pars$conc_fresh['COD']
+  #dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
 
-  # Loading 
-  # Flows in g/d
-  dat$COD_load_rate <- dat$COD_conc_fresh * dat$slurry_prod_rate
-  dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
-  dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
-  dat$VS_load_rate <- dat$VS_conc_fresh * dat$slurry_prod_rate
+  ## Loading 
+  ## Flows in g/d
+  #dat$COD_load_rate <- dat$COD_conc_fresh * dat$slurry_prod_rate
+  #dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
+  #dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
+  #dat$VS_load_rate <- dat$VS_conc_fresh * dat$slurry_prod_rate
 
   # Cumulative flow in g
   dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
@@ -467,9 +479,20 @@ abm <- function(
   if (pars$unts$temp == 'F') {
     dat$temp <- dat$temp * 9 / 5 + 32
   } 
+
   # Calculate totals for summary
-  which.tot <- grep('cum', names(dat), value = TRUE)
-  summ <- unlist(dat[nrow(dat), which.tot])
+  #which.tot <- grep('cum', names(dat), value = TRUE)
+  which.ave <- c('TS_conc_fresh', 'VS_conc_fresh', 
+                 'COD_conc_fresh', 'dCOD_conc_fresh', 'dpCOD_conc_fresh', 'dsCOD_conc_fresh',
+                 'COD_conc', 'dCOD_conc', 'dpCOD_conc', 'dsCOD_conc',
+                 'TS_conc', 'VS_conc') 
+  summ.ave <- apply(dat[, which.ave], 2, mean)
+  names(summ.ave) <- paste0(names(summ.ave), '_ave')
+
+  which.tot <- c('COD_load_cum', 'dCOD_load_cum', 'CH4_cum_f_COD', 'respir_cum_f_COD')
+  summ.tot <- unlist(dat[nrow(dat), which.tot])
+
+  summ <- c(summ.ave, summ.tot)
 
   # Replace . in names with _
   names(dat) <- gsub('\\.', '_', names(dat))

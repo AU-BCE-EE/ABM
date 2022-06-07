@@ -1,5 +1,5 @@
 rates <-
-function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
+function(t, y, parms, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun) {
   
   # Hard-wire NH4+ activity coefficient
   g_NH4 <- 0.7
@@ -23,8 +23,6 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   resid_frac <- parms$resid_frac
   area <- parms$area
   temp <- parms$temp
-                  
-  conc_fresh <- parms$conc_fresh
   
   yield <- parms$yield
   xa_fresh <- parms$xa_fresh
@@ -47,6 +45,8 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   kl<- parms$kl  
   
   t_run <- parms$t_run
+                  
+  conc_fresh <- conc_fresh_fun(t + t_run)
   
   # Hard-wired settings
   temp_standard <- 298
@@ -85,8 +85,6 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
   CH4_emis_cum <- y[['CH4_emis_cum']]
 
   # pH and SO4-2
-  conc_fresh_SO4 <- SO4_fun(t + t_run)
-  conc_SO4 <- SO4/slurry_mass
   if (is.numeric(parms$pH) | is.data.frame(parms$pH)) {
     pH <- pH_fun(t + t_run)
   } else if (parms$pH == 'calc') {
@@ -173,7 +171,7 @@ function(t, y, parms, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
     isCOD = slurry_prod_rate * conc_fresh[['isCOD']] - isCOD / slurry_mass * slurry_rem_rate,
     ipFS  = slurry_prod_rate * conc_fresh[['ipFS']] - ipFS / slurry_mass * slurry_rem_rate,
     isFS  = slurry_prod_rate * conc_fresh[['isFS']] - isFS / slurry_mass * slurry_rem_rate,
-    SO4 = slurry_prod_rate * conc_fresh_SO4 - SO4 / slurry_mass * slurry_rem_rate - sum(rutsr) * COD_conv[['S']],
+    SO4 = slurry_prod_rate * conc_fresh[['SO4']] - SO4 / slurry_mass * slurry_rem_rate - sum(rutsr) * COD_conv[['S']],
     S2 = slurry_prod_rate * conc_fresh[['S2']] - S2 / slurry_mass * slurry_rem_rate + sum(rutsr) * COD_conv[['S']] - H2SEmissionRate,
     CH4_emis_cum = sum(rut[i_meth]) * COD_conv[['CH4']],
     CO2_emis_cum =  sum(rut[i_meth]) * COD_conv[['CO2_anaer']] + sum(rutsr) * COD_conv[['CO2_sr']] + respiration * COD_conv[['CO2_aer']],

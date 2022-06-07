@@ -1,4 +1,4 @@
-abm_variable <- function(days, delta_t, y, pars, warn, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
+abm_variable <- function(days, delta_t, y, pars, warn, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun) {
 
   # NTS: check to see what this is used for!
   pars$abm_regular <- FALSE
@@ -92,7 +92,7 @@ abm_variable <- function(days, delta_t, y, pars, warn, temp_fun = temp_fun, pH_f
       pars$t_run <- t_run
 
       # Call up ODE solver
-      out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+      out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun)
 
       # Extract new state variable vector from last row of lsoda output
       y <- out[nrow(out), 1:(length(y)) + 1]

@@ -1,4 +1,4 @@
-abm_regular <- function(days, delta_t, y, pars, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun) {
+abm_regular <- function(days, delta_t, y, pars, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun) {
 
   pars$abm_regular <- TRUE
   
@@ -67,7 +67,7 @@ abm_regular <- function(days, delta_t, y, pars, temp_fun = temp_fun, pH_fun = pH
 
     # Call up ODE solver
     #cat(t_rem, '\n')
-    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun)
 
     # Get number of microbial groups
     n_mic <- length(pars$qhat_opt)
@@ -114,7 +114,7 @@ abm_regular <- function(days, delta_t, y, pars, temp_fun = temp_fun, pH_fun = pH
         times <- seq(0, pars$rest_d, delta_t)
         parsr <- pars
         parsr$slurry_prod_rate <- 0
-        outr <- deSolve::lsoda(y = y, times = times, rates, parms = parsr, temp_fun = temp_fun, pH_fun = pH_fun, SO4_fun = SO4_fun)
+        outr <- deSolve::lsoda(y = y, times = times, rates, parms = parsr, temp_fun = temp_fun, pH_fun = pH_fun)
         # Extract new state variable vector from last row
         y <- outr[nrow(outr), 1:(length(y)) + 1]
         # Correct time in outr and combine with main output

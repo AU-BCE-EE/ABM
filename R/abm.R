@@ -51,7 +51,6 @@ abm <- function(
                   ),  # kl = mass transfer coefficient (liquid phase units) in m/d
   add_pars = NULL,
   startup = 0,
-  starting = NULL,
   approx_method_temp = 'linear',
   approx_method_pH = 'linear',
   approx_method_SO4 = 'linear',
@@ -63,7 +62,7 @@ abm <- function(
   # If startup repetitions are requested, repeat some number of times before returning results
   if (startup > 0) {
     out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,
-               mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0, starting = NULL,
+               mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0,
                approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, approx_method_SO4 = approx_method_SO4, 
                par_key = par_key, value = value, warn = warn)
 
@@ -71,7 +70,7 @@ abm <- function(
     for (i in 1:startup) {
       cat(i, 'x ')
 
-      # Pull starting *concentrations* only from previous sim
+      # Pull starting *concentrations* (inlcuding xa) only from previous sim
       if (value == 'all') {
         tso <- out$ts
       } else if (value == 'ts') {
@@ -80,14 +79,18 @@ abm <- function(
         stop('Value must be all or ts for startup > 0')
       }
 
-      # NTS: is this _par stuff needed now that starting argument has been updated?
-      man_pars$conc_init <- unlist(tso[nrow(tso), paste0(names(man_pars$conc_fresh), '_conc')])
-      names(man_pars$conc_init) <- names(man_pars$conc_fresh)
+      # Names need to deal with possible data frame for conc_fresh
+      cf_names <- names(man_pars$conc_fresh)
+      cf_names <- cf_names[!grepl('^time', cf_names)]
+
+      man_pars$conc_init <- unlist(tso[nrow(tso), paste0(cf_names, '_conc')])
+      names(man_pars$conc_init) <- cf_names
+
       grp_pars$xa_init <- unlist(tso[nrow(tso), paste0(grp_pars$grps, '_conc')])
       names(grp_pars$xa_init) <- grp_pars$grps
 
       out <- abm(days = days, delta_t = delta_t, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars,
-                 mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0, starting = tso,
+                 mic_pars = mic_pars, chem_pars = chem_pars, add_pars = add_pars, startup = 0, 
                  approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, approx_method_SO4 = approx_method_SO4, 
                  par_key = par_key, value = value, warn = warn)
     }
@@ -410,10 +413,6 @@ abm <- function(
   dat$dVSS <- dat$dpVS
   dat$dVS <- pars$COD_conv[['VS']] * dat$dCOD
 
-  # Conserve TAN
-  # NTS: Should add as state variable at least for evaporation later
-  #dat$TAN_conc <- pars$conc_fresh['TAN']
-
   # Caculate concentrations where relevant (NTS: g/kg????)
   mic_names <- pars$grps
   conc.names <-  c('NH4', 'NH3', 
@@ -439,6 +438,10 @@ abm <- function(
   conc_fresh <- conc_fresh_ns_fun(dat$time)
   names(conc_fresh) <- paste0(names(conc_fresh), '_conc_fresh')
   dat <- cbind(dat, conc_fresh)
+
+  # Conserve TAN
+  # NTS: Should add as state variable at least for evaporation later
+  dat$TAN_conc <- dat$TAN_conc_fresh
 
   # Calculate rates etc. for ouput, from state variables
   dat$rCH4 <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))

@@ -226,7 +226,11 @@ abm <- function(
   }
 
   # Apply conversion factors
-  pars$conc_fresh <- pars$conc_fresh * cf$conc
+  if (is.data.frame(pars$conc_fresh)) {
+    pars$conc_fresh[, -1] <- pars$conc_fresh[, -1] * cf$conc
+  } else {
+    pars$conc_fresh <- pars$conc_fresh * cf$conc
+  }
   pars$conc_init <- pars$conc_init * cf$conc
 
   pars$storage_depth <- pars$storage_depth * cf$depth
@@ -283,11 +287,14 @@ abm <- function(
   # Note that initial concentrations (in lagoon) have already experienced settling, so sf = 0
   # _ns is for not settled, for adding to output df
   # NTS: problem with conc_fresh_ns
-  #conc_fresh_ns <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = 0)
+  conc_fresh_ns <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = 0)
+  #conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = pars$sett_frac)
   pars$conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = pars$sett_frac)
 
   # Create function for time-variable conc_fresh
+  sel_names <- c('dpCOD', 'dpCODsed', 'ipCOD', 'ipCODsed', 'dsCOD', 'isCOD', 'ipFS', 'isFS', 'SO4', 'S2', 'TAN')
   if (is.data.frame(pars$conc_fresh)) {
+
     cffuns <- list()
     ttime <- pars$conc_fresh$time
     for (i in names(pars$conc_fresh)[-1]) {
@@ -296,21 +303,48 @@ abm <- function(
                                yleft = yin[1], yright = yin[length(yin)], 
                                rule = 2)
     }
-    conc_fresh_fun <- function(x) {
+    conc_fresh_sel_fun <- function(x) {
+      out <- data.frame(time = x)
+      for (i in sel_names) {
+        out[, i] <- cffuns[[i]](x)
+      }
+      out$time <- NULL
+      if (length(x) == 1) {
+        return(unlist(out))
+      } else {
+        return(out)
+      }
+    }
+
+    cffuns <- list()
+    ttime <- conc_fresh_ns$time
+    for (i in names(conc_fresh_ns)[-1]) {
+      yin <- conc_fresh_ns[, i]
+      cffuns[[i]] <- approxfun(ttime, yin, method = 'linear',
+                               yleft = yin[1], yright = yin[length(yin)], 
+                               rule = 2)
+    }
+    conc_fresh_ns_fun <- function(x) {
       out <- data.frame(time = x)
       for (i in names(cffuns)) {
         out[, i] <- cffuns[[i]](x)
       }
       out$time <- NULL
-      return(unlist(out))
+      if (length(x) == 1) {
+        return(unlist(out))
+      } else {
+        return(out)
+      }
     }
+
   } else {
-    conc_fresh_fun <- function(x) return(pars$conc_fresh)
+    conc_fresh_sel_fun <- function(x) return(pars$conc_fresh)
+    conc_fresh_ns_fun <- function(x) return(conc_fresh_ns)
   }
 
   # Pull initial concentrations from fresh if missing
   if (is.na(pars$conc_init[1])) {
-    pars$conc_init <- conc_fresh_fun(0)
+    pars$conc_init <- conc_fresh_sel_fun(0)
   } else {
     pars$conc_init <- VS2COD(pars$conc_init, cf = pars$COD_conv[['VS']], sf = 0)
   }
@@ -346,10 +380,10 @@ abm <- function(
   # Figure out type of run - with constant rates or not
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun)
+    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, conc_fresh_sel_fun = conc_fresh_sel_fun, temp_fun = temp_fun, pH_fun = pH_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- abm_variable(days = days, delta_t = delta_t, y = y, pars = pars, conc_fresh_fun = conc_fresh_fun, warn = warn, temp_fun = temp_fun, pH_fun = pH_fun)
+    dat <- abm_variable(days = days, delta_t = delta_t, y = y, pars = pars, conc_fresh_sel_fun = conc_fresh_sel_fun, warn = warn, temp_fun = temp_fun, pH_fun = pH_fun)
   } 
 
   # Add slurry removal rate to output
@@ -401,12 +435,10 @@ abm <- function(
     stop('Problem with pH input (bee721)')
   }
 
-  # Add fresh concentrations
-  # NTS: Simpler now that input is vector not list
-  # NTS: need to fix and add back in!
-  #conc_fresh <- conc_fresh_ns
-  #names(conc_fresh) <- paste0(names(conc_fresh), '_conc_fresh')
-  #dat <- cbind(dat, t(conc_fresh))
+  # Add fresh concentrations (before settling, *sed = 0, ns = not settled)
+  conc_fresh <- conc_fresh_ns_fun(dat$time)
+  names(conc_fresh) <- paste0(names(conc_fresh), '_conc_fresh')
+  dat <- cbind(dat, conc_fresh)
 
   # Calculate rates etc. for ouput, from state variables
   dat$rCH4 <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
@@ -418,22 +450,17 @@ abm <- function(
   dat$CO2_flux <- dat$CO2_emis_rate / pars$area
   ## NTS: Add others, e.g., mu
 
-  # Cut startup period before calculating cumulative flows
-  dat <- dat[dat$time > startup, ]
+  # Calculate COD/VS flows
+  # First concentrations in g/kg
+  dat$dCOD_conc_fresh <- dat$dsCOD_conc_fresh + dat$dpCOD_conc_fresh + sum(pars$xa_fresh)
+  dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
 
-  ## Calculate COD/VS flows
-  ## First concentrations in g/kg
-  browser()
-  #dat$dCOD_conc_fresh <- pars$conc_fresh['dsCOD'] + pars$conc_fresh['dpCOD'] + sum(pars$xa_fresh)
-  #dat$COD_conc_fresh <- pars$conc_fresh['COD']
-  #dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
-
-  ## Loading 
-  ## Flows in g/d
-  #dat$COD_load_rate <- dat$COD_conc_fresh * dat$slurry_prod_rate
-  #dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
-  #dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
-  #dat$VS_load_rate <- dat$VS_conc_fresh * dat$slurry_prod_rate
+  # Loading 
+  # Flows in g/d
+  dat$COD_load_rate <- dat$COD_conc_fresh * dat$slurry_prod_rate
+  dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
+  dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
+  dat$VS_load_rate <- dat$VS_conc_fresh * dat$slurry_prod_rate
 
   # Cumulative flow in g
   dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
@@ -467,8 +494,10 @@ abm <- function(
   dat$slurry_depth <- dat$slurry_mass / pars$dens / pars$area
 
   # Convert units back to inputs
+  # NTS: add mass conversion too!
   concnames <- grep('conc', names(dat), value = TRUE)
   # Exclude microbial biomass
+  # NTS: why????
   concnames <- grep('^[^ms]', concnames, value = TRUE)
   dat[, concnames] <- dat[, concnames] / cf$conc
   dat[, grep('area', names(dat))] <- dat[, grep('area', names(dat))] / cf$area

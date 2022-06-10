@@ -1,5 +1,5 @@
 rates <-
-function(t, y, parms, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun) {
+function(t, y, parms, conc_fresh_sel_fun, temp_fun, pH_fun) {
   
   # Hard-wire NH4+ activity coefficient
   g_NH4 <- 0.7
@@ -46,7 +46,7 @@ function(t, y, parms, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_f
   
   t_run <- parms$t_run
                   
-  conc_fresh <- conc_fresh_fun(t + t_run)
+  conc_fresh <- conc_fresh_sel_fun(t + t_run)
   
   # Hard-wired settings
   temp_standard <- 298

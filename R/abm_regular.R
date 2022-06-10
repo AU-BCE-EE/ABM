@@ -1,4 +1,4 @@
-abm_regular <- function(days, delta_t, y, pars, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun) {
+abm_regular <- function(days, delta_t, y, pars, conc_fresh_sel_fun, temp_fun, pH_fun) {
 
   pars$abm_regular <- TRUE
   
@@ -67,7 +67,7 @@ abm_regular <- function(days, delta_t, y, pars, conc_fresh_fun = conc_fresh_fun,
 
     # Call up ODE solver
     #cat(t_rem, '\n')
-    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, conc_fresh_fun = conc_fresh_fun, temp_fun = temp_fun, pH_fun = pH_fun)
+    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, conc_fresh_sel_fun = conc_fresh_sel_fun, temp_fun = temp_fun, pH_fun = pH_fun)
 
     # Get number of microbial groups
     n_mic <- length(pars$qhat_opt)

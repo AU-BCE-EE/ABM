@@ -289,10 +289,14 @@ abm <- function(
   # Sort out VS/COD concentrations
   # Note that initial concentrations (in lagoon) have already experienced settling, so sf = 0
   # _ns is for not settled, for adding to output df
-  # NTS: problem with conc_fresh_ns
+  conc_fresh_orig <- pars$conc_fresh
   conc_fresh_ns <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = 0)
   #conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = pars$sett_frac)
   pars$conc_fresh <- VS2COD(pars$conc_fresh, cf = pars$COD_conv[['VS']], sf = pars$sett_frac)
+
+  if (any(pars$conc_fresh < 0) | any(conc_fresh_ns < 0)) {
+    stop('Some calculated concentrations are below 0 at the start--check conc_fresh values.')
+  }
 
   # Create function for time-variable conc_fresh
   sel_names <- c('dpCOD', 'dpCODsed', 'ipCOD', 'ipCODsed', 'dsCOD', 'isCOD', 'ipFS', 'isFS', 'SO4', 'S2', 'TAN')
@@ -529,12 +533,17 @@ abm <- function(
   # Replace . in names with _
   names(dat) <- gsub('\\.', '_', names(dat))
 
+  # Extract conc_fresh components to use as input
+  nn <- unique(c('time', names(conc_fresh_orig)))
+  nn[-1] <- paste0(nn[-1], '_conc')
+  concs <- dat[, c(nn)]
+
   # Return results
   # Average only
   if (substring(value, 1, 3) == 'sum') return(summ)
   # ts = time series
   if (value == 'ts') return(dat)
   # Or everything
-  return(list(pars = pars, ts = dat, summ = summ))
+  return(list(pars = pars, ts = dat, summ = summ, concs = concs))
 
 }

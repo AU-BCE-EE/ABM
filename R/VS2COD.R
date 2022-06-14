@@ -1,6 +1,6 @@
 # Sorts out fresh and initial concentrations based on TS/VS inputs
 
-VS2COD <- function(x, cf, sf = 0, digits = 4, ll = 1E-6) {
+VS2COD <- function(x, cf, sf = 0, digits = 6) {
 
   # cf = VS:COD conversion factor
   # sf = settling fraction
@@ -23,12 +23,12 @@ VS2COD <- function(x, cf, sf = 0, digits = 4, ll = 1E-6) {
   x[['isFS']] <- x[['iFS']] - x[['ipFS']] 
 
   # Calculate settling component of degradable (sediment layer)
-  x[['dpVS']] <- (1 - sf) * x[['dpVS']] 
   x[['dpVSsed']] <- sf * x[['dpVS']] 
-  x[['ipVS']] <- (1 - sf) * x[['ipVS']] 
+  x[['dpVS']] <- (1 - sf) * x[['dpVS']] 
   x[['ipVSsed']] <- sf * x[['ipVS']] 
-  x[['ipFS']] <- (1 - sf) * x[['ipFS']] 
+  x[['ipVS']] <- (1 - sf) * x[['ipVS']] 
   x[['ipFSsed']] <- sf * x[['ipFS']] 
+  x[['ipFS']] <- (1 - sf) * x[['ipFS']] 
 
   # Convert to COD
   x[['COD']]   <-    x[['VS']]      / cf
@@ -42,7 +42,8 @@ VS2COD <- function(x, cf, sf = 0, digits = 4, ll = 1E-6) {
   x[['isCOD']] <-    x[['isVS']]    / cf
 
   x <- signif(x, digits)
-  x[abs(x) < ll] <- 0
+  x[abs(x) < min(abs(x))/10^(digits - 3)] <- 0
+  x[abs(x) < 1E-4] <- 0
 
   return(x)
 

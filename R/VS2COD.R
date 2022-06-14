@@ -1,6 +1,6 @@
 # Sorts out fresh and initial concentrations based on TS/VS inputs
 
-VS2COD <- function(x, cf, sf = 0) {
+VS2COD <- function(x, cf, sf = 0, digits = 4, ll = 1E-6) {
 
   # cf = VS:COD conversion factor
   # sf = settling fraction
@@ -40,6 +40,9 @@ VS2COD <- function(x, cf, sf = 0) {
   x[['sCOD']]  <-    x[['sVS']]     / cf
   x[['dsCOD']] <-    x[['dsVS']]    / cf
   x[['isCOD']] <-    x[['isVS']]    / cf
+
+  x <- signif(x, digits)
+  x[abs(x) < ll] <- 0
 
   return(x)
 

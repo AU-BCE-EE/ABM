@@ -323,18 +323,18 @@ abm <- function(
       }
     }
 
-    cffuns <- list()
+    cffunsns <- list()
     ttime <- conc_fresh_ns$time
     for (i in names(conc_fresh_ns)[-1]) {
       yin <- conc_fresh_ns[, i]
-      cffuns[[i]] <- approxfun(ttime, yin, method = 'linear',
+      cffunsns[[i]] <- approxfun(ttime, yin, method = 'linear',
                                yleft = yin[1], yright = yin[length(yin)], 
                                rule = 2)
     }
     conc_fresh_ns_fun <- function(x) {
       out <- data.frame(time = x)
-      for (i in names(cffuns)) {
-        out[, i] <- cffuns[[i]](x)
+      for (i in names(cffunsns)) {
+        out[, i] <- cffunsns[[i]](x)
       }
       out$time <- NULL
       if (length(x) == 1) {

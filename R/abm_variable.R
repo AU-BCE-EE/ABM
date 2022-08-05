@@ -38,7 +38,7 @@ abm_variable <- function(days, delta_t, y, pars, warn, conc_fresh_sel_fun, temp_
   slurry_prod_rate_t[slurry_prod_rate_t < 0] <- 0
   slurry_prod_rate_t[!is.finite(slurry_prod_rate_t)] <- 0
 
-  # Note about time: 1) All simulations start at 0, 2) days must be at least as long as mass data
+  # Note about time: 1) All simulations start at 0, 2) mass data is trimmed to match days
   add_int <- 0
   t_1 <- NULL
   t_end <- NULL
@@ -55,6 +55,10 @@ abm_variable <- function(days, delta_t, y, pars, warn, conc_fresh_sel_fun, temp_
     t_end <- days
     slurry_prod_rate_t <- c(slurry_prod_rate_t, 0)
     removals <- c(removals, 0)
+  }
+
+  if (pars$slurry_mass[nrow(pars$slurry_mass), 'time'] > days) {
+    pars$slurry_mass <- pars$slurry_mass[pars$slurry_mass$time <= days, ]
   }
 
   # Fill in slurry_prod_rate (will be updated for each iteration in loop)

@@ -9,17 +9,11 @@ abm_regular <- function(days, delta_t, y, pars, conc_fresh_sel_fun, temp_fun, pH
     pars$slurry_mass <- 1E-10
   }
 
-  # Continue sorting out intervals
-  i <- 0
-  t_int <- 0
-
-  # Continute . . .
-  # Each interval is either 1) the fixed empty_int 
+  # Sorting out intervals
+  t_int <- c(rep(empty_int, days %/% empty_int), days %% empty_int)
 
   # Number of empty intervals
   n_int <- length(t_int)
-
-  ### NTS: sort out starting in abm.R
 
   # Empty data frame for holding results
   dat <- NULL

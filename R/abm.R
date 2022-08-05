@@ -6,13 +6,9 @@ abm <- function(
                   slurry_mass = 0,          # Initial slurry mass (kg)
                   storage_depth = 3,        # Storge structure depth, assued to be maximum slurry depth (m)
                   resid_depth = 0.2,        # Residual slurry depth after emptying (m)
-                  floor_area = 11,          # NTS: needs to be defined
                   area = 11,                # Area (assume vertical sides) (m2)
                   empty_int = 35,           # (d)
                   temp = 20,                # (deg. C)
-                  wash_water = 0,           # (kg) 
-                  wash_int = NA,            # (d)
-                  rest_d = 0,               # (d)
                   xa_retent = 1,            # Fraction of active biomass in sediment (versus suspended)
                   sett_frac = 0,            # Fixed fraction that settles in the lagoon
                   mix = TRUE),              # Mix before emptying event?
@@ -247,7 +243,6 @@ abm <- function(
   }
   pars$slurry_rem_rate <- pars$slurry_rem_rate * cf$flow
 
-  pars$floor_area <- pars$floor_area * cf$area
   pars$area <- pars$area * cf$area
 
   # Temperature trickier

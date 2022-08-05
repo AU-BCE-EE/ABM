@@ -61,11 +61,17 @@ abm_regular <- function(days, delta_t, y, pars, conc_fresh_sel_fun, temp_fun, pH
         y['slurry_mass'] <- max(resid_frac * y['slurry_mass'], 1E-10)
 
         if (pars$mix) {
+          # Note invert argument below
           empty_names <- grep('^xa\\.|cum|slurry_mass', names(y), value = TRUE, invert = TRUE)
+          # If lagoon contents are mixed microbial biomass can still be retained beyond resid_frac
+          # If this isn't desired, set resid_enrich = 0
           resid_xa <- logistic(logit(resid_frac) + pars$resid_enrich)
           y[1:n_mic] <- resid_xa * y[1:n_mic]
         } else {
+          # Note invert argument below
           empty_names <- grep('^xa\\.|cum|slurry_mass|sed$', names(y), value = TRUE, invert = TRUE)
+          # Without mixing, microbial bioass is assumed to be completely sedimented and is completely retained
+          # All sediment is too of course
         }
         y[empty_names] <- sapply(y[empty_names], function(x) resid_frac * x) # apply resid_frac to other state variables
 

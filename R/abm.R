@@ -19,8 +19,8 @@ abm <- function(
                   pH = 7, dens = 1000),     # SO4 cannot be data frame
   grp_pars = list(grps = c('m1','m2','m3', 'sr1'),
                   yield = c(default = 0.05, sr1 = 0.065),
-                  xa_fresh = c(sr1 = 0, default = 0.02), # (g/kg)?
-                  xa_init = c(sr1 = 0, default = 0.02),  # (g/kg)?
+                  xa_fresh = c(sr1 = 0, default = 0.02), # (g/kg)
+                  xa_init = c(sr1 = 0, default = 0.02),  # (g/kg)
                   decay_rate = c(all = 0.02),            # (1/d)
                   ks_coefficient = c(default = 3, sr1 = 1.2),
                   resid_enrich = c(all = 0.1),
@@ -214,6 +214,7 @@ abm <- function(
 
   if (pars$unts$mass == 't') {
     cf$mass <- 1 / 1.102E-3
+    cf$mass.g <- 1 / 1.102E-3 * 1000
   } else if (pars$unts$mass != 'kg') {
     stop('Error in input for unts$mass')
   }
@@ -231,6 +232,9 @@ abm <- function(
     pars$conc_fresh <- pars$conc_fresh * cf$conc
   }
   pars$conc_init <- pars$conc_init * cf$conc
+  # Include microbial biomass concentrations
+  pars$xa_init <- pars$xa_init * cf$conc
+  pars$xa_fresh <- pars$xa_fresh * cf$conc
 
   pars$storage_depth <- pars$storage_depth * cf$depth
   pars$resid_depth <- pars$resid_depth * cf$depth 
@@ -371,7 +375,7 @@ abm <- function(
   y <- c(xa = pars$xa_init, 
          slurry_mass = 1, 
          unlist(pars$conc_init[c('dpCOD', 'dpCODsed', 'ipCOD', 'ipCODsed', 'dsCOD', 'isCOD', 'ipFS', 'isFS', 'SO4', 'S2')])) # NTS: unlist prob not needed now that conc_fresh is vector
-  # Convert to mass (g??)
+  # Convert to mass (g)
   y <- y * slurry_mass_init
 
   # Add 0 for cumulative emission
@@ -498,15 +502,16 @@ abm <- function(
   # Convert units back to inputs
   # NTS: add mass conversion too!
   concnames <- grep('conc', names(dat), value = TRUE)
-  # Exclude microbial biomass
-  # NTS: why????
-  concnames <- grep('^[^ms]', concnames, value = TRUE)
+  # Includ microbial biomass (otherwise use concnames <- grep('^[^ms]', concnames, value = TRUE))
   dat[, concnames] <- dat[, concnames] / cf$conc
   dat[, grep('area', names(dat))] <- dat[, grep('area', names(dat))] / cf$area
   dat[, grep('depth', names(dat))] <- dat[, grep('depth', names(dat))] / cf$depth
   dat[, 'slurry_prod_rate'] <- dat[, 'slurry_prod_rate'] / cf$flow
   dat[, 'slurry_rem_rate'] <- dat[, 'slurry_rem_rate'] / cf$flow
   dat[, 'slurry_mass'] <- dat[, 'slurry_mass'] / cf$mass
+  mcols <- c('TS', 'FS', 'VS', 'dsVS', 'dpVS', 'dVSS', 'TSS', 'VSS', 'COD', 'dCOD', 'dpCOD', 'dpCODsed', 'ipCODsed', 'ipCOD', 'dsCOD', 'isCOD', 'pCOD', 'sCOD', 'NH4', 'NH3', 'S2', 'SO4', 'm1', 'm2', 'm3', 'sr1') 
+  dat[, mcols] <- dat[, mcols] / cf$mass.g
+  dat[, 'CH4_emis_rate'] <- dat[, 'CH4_emis_rate'] / cf$mass.g
   if (pars$unts$temp == 'F') {
     dat$temp <- dat$temp * 9 / 5 + 32
   } 
@@ -533,12 +538,21 @@ abm <- function(
   nn[-1] <- paste0(nn[-1], '_conc')
   concs <- dat[, c(nn)]
 
+  # Exclude some less important columns from output
+  # NTS: include VS loading? COD loading?
+  tser <- dat[, c('time', 'temp', 'slurry_mass', 'slurry_depth', 'slurry_prod_rate', 'slurry_rem_rate',
+                  'TS_conc', 'FS_conc', 'VS_conc', 'dsVS_conc', 'dpVS_conc', 'dVSS_conc', 'TSS_conc', 'VSS_conc', 'COD_conc', 'dCOD_conc', 'dpCOD_conc', 'ipCOD_conc', 'dsCOD_conc', 'isCOD_conc', 'pCOD_conc', 'sCOD_conc', 'TAN_conc', 'NH4_conc', 'NH3_conc', 'S2_conc', 'SO4_conc',
+                  'TS', 'FS', 'VS', 'dsVS', 'dpVS', 'dVSS', 'TSS', 'VSS', 'COD', 'dCOD', 'dpCOD', 'dpCODsed', 'ipCODsed', 'ipCOD', 'dsCOD', 'isCOD', 'pCOD', 'sCOD', 'NH4', 'NH3', 'S2', 'SO4',
+                  'm1', 'm2', 'm3', 'sr1', 
+                  'm1_conc', 'm2_conc', 'm3_conc', 'sr1_conc', 
+                  'CH4_emis_rate', 'CH4_cum_f_COD', 'CH4_rate_f_COD')]
+
   # Return results
   # Average only
   if (substring(value, 1, 3) == 'sum') return(summ)
   # ts = time series
   if (value == 'ts') return(dat)
   # Or everything
-  return(list(pars = pars, ts = dat, summ = summ, concs = concs))
+  return(list(pars = pars, ts = tser, summ = summ, concs = concs))
 
 }

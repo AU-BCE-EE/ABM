@@ -218,6 +218,9 @@ function(
   # Cut startup period before calculating cumulative flows
   dat <- dat[dat$time > startup, ]
 
+  # Subtract cumulative values that already exist (CH4 emission)
+  dat[, grepl('_cum', names(dat))] <- dat[, grepl('_cum', names(dat))] - dat[rep(1, nrow(dat)), grepl('_cum', names(dat))]
+
   # Calculate COD/VS flows
   # First concentrations in g/kg
   dat$dCOD_conc_fresh <- pars$conc_fresh$VFA + pars$conc_fresh$Sp + sum(pars$xa_fresh)

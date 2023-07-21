@@ -121,7 +121,7 @@
     out$time <- out$time + t_run
   
     # Add results to earlier ones
-    dat <- bind_rows(dat, out)
+    dat <- dplyr::bind_rows(dat, out)
     
     # Update time remaining and time run so far
     t_rem <- t_rem - t_call - wash[i] * rest_d

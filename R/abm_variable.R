@@ -229,7 +229,7 @@ function(days, delta_t, times, y, pars, warn, temp_C_fun = temp_C_fun, temp_air_
     out[nrow(out), names(y.eff)] <- y.eff
  
     # Add results to earlier ones
-    dat <- bind_rows(dat, out)
+    dat <- dplyr::bind_rows(dat, out)
     
     # Update time remaining and total time run so far
     t_rem <- t_rem - t_call

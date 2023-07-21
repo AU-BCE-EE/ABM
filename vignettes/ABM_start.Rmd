@@ -180,17 +180,11 @@ plot(CH4_emis_rate ~ time, data = out1, type = 'l', ylab = 'Emission rate (g/d)'
 Microbial biomass (g) is given in columns with names that match those used for the names of the groups (defaults shown below, set within the `grp_pars` argument--see Section 6).
 
 ```{r}
-matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'm4', 'm5')], 
+matplot(out1$time, out1[, nn <- c('m0','m1','m2')], 
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (g)')
 legend('topleft', nn, col = 1:6, lty = 1)
 ```
 
-Because of a default temperature of 23&deg (NTS: why so high?) methanogen `m2` dominates under default conditions.
-Biomass concentrations (g per kg of slurry) may be more informative.
-
-```{r}
-plot(m3_conc ~ time, data = out1, type = 'l')
-```
 
 Dynamics in production of CH~4~ are often related to VFA accumulation, and VFA mass (g) and concentration (g/kg) can be extracted.
 
@@ -230,7 +224,7 @@ To simulate a lower pH then, the following call could be used:
 
 ```{r}
 out2 <- abm(365, 1, man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, 
-                                                       VFA = 4.2, Sp = 65, COD = 160), 
+                                                       VFA = 4.2, VSd = 65), 
                                      pH = 6))
 ```
 

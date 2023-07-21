@@ -124,11 +124,11 @@ Because all output variables seem stable after two years, we might exclude the f
 Furthermore, we can also focus on total emission in the last year.
 
 ```{r}
-out0a <- abm(3*365, add_pars = list(temp_C = temp_dat, max_slurry_mass = 202777, slurry_mass = 0.3 * 202777), startup = 730, value = 'summ')
+out0a <- abm(3*365, add_pars = list(temp_C = temp_dat, storage_depth = 4, area = 1000, slurry_mass = 0.3 * 4 * 1000, empty_int = 182.5), startup = 730, value = 'summ')
 out0a
 ```
 
-Results show total annual emission of about 7 t CH~4~, representing 14% of availablve COD.
+Results show total annual emission of about 10 t CH~4~, representing 31% of available COD.
 
 ```{r}
 out0a['CH4_emis_cum']
@@ -136,15 +136,15 @@ out0a['f_COD_CH4']
 ```
 
 How much might acidification reduce emission?
-We can easily make a comparison to a scenario with pH reduced to 5.5, with everything else the same.
+We can easily make a comparison to a scenario with pH reduced to 5.5, with everything else the same.pH is indirectly affecting methane because reduced pH increase concentration of toxic H2S, and protonated VFAs.
 
 
 ```{r}
-out0b <- abm(3*365, add_pars = list(temp_C = temp_dat, max_slurry_mass = 202777, slurry_mass = 0.3 * 202777, pH = 5.5), startup = 730, value = 'summ')
+out0b <- abm(3*365, add_pars = list(temp_C = temp_dat, storage_depth = 4, area = 1000, slurry_mass = 0.3 * 4 * 1000, empty_int = 182.5, pH = 5.5), startup = 730, value = 'summ')
 out0b
 ```
 
-The predicted reduction is 99%.
+The predicted reduction is 98.6%.
 
 ```{r}
 1 - out0b['CH4_emis_cum'] / out0a['CH4_emis_cum']

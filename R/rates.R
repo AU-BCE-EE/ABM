@@ -133,14 +133,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, temp_air_C_fun = temp_ai
       
       cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib
       
-      # How to handle acidification? Ideally it should be cum_inhib still.
-      SO4_inhib <- SO4_inhibition_fun(sulfate/slurry_mass)
-    
-      #if(conc_fresh[['sulfate']] > 0.3){
-      #  cum_inhib[i_meth] <- H2S_inhib * SO4_inhib
-      #  cum_inhib[i_sr] <- H2S_inhib * SO4_inhib
-      #}
-      
     # Henrys constant temp dependency
     H.NH3 <- 1431 * 1.053^(293 - temp_K)
     

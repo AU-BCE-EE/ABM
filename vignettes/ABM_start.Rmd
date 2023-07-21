@@ -55,7 +55,7 @@ for (i in ff) source(i)
 A demonstration is presented in this section to show what the abm() function can do.
 For a more incremental introduction to the function, see the following sections.
 
-Let's assume a cattle farm produces manure at a rate of 1000 kg (fresh mass) per day.
+Let's assume a cattle farm produces manure at a rate of 10000 kg (fresh mass) per day.
 Manure composition is typical, with volatile solids (VS) ca. of 11% of total mass, and degradability matching default values.
 In our example, manure is transferred to an outdoor storage tank every day, and we can ignore any minor emission that occurs from the small quantity of fresh manure in the barn.
 Further, let's assume we have measurements that show the temperature of stored manure ranges from a low of 3&degC in January to 22&degC in August, following the values shown below. 
@@ -66,7 +66,7 @@ plot(temp_C ~ time, data = temp_dat, type = 'l')
 ```
 
 The slurry tank is emptied twice per year, in March and September.
-Considering that upon "emptying", 0.2 m of slurry is left in the tank and the storage height is 4 m.
+Considering that upon "emptying", 0.2 m of slurry is left in the tank, the storage height is 4 m and the surface area of the storage tank is 1000 m2. We assume that we start with the tank being 30% full. 
 
 We'll duplicate the temperature data so we can simulate multiple years.
 
@@ -78,12 +78,16 @@ temp_dat <- rbind(temp_dat, t2, t3)
 ```
 
 
-```{r}
-out0 <- abm(3*365, add_pars = list(temp_C = temp_dat, storage_depth = 4, area = 1000, slurry_mass = 0.3 * 202777))
-```
 
-Slurry mass increases at a constant rate until reaching storage capacity.
-In this simulation, 10% is assumed to be left behind.
+```{r}
+out0 <- abm(3*365, add_pars = list(temp_C = temp_dat, slurry_prod_rate = 10000, storage_depth = 4, 
+                                   area = 1000, empty_int = 182.5, 
+                                   slurry_mass = 0.3 * 1000 * 4))
+```
+One could also have speficied a constant temperature by replacing "temp_C = temp_dat" with "temp_C = 20" in the "add_pars" argument. 
+
+Slurry mass increases at a constant rate until it is emptied after 182.5 days.
+In this simulation, 0.2 m is assumed to be left behind. A warning will be given manure production and empty intervals result in overfilling of the storage tank. 
 Temperature exactly follows the curve shown above (with interpolation as needed).
 
 ```{r}
@@ -91,15 +95,15 @@ plot(slurry_mass/1000 ~ time, data = out0, type = 'l', xlab = 'Time (d)', ylab =
 plot(temp_C ~ time, data = out0, type = 'l', xlab = 'Time (d)', ylab = 'Slurry mass (t)')
 ```
 
-What is the predicted respons of methanogen populations?
+What is the predicted response of methanogen populations?
 
 ```{r}
-matplot(out0$time, out0[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'm4_conc', 'm5_conc')], 
-        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (g)')
+matplot(out0$time, out0[, nn <- c('m0','m1','m2')]/1000, 
+        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (kg)')
 legend('topleft', nn, col = 1:6, lty = 1)
 ```
 
-We see a shift away from the most cold-tolerant (`m1`, 18&degC optimum) to groups with higher optima (especially `m2`, 28&degC optimum) as the slurry warms, and the reverse during cooling.
+We see a shift away from the most cold-tolerant (`m0` and `m1`, 18&degC optimum) to groups with higher optima (especially `m2`, 28&degC optimum) as the slurry warms, and the reverse during cooling.
 
 Methane production depends on these populations, but also available substrate and hydrolysis rate (itself temperature-dependent).
 Particulate substrate, in turn, depends on the quanity of slurry in the storage, but also prior consumption.

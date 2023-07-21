@@ -1,6 +1,6 @@
 ---
 title: "Getting Started with the ABM Package in R"
-author: "Sasha D. Hafner and Frekerik Dalby"
+author: "Sasha D. Hafner and Frederik Dalby"
 date: "`r Sys.Date()`"
 fig_width: 6 
 fig_height: 4 

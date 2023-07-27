@@ -36,7 +36,6 @@ devtools::install_github('AU-BCE-EE/ABM', build_vignettes = FALSE)
 And to use the ABM model, the package must be loaded.
 
 ```{r,eval= TRUE}
-library(dplyr)
 library(ABM)
 ```
 

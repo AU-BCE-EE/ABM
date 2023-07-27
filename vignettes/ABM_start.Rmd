@@ -54,35 +54,29 @@ for (i in ff) source(i)
 A demonstration is presented in this section to show what the abm() function can do.
 For a more incremental introduction to the function, see the following sections.
 
-Let's assume a cattle farm produces manure at a rate of 10000 kg (fresh mass) per day.
-Manure composition is typical, with volatile solids (VS) ca. of 11% of total mass, and degradability matching default values.
-In our example, manure is transferred to an outdoor storage tank every day, and we can ignore any minor emission that occurs from the small quantity of fresh manure in the barn.
-Further, let's assume we have measurements that show the temperature of stored manure ranges from a low of 3&degC in January to 22&degC in August, following the values shown below. 
+First we will start with a demonstration using the default input parameters, which reflect manure production in a pig-house with 1000 finisher growing pigs. In-house slurry pits are 0.6 m deep and the slurry is flushed out of the pig-house every 28 days, leaving 5 cm of residual slurry inside the in-house slurry pits. The slurry temperature is 20&degC. The amount of degradable VS content of raw pig manure is set to 75 gCOD/kg manure (feces + urine). 
+
+To predict in-house manure methane emission we can make the following call, specifying that we want to run the model for 365 days 
 
 ```{r}
-temp_dat <- data.frame(time = c(1, 50, 190, 240, 290, 315, 365), temp_C = c(8, 9, 26, 28, 26, 9, 9)) 
-plot(temp_C ~ time, data = temp_dat, type = 'l')
+out0 <- abm(365) # run the simulation for 365 days
 ```
-
-The slurry tank is emptied twice per year, in March and September.
-Considering that upon "emptying", 0.2 m of slurry is left in the tank, the storage height is 4 m and the surface area of the storage tank is 1000 m2. We assume that we start with the tank being 30% full. 
-
-We'll duplicate the temperature data so we can simulate multiple years.
-
+¨
+Lets take a look at the output 
 ```{r}
-t3 <- t2 <- temp_dat
-t2$time <- t2$time  + 365
-t3$time <- t3$time + 730
-temp_dat <- rbind(temp_dat, t2, t3)
+line_colors <- c('red', 'blue', 'green')
+matplot(out0$time, out0[, nn <- c('m0','m1','m2')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Microbial biomass (kg)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
+       title = "Microbial biomass", cex = 0.8)
+
+matplot(out0$time, out0[, nn <- c('CH4_emis_rate', 'CO2_emis_rate', 'NH3_emis_rate')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Emission rate (kg/day)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
+       title = "Emission rates", cex = 0.8)
+
 ```
 
-
-
-```{r}
-out0 <- abm(3*365, add_pars = list(temp_C = temp_dat, slurry_prod_rate = 10000, storage_depth = 4, 
-                                   area = 1000, empty_int = 182.5, 
-                                   slurry_mass = 0.3 * 1000 * 4))
-```
 One could also have speficied a constant temperature by replacing "temp_C = temp_dat" with "temp_C = 20" in the "add_pars" argument. 
 
 Slurry mass increases at a constant rate until it is emptied after 182.5 days.

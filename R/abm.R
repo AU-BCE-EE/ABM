@@ -3,15 +3,15 @@ abm <- function(
   days = 365,                                # Number of days to run
   delta_t = 1,                               # Time step for output
   times = NA,
-  wthr_pars = list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 20),
+  wthr_pars = list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10),
   evap_pars = list(evap = 0.5 * et(temp_C = wthr_pars$temp_air_C, pres_kpa = wthr_pars$pres_kpa, rs = wthr_pars$rs)),                # mm/d
-  mng_pars = list(slurry_prod_rate = 1000,   # kg/d
-                  slurry_mass = 1000,           # Initial slurry mass (kg) NTS: convert to depth??
-                  storage_depth = 4,         # Storge structure depth, assued to be maximum slurry depth (m)
-                  resid_depth = 0.2,         # Residual slurry depth after emptying (m)
-                  floor_area = 11,           # Currently for NH3 loss from barn floor (nothing to do with pit/tank floor)
-                  area = 11,                 # Area (assume vertical sides) (m2)
-                  empty_int = 35,            # (d)
+  mng_pars = list(slurry_prod_rate = 5500,   # kg/d
+                  slurry_mass = 39000,           # Initial slurry mass (kg) NTS: convert to depth??
+                  storage_depth = 0.6,         # Storge structure depth, assued to be maximum slurry depth (m)
+                  resid_depth = 0.05,         # Residual slurry depth after emptying (m)
+                  floor_area = 650,           # Currently for NH3 loss from barn floor (nothing to do with pit/tank floor)
+                  area = 650,                 # Area (assume vertical sides) (m2)
+                  empty_int = 28,            # (d)
                   temp_C = 20,
                   wash_water = 0,            
                   wash_int = NA,
@@ -19,7 +19,7 @@ abm <- function(
                   cover = NA,
                   resid_enrich = 0.9,
                   slopes = c(urea = NA, slurry_prod_rate = NA),
-                  scale = c(ks_coefficient = 1.170719751, qhat_opt = 0.316190792, xa_fresh = 1, yield = 1, alpha_opt = 2.477011426)),
+                  scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
   man_pars = list(conc_fresh = list(sulfide = 0.01, urea = 2.4, sulfate = 0.2, TAN = 0.6, starch = 0, 
                                     VFA = 2.83, xa_dead = 0, CF = 0, CP = 0, RFd = 0, iNDF = 15, VSd = 75, VSd_A = 44.4, VSnd_A = 20, ash = 15), pH = 7, dens = 1000),
   init_pars = list(conc_init = man_pars$conc_fresh),
@@ -28,8 +28,8 @@ abm <- function(
                   xa_fresh = c(default = 0.0628),
                   xa_init = c(all = 0.0628),
                   decay_rate = c(all = 0.02),
-                  ks_coefficient = c(default = 1, sr1 = 0.4),
-                  qhat_opt = c(m0 = 1.5, m1 = 3.6, m2 = 5.6 , m3 = 7.2, m4 = 8, m5 = 8, sr1 = 8),
+                  ks_coefficient = c(default = 1.17, sr1 = 0.468),
+                  qhat_opt = c(m0 = 0.4742862, m1 = 1.138287, m2 = 1.770668 , m3 = 7.2, m4 = 8, m5 = 8, sr1 = 8),
                   T_opt = c(m0 = 18, m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55, sr1 = 43.75),
                   T_min = c(m0 = 0, m1 = 10, m2 = 10, m3 = 15, m4 = 26.25, m5 = 30, sr1 = 0),
                   T_max = c(m0 = 25, m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60, sr1 = 51.25),
@@ -41,7 +41,7 @@ abm <- function(
                   ki_H2S_int = c(default = 0.93066, sr1 = 1.2938),
                   ki_H2S_min = c(default = 0.08)),
   mic_pars = list(ks_SO4 = 0.00694,
-                  alpha_opt = c(urea = 70, VSd = 0.02),
+                  alpha_opt = c(urea = 35, VSd = 0.04954023),
                   alpha_T_min = c(urea = 0, VSd = 0),
                   alpha_T_opt = c(urea = 50, VSd = 50),
                   alpha_T_max = c(urea = 60, VSd = 60)),

@@ -76,26 +76,62 @@ legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 
        title = "Emission rates", cex = 0.8)
 
 ```
+Methane and carbon dioxide emission rates follow a clear pattern correlated with the amount of slurry in the slurry pits, which is flushed out every 28 days. 
 
-One could also have speficied a constant temperature by replacing "temp_C = temp_dat" with "temp_C = 20" in the "add_pars" argument. 
-
-Slurry mass increases at a constant rate until it is emptied after 182.5 days.
-In this simulation, 0.2 m is assumed to be left behind. A warning will be given manure production and empty intervals result in overfilling of the storage tank. 
-Temperature exactly follows the curve shown above (with interpolation as needed).
-
-```{r}
-plot(slurry_mass/1000 ~ time, data = out0, type = 'l', xlab = 'Time (d)', ylab = 'Slurry mass (t)')
-plot(temp_C ~ time, data = out0, type = 'l', xlab = 'Time (d)', ylab = 'Slurry mass (t)')
-```
-
-What is the predicted response of methanogen populations?
+So how much methane per pig per year from the in-house emission?
+We can use the cumulative methane output and the fact that slurry production rate default is for 1000 pigs.
+For ammonia we might want to have emissions per production area. Since we assume that the floor is fully slatted, we can assume that the production area of the pigs are equal to the slurry surface area 
 
 ```{r}
-matplot(out0$time, out0[, nn <- c('m0','m1','m2')]/1000, 
-        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (kg)')
-legend('topleft', nn, col = 1:6, lty = 1)
+pigs <- 1000
+CH4_kg_pr_pig_pr_year <- max(out0$CH4_emis_cum)/1000/pigs 
+CH4_kg_pr_pig_pr_year
+CO2_kg_pr_pig_pr_year <- max(out0$CO2_emis_cum)/1000/pigs 
+CO2_kg_pr_pig_pr_year
+NH3_kg_pr_pig_pr_year <- max(out0$NH3_emis_cum)/1000/out0$area[1]
+NH3_kg_pr_pig_pr_year
+C_ratio <- (CH4_kg_pr_pig_pr_year * 12/16) / (CO2_kg_pr_pig_pr_year * 12/44 + CH4_kg_pr_pig_pr_year * 12/16)
+C_ratio
+```
+Only 23.5% of carbon emission is methane, suggesting that a lot of carbon dioxide comes from non methanogenic processes (urea hydrolysis and surface respiration).  
+
+We can continue our calculations by doing another simulation of emissions coming from the outside slurry tank, by using the effluents from the in-house simulation as input for our storage simulation. 
+To do this we extract the effluent slurry masses and pass to the new simulation as a data.frame using the add_pars argument. With add_pars we can change the default input parameters. In the outside storage, the temperature will also changes considerably over the year, so temperature will also be passed as a data.frame(). We will get our temperature data another file. Since Some VS was degraded in the barn we have to change the VS in the manure going to the outside storage also.
+
+```{r}
+
+slurry_mass_intp <- approx(out0$time, out0$slurry_mass_eff, xout = out0$time)$y
+slurry_mass_cum <- cumsum(slurry_mass_intp)
+slurry_mass_dat <- data.frame(time = out0$time, slurry_mass = slurry_mass_cum)
+slurry_mass_dat
+VSd_fresh <- mean(out0$VSd_eff_conc, na.rm = T)
+VSd_fresh
+temp_dat <- read.csv('../dat/outside_slurry_temp.csv', sep = ';')
+temp_dat
+
 ```
 
+Lets look at temperature and slurry data before we continue
+
+```{r}
+plot(slurry_mass_dat$time, slurry_mass_dat$slurry_mass, ylab = 'Slurry_mass (kg)', 
+     xlab = 'Time (days from 1. Apr)')
+plot(temp_dat$time, temp_dat$temp_C, ylab = 'Temperature (deg C)', xlab = 'Time (days from 1. Apr)')
+```
+
+```{r}
+
+
+out1 <- abm(365, add_pars = list(slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0))
+
+```
+
+We can assess the fresh concentration of organic matter componenets from the "conc_fresh" 
+
+```{r}
+out1 <- abm(365, add_pars = list(slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0))
+
+```
 We see a shift away from the most cold-tolerant (`m0` and `m1`, 18&degC optimum) to groups with higher optima (especially `m2`, 28&degC optimum) as the slurry warms, and the reverse during cooling.
 
 Methane production depends on these populations, but also available substrate and hydrolysis rate (itself temperature-dependent).

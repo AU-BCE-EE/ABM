@@ -177,7 +177,6 @@ abm <- function(
   # Create time-variable functions
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method_temp)
-  temp_air_C_fun <- makeTimeFunc(pars$temp_air_C, approx_method = approx_method_temp)
   pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method_pH)
   
   # Inhibition function
@@ -245,16 +244,16 @@ abm <- function(
     y[start.vars]  <- starting[nrow(starting), start.vars]
   }  
   
-  if (pars$conc_fresh[['VSd']] > 1e-10 & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$lnA) & names(pars$lnA) != 'VSd_A'] > 0)) {
+  if (any(pars$conc_fresh[['VSd']]) > 1e-10 & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$lnA) & names(pars$lnA) != 'VSd_A'] > 0)) {
     stop('Cannot have both VSd and other organic matter components being above 0')
   }
   
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, temp_air_C_fun = temp_air_C_fun, pH_fun = pH_fun,  SO4_inhibition_fun = SO4_inhibition_fun)
+    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  SO4_inhibition_fun = SO4_inhibition_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, temp_air_C_fun = temp_air_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun)
+    dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun)
   } 
   
   colnames(dat) <- gsub("conc_fresh.","conc_fresh_", colnames(dat))
@@ -273,7 +272,6 @@ abm <- function(
   
   # Add temperature and pH
   dat$temp_C <- temp_C_fun(dat$time)
-  dat$temp_air_C <- temp_air_C_fun(dat$time)
   if (is.numeric(pars$pH) | is.data.frame(pars$pH)) {
     dat$pH <- pH_fun(dat$time)
   } else if (pars$pH == 'calc'){

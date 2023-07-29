@@ -1,4 +1,4 @@
-rates <- function(t, y, parms, temp_C_fun = temp_C_fun, temp_air_C_fun = temp_air_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun) {
+rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun) {
   
      y[y < 1E-10] <- 1E-10
      
@@ -51,10 +51,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, temp_air_C_fun = temp_ai
     temp_zero <- 273
     
     #temp functions
-    temp_air_C <- temp_air_C_fun(t + t_run)
     temp_C <- temp_C_fun(t + t_run)
     temp_K <- temp_C + 273.15
-    temp_air_K <- temp_air_C + 273.15
+
     
     # Find methanogens and sulfate reducers
     i_meth <- grepl('^[mp]', names(qhat_opt))

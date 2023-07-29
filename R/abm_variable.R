@@ -1,5 +1,5 @@
 abm_variable <-
-function(days, delta_t, times, y, pars, warn, temp_C_fun = temp_C_fun, temp_air_C_fun = temp_air_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun) {
+function(days, delta_t, times, y, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun) {
 
   #initialize dat for storage of results to speed up bind_rows
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) # slow speed, but much faster than before
@@ -179,7 +179,7 @@ function(days, delta_t, times, y, pars, warn, temp_C_fun = temp_C_fun, temp_air_
       pars$t_run <- t_run
 
       # Call up ODE solver
-      out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, temp_air_C_fun = temp_air_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun)
+      out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun)
 
       # Change format of output and drop first (time 0) row (duplicated in last row of previous)
       if (i == 2) {

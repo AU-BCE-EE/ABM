@@ -244,7 +244,7 @@ abm <- function(
     y[start.vars]  <- starting[nrow(starting), start.vars]
   }  
   
-  if (any(pars$conc_fresh[['VSd']]) > 1e-10 & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$lnA) & names(pars$lnA) != 'VSd_A'] > 0)) {
+  if (any(pars$conc_fresh[['VSd']] > 1e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$lnA) & names(pars$lnA) != 'VSd_A'] > 0)) {
     stop('Cannot have both VSd and other organic matter components being above 0')
   }
   

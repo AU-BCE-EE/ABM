@@ -45,10 +45,10 @@ abm <- function(
                   alpha_T_min = c(urea = 0, VSd = 0),
                   alpha_T_opt = c(urea = 50, VSd = 50),
                   alpha_T_max = c(urea = 60, VSd = 60)),
-  chem_pars = list(COD_conv = c(CH4 = 0.2507, xa_dead = 0.73, RFd = 0.8444792, iNDF = 0.8444792, starch = 0.8444792, 
-                                CF = 0.3117844, CP = 0.6541602, VFA = 0.9383125, S = 0.5015, VS = 0.69, CO2_anaer = 0.53, CO2_aer = 1.1, CO2_sr = 1.2, CO2_ureo = 1.57,
-                                N_CP = 0.1014, C_xa_dead = 0.358, C_RFd = 0.376, C_iNDF = 0.358
-                                , C_starch = 0.377, C_CF = 0.265, C_CP = 0.359 , C_VFA = 0.374, C_VSd = 0.344, C_N_urea = 0.429), 
+  chem_pars = list(COD_conv = c(CH4 = 1/0.2507, xa_dead = 1/0.73, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
+                                CF = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_anaer = 1/0.53, CO2_aer = 1/1.1, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
+                                N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358,
+                                C_starch = 1/0.377, C_CF = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429), 
                    kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02)), 
   arrh_pars = list(lnA = c(VSd_A = 31.3, xa_dead= 8.56*10^7, starch = 5.86*10^18, CF = 0, CP = 114.4, RFd = 7.455*10^9), 
                    E = c(VSd_A = 81000, xa_dead= 60600, starch = 109400, CF = 0, CP = 25300, RFd = 69740.5),  
@@ -310,34 +310,34 @@ abm <- function(
   dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_CF + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))])
   dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_CF + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) + dat$conc_fresh_iNDF
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
-  dat$C_conc_fresh <- dat$conc_fresh_VFA * pars$COD_conv[['C_VFA']] + dat$conc_fresh_xa_dead * pars$COD_conv[['C_xa_dead']] + dat$conc_fresh_RFd * pars$COD_conv[["C_RFd"]] +
-                      dat$conc_fresh_starch * pars$COD_conv[['C_starch']] + dat$conc_fresh_CP * pars$COD_conv[['C_CP']] + dat$conc_fresh_CF * pars$COD_conv[['C_CF']] +
-                      dat$conc_fresh_VSd * pars$COD_conv[['C_VSd']] + dat$conc_fresh_iNDF * pars$COD_conv[['C_iNDF']] + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) * pars$COD_conv[['C_xa_dead']] +
-                      dat$conc_fresh_urea * pars$COD_conv[['C_N_urea']]
+  dat$C_conc_fresh <- dat$conc_fresh_VFA / pars$COD_conv[['C_VFA']] + dat$conc_fresh_xa_dead / pars$COD_conv[['C_xa_dead']] + dat$conc_fresh_RFd / pars$COD_conv[["C_RFd"]] +
+                      dat$conc_fresh_starch / pars$COD_conv[['C_starch']] + dat$conc_fresh_CP / pars$COD_conv[['C_CP']] + dat$conc_fresh_CF / pars$COD_conv[['C_CF']] +
+                      dat$conc_fresh_VSd / pars$COD_conv[['C_VSd']] + dat$conc_fresh_iNDF / pars$COD_conv[['C_iNDF']] + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) / pars$COD_conv[['C_xa_dead']] +
+                      dat$conc_fresh_urea / pars$COD_conv[['C_N_urea']]
   
   # ndCOD is almost conserved, same everywhere always
   dat$ndCOD_conc <- ndCOD_conc <- dat$COD_conc_fresh - dat$dCOD_conc_fresh 
   dat$dCOD_conc <- dCOD_conc <- dat$xa_dead_conc + dat$RFd_conc + dat$CF_conc + dat$CP_conc + dat$starch_conc + dat$VFA_conc + dat$VSd_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
   dat$COD_conc <- COD_conc <- ndCOD_conc + dCOD_conc
   dat$VS_conc <- pars$COD_conv[['VS']] * COD_conc # this needs to be updated. Note this is both deg and undeg VS, whereas if VSd is given it is only deg VS
-  dat$C_conc <- dat$VFA_conc * pars$COD_conv[['C_VFA']] + dat$xa_dead_conc * pars$COD_conv[['C_xa_dead']] + dat$RFd_conc * pars$COD_conv[["C_RFd"]] +
-                dat$starch_conc * pars$COD_conv[['C_starch']] + dat$CP_conc * pars$COD_conv[['C_CP']] + dat$CF_conc * pars$COD_conv[['C_CF']] +
-                dat$VSd_conc * pars$COD_conv[['C_VSd']] + dat$iNDF_conc * pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) * pars$COD_conv[['C_xa_dead']] +
-                dat$urea_conc * pars$COD_conv[['C_N_urea']]
-  dat$C_eff_conc <- dat$VFA_eff_conc * pars$COD_conv[['C_VFA']] + dat$xa_dead_eff_conc * pars$COD_conv[['C_xa_dead']] + dat$RFd_eff_conc * pars$COD_conv[["C_RFd"]] +
-                dat$starch_eff_conc * pars$COD_conv[['C_starch']] + dat$CP_eff_conc * pars$COD_conv[['C_CP']] + dat$CF_eff_conc * pars$COD_conv[['C_CF']] +
-                dat$VSd_eff_conc * pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc * pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) * pars$COD_conv[['C_xa_dead']] +
-                dat$urea_eff_conc * pars$COD_conv[['C_N_urea']]
+  dat$C_conc <- dat$VFA_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_conc / pars$COD_conv[['C_xa_dead']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
+                dat$starch_conc / pars$COD_conv[['C_starch']] + dat$CP_conc / pars$COD_conv[['C_CP']] + dat$CF_conc / pars$COD_conv[['C_CF']] +
+                dat$VSd_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa_dead']] +
+                dat$urea_conc / pars$COD_conv[['C_N_urea']]
+  dat$C_eff_conc <- dat$VFA_eff_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa_dead']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
+                dat$starch_eff_conc / pars$COD_conv[['C_starch']] + dat$CP_eff_conc / pars$COD_conv[['C_CP']] + dat$CF_eff_conc / pars$COD_conv[['C_CF']] +
+                dat$VSd_eff_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa_dead']] +
+                dat$urea_eff_conc / pars$COD_conv[['C_N_urea']]
   
   
   dat$Ninorg_conc_fresh <- dat$conc_fresh_urea + dat$conc_fresh_TAN
-  dat$Norg_conc_fresh <- dat$conc_fresh_CP * pars$COD_conv[['N_CP']]
+  dat$Norg_conc_fresh <- dat$conc_fresh_CP / pars$COD_conv[['N_CP']]
   dat$N_conc_fresh <- dat$Ninorg_conc_fresh + dat$Norg_conc_fresh
   dat$Ninorg_conc <- Ninorg_conc <- dat$urea_conc + dat$TAN_conc
-  dat$Norg_conc <- Norg_conc <- dat$CP_conc * pars$COD_conv[['N_CP']]
+  dat$Norg_conc <- Norg_conc <- dat$CP_conc / pars$COD_conv[['N_CP']]
   dat$N_conc <- N_conc <- dat$Ninorg_conc + dat$Norg_conc
   dat$Ninorg_eff_conc <- Ninorg_eff_conc <- dat$urea_eff_conc + dat$TAN_eff_conc
-  dat$N_eff_conc <- Ninorg_eff_conc + dat$CP_eff_conc * pars$COD_conv[['N_CP']]
+  dat$N_eff_conc <- Ninorg_eff_conc + dat$CP_eff_conc / pars$COD_conv[['N_CP']]
 
   
   # And flows in g/d

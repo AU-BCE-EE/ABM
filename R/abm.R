@@ -319,7 +319,7 @@ abm <- function(
   dat$ndCOD_conc <- ndCOD_conc <- dat$COD_conc_fresh - dat$dCOD_conc_fresh 
   dat$dCOD_conc <- dCOD_conc <- dat$xa_dead_conc + dat$RFd_conc + dat$CF_conc + dat$CP_conc + dat$starch_conc + dat$VFA_conc + dat$VSd_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
   dat$COD_conc <- COD_conc <- ndCOD_conc + dCOD_conc
-  dat$VS_conc <- pars$COD_conv[['VS']] * COD_conc # this needs to be updated. Note this is both deg and undeg VS, whereas if VSd is given it is only deg VS
+  dat$VS_conc <- COD_conc / pars$COD_conv[['VS']] # this needs to be updated. Note this is both deg and undeg VS, whereas if VSd is given it is only deg VS
   dat$C_conc <- dat$VFA_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_conc / pars$COD_conv[['C_xa_dead']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_conc / pars$COD_conv[['C_starch']] + dat$CP_conc / pars$COD_conv[['C_CP']] + dat$CF_conc / pars$COD_conv[['C_CF']] +
                 dat$VSd_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa_dead']] +
@@ -344,7 +344,7 @@ abm <- function(
   dat$COD_load_rate <- dat$COD_conc_fresh * dat$slurry_prod_rate
   dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
   dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
-  dat$VS_load_rate <- pars$COD_conv[['VS']] * dat$COD_load_rate
+  dat$VS_load_rate <- dat$COD_load_rate / pars$COD_conv[['VS']]
   dat$C_load_rate <- dat$C_conc_fresh * dat$slurry_prod_rate
   
   dat$Ninorg_load_rate <- dat$Ninorg_conc_fresh * dat$slurry_prod_rate
@@ -401,7 +401,7 @@ abm <- function(
   dat$CO2_emis_cum_C <- dat$CO2_emis_cum / dat$C_load_cum
   
   # Apparent COD conversion fraction
-  dat$f_COD_CH4_rate <-  dat$CH4_emis_rate / pars$COD_conv[['CH4']] / dat$COD_load_rate
+  dat$f_COD_CH4_rate <-  dat$CH4_emis_rate * pars$COD_conv[['CH4']] / dat$COD_load_rate
   dat$f_COD_CH4_cum <-  dat$COD_conv_cum_meth / dat$COD_load_cum
   dat$f_COD_respir_cum <-  dat$COD_conv_cum_respir / dat$COD_load_cum
   dat$f_COD_sr_cum <-  dat$COD_conv_cum_sr / dat$COD_load_cum

@@ -244,7 +244,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     return(list(derivatives, c(H2S_emis_rate = H2S_emis_rate, NH3_emis_rate_pit = NH3_emis_rate_pit,
                                NH3_emis_rate_floor = NH3_emis_rate_floor,
                                qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = respiration * COD_conv[['CO2_aer']],
-                               H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib, HAC_inhib = HAC_inhib, SO4_inhib = SO4_inhib, cum_inhib = cum_inhib, 
+                               H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib, HAC_inhib = HAC_inhib, cum_inhib = cum_inhib, 
                                rut = rut, t_run = t_run, t_batch = t_batch, conc_fresh = conc_fresh, xa_init = xa_init, 
                                xa_fresh = xa_fresh * scale['xa_fresh'], area = area, t_batch = t_batch, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))

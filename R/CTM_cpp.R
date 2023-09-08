@@ -1,7 +1,7 @@
 #' My R Wrapper Function
 #'
 #' @param x Some input data
-#' @return The result of the C++ function in CTM.cpp
+#' @return The result of the C++ function in CTM_cpp.cpp
 #' @export
 my_r_function <- function(x) {
   library(Rcpp)  # Load the Rcpp package

@@ -1,14 +1,15 @@
-#' My R Wrapper Function
+#' My R Wrapper Function for CTM_cpp
 #'
-#' @param x Some input data
-#' @return The result of the C++ function in CTM_cpp.cpp
+#' @param tt Numeric vector
+#' @param top Numeric vector
+#' @param tmin Numeric vector
+#' @param tmax Numeric vector
+#' @param yopt Numeric vector
+#' @return Numeric vector
 #' @export
-my_r_function <- function(x) {
-  library(Rcpp)  # Load the Rcpp package
+CTM_cpp <- function(tt, top, tmin, tmax, yopt) {
   Rcpp::cppFunction(
     code = '
-      #include <Rcpp.h>
-      
       // [[Rcpp::export]]
       Rcpp::NumericVector CTM_cpp(Rcpp::NumericVector tt, Rcpp::NumericVector top, Rcpp::NumericVector tmin, 
                                   Rcpp::NumericVector tmax, Rcpp::NumericVector yopt) {
@@ -30,7 +31,7 @@ my_r_function <- function(x) {
               y[i] = 0;
             }
             
-          } else{
+          } else {
              
               y[i] = yopt[i] * ((tt[0] - tmax[i]) * pow(tt[0] - tmin[i], 2)) / 
               ((top[i] - tmin[i]) * ((top[i] - tmin[i]) * (tt[0] - top[i]) - 
@@ -45,11 +46,11 @@ my_r_function <- function(x) {
           }
         }
         
-        return y; 
+        return y;
       }
     ',
     includes = '#include <Rcpp.h>',
     depends = 'Rcpp'
   )
-  CTM_cpp(x)  # Call the correct C++ function
+  CTM_cpp(tt, top, tmin, tmax, yopt)
 }

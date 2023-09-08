@@ -1,3 +1,4 @@
 import(deSolve)
 importFrom("stats", "approx", "approxfun")
 export(abm)
+import(Rcpp)

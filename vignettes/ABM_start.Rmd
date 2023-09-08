@@ -99,7 +99,9 @@ We can continue our calculations by doing another simulation of emissions coming
 To do this we extract the effluent slurry masses and pass to the new simulation as a data.frame using the add_pars argument. With add_pars we can change the default input parameters. In the outside storage, the temperature will also changes considerably over the year, so temperature will also be passed as a data.frame(). We will get our temperature data another file. Since Some VS was degraded in the barn we have to change the VS in the manure going to the outside storage also.
 
 ```{r}
-
+# fix this. 
+dim(out0)
+out0 <- out0[!duplicated(out0$time), ]
 slurry_mass_intp <- approx(out0$time, out0$slurry_mass_eff, xout = out0$time)$y
 slurry_mass_cum <- cumsum(slurry_mass_intp)
 slurry_mass_dat <- data.frame(time = out0$time, slurry_mass = slurry_mass_cum)

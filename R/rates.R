@@ -1,4 +1,6 @@
-rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun) {
+rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
+                  SO4_inhibition_fun = SO4_inhibition_fun, 
+                  conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) {
   
      y[y < 1E-10] <- 1E-10
      
@@ -41,10 +43,40 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inh
     }
 
     # when variable fresh concentration is used
-    if(is.data.frame(conc_fresh) | is.data.frame(xa_fresh)){
-      conc_fresh <- variable_conc(conc_fresh, xa_fresh, t, t_run)$conc_fresh
-      xa_fresh <- variable_conc(conc_fresh, xa_fresh, t, t_run)$xa_fresh
+    #if(is.data.frame(conc_fresh) | is.data.frame(xa_fresh)){
+    #  conc_fresh <- variable_conc(conc_fresh, xa_fresh, t, t_run)$conc_fresh
+    #  xa_fresh <- variable_conc(conc_fresh, xa_fresh, t, t_run)$xa_fresh
+    #}
+    
+    if(is.data.frame(conc_fresh)){
+      conc_fresh <- list()
+      conc_fresh$sulfide <- conc_fresh_fun$conc_fresh_fun_sulfide(t + t_run)
+      conc_fresh$urea <- conc_fresh_fun$conc_fresh_fun_sulfide(t + t_run)
+      conc_fresh$sulfate <- conc_fresh_fun$conc_fresh_fun_sulfate(t + t_run)
+      conc_fresh$TAN <- conc_fresh_fun$conc_fresh_fun_TAN(t + t_run)
+      conc_fresh$starch <- conc_fresh_fun$conc_fresh_fun_starch(t + t_run)
+      conc_fresh$VFA <- conc_fresh_fun$conc_fresh_fun_VFA(t + t_run)
+      conc_fresh$xa_dead <- conc_fresh_fun$conc_fresh_fun_xa_dead(t + t_run)
+      conc_fresh$CF <- conc_fresh_fun$conc_fresh_fun_CF(t + t_run)
+      conc_fresh$CP <- conc_fresh_fun$conc_fresh_fun_CP(t + t_run)
+      conc_fresh$RFd <- conc_fresh_fun$conc_fresh_fun_RFd(t + t_run)
+      conc_fresh$iNDF <- conc_fresh_fun$conc_fresh_fun_iNDF(t + t_run)
+      conc_fresh$VSd <- conc_fresh_fun$conc_fresh_fun_VSd(t + t_run)
+      conc_fresh$VSd_A <- conc_fresh_fun$conc_fresh_fun_VSd_A(t + t_run)
+      conc_fresh$VSnd_A <- conc_fresh_fun$conc_fresh_fun_VSnd_A(t + t_run)
+      conc_fresh$ash <- conc_fresh_fun$conc_fresh_fun_ash(t + t_run)
     }
+    
+    xa_fresh <- if (is.data.frame(xa_fresh)) {
+      sapply(seq_along(grps), function(i) {
+        conc <- xa_fresh_fun[[i]](t + t_run)
+        return(conc)
+      })
+    } else{
+      xa_fresh <- xa_fresh
+    }
+    
+    names(xa_fresh) <- grps
     
     # Hard-wired temp settings settings
     temp_standard <- 298
@@ -78,7 +110,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inh
     # Hydrolysis rate with Arrhenius function or CTM. 
     alpha <- scale['alpha_opt'] * CTM(temp_K, alpha_T_opt, alpha_T_min, alpha_T_max, alpha_opt)
     names(alpha) <- names(alpha_opt)
-    alpha_arrh <- Arrh_func(lnA, E, R, temp_K)
+    alpha_arrh <- Arrh_func(A, E, R, temp_K)
     alpha <- c(alpha, alpha_arrh)
 
     # Microbial substrate utilization rate (vectorized calculation)
@@ -211,10 +243,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inh
 
     return(list(derivatives, c(H2S_emis_rate = H2S_emis_rate, NH3_emis_rate_pit = NH3_emis_rate_pit,
                                NH3_emis_rate_floor = NH3_emis_rate_floor,
-                               qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = respiration / COD_conv[['CO2_aer']],
-                               H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib, HAC_inhib = HAC_inhib, cum_inhib = cum_inhib, 
+                               qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = respiration * COD_conv[['CO2_aer']],
+                               H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib, HAC_inhib = HAC_inhib, SO4_inhib = SO4_inhib, cum_inhib = cum_inhib, 
                                rut = rut, t_run = t_run, t_batch = t_batch, conc_fresh = conc_fresh, xa_init = xa_init, 
                                xa_fresh = xa_fresh * scale['xa_fresh'], area = area, t_batch = t_batch, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))
      })
-  }
+}

@@ -1,4 +1,5 @@
- abm_regular <- function(days, delta_t, y, pars, starting = NULL, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun) { 
+abm_regular <- function(days, delta_t, y, pars, starting = NULL, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
+                        SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) { 
   
   #initialize dat for storage of results to speed up bind_rows
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) 
@@ -69,8 +70,10 @@
     # Call up ODE solver
     #cat(t_rem, '\n')
     
-    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun)
-
+    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
+                          temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
+                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+    
     # Get number of microbial groups
     n_mic <- length(pars$qhat_opt)
 
@@ -97,7 +100,8 @@
         times <- seq(0, pars$rest_d, delta_t)
         parsr <- pars
         parsr$slurry_prod_rate <- 0
-        outr <- deSolve::lsoda(y = y, times = times, rates, parms = parsr, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun)
+        outr <- deSolve::lsoda(y = y, times = times, rates, parms = parsr, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
+                               SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
         # Extract new state variable vector from last row
         y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 25) + 1]
         # Correct time in outr and combine with main output

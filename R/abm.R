@@ -1,4 +1,4 @@
-
+#abm
 abm <- function(
   days = 365,                                # Number of days to run
   delta_t = 1,                               # Time step for output
@@ -50,8 +50,10 @@ abm <- function(
                                 N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358,
                                 C_starch = 1/0.377, C_CF = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429), 
                    kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02)), 
-  arrh_pars = list(lnA = c(VSd_A = 31.3, xa_dead= 8.56*10^7, starch = 5.86*10^18, CF = 0, CP = 114.4, RFd = 7.455*10^9), 
-                   E = c(VSd_A = 81000, xa_dead= 60600, starch = 109400, CF = 0, CP = 25300, RFd = 69740.5),  
+  arrh_pars = list(lnA = c(VSd_A = 31.3),
+                   E_CH4 = c(VSd_A = 81000), 
+                   A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, CF = 0, CP = 114.4, RFd = 1.32*10^9), 
+                   E = c(xa_dead= 60600, starch = 109400, CF = 0, CP = 25300, RFd = 65486),  
                    R = 8.314,  
                    VS_CH4 = 6.67),
   
@@ -78,9 +80,10 @@ abm <- function(
   }
   
   # if variable conc fresh, we need to modify the conc_init a little
-  if (is.data.frame(man_pars$conc_fresh)) {
+  if (is.data.frame(man_pars$conc_fresh) & (length(init_pars$conc_init) == length(man_pars$conc_fresh))) {
     init_pars <- list(conc_init = man_pars$conc_fresh[1, -which(names(man_pars$conc_fresh) == "time")])
   } 
+  
   
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) {
@@ -178,6 +181,11 @@ abm <- function(
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method_temp)
   pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method_pH)
+  conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
+  
+  # add time to xa_fresh and get xa_fresh funs
+  if(is.data.frame(pars$xa_fresh)) pars$xa_fresh$time <- xa_fresh_time
+  xa_fresh_fun <- makeXaFreshFunc(pars$xa_fresh)
   
   # Inhibition function
   td <- data.frame(SO4_conc = c(0, 0.09, 0.392251223, 0.686439641, 1.046003263, 1.470942088, 1.961256117, 4), 
@@ -186,11 +194,11 @@ abm <- function(
   
   
   # when variable xa_fresh is used xa_init should be the same as starting xa_fresh
-  if (is.data.frame(pars$xa_fresh)) {
-    pars$xa_init <- as.numeric(pars$xa_fresh[1, grepl("m[0-9]|sr[0-9]", names(pars$xa_fresh))])
-    names(pars$xa_init) <- names(pars$xa_fresh)[!grepl("time", names(pars$xa_fresh))]
-    pars$xa_fresh["time"] <- xa_fresh_time
-  }
+  #if (is.data.frame(pars$xa_fresh)) {
+  #  pars$xa_init <- as.numeric(pars$xa_fresh[1, grepl("m[0-9]|sr[0-9]", names(pars$xa_fresh))])
+  #  names(pars$xa_init) <- names(pars$xa_fresh)[!grepl("time", names(pars$xa_fresh))]
+  #  pars$xa_fresh["time"] <- xa_fresh_time
+  #}
 
   # Convert some supplied parameters
   # Maximum slurry mass in kg
@@ -244,16 +252,18 @@ abm <- function(
     y[start.vars]  <- starting[nrow(starting), start.vars]
   }  
   
-  if (any(pars$conc_fresh[['VSd']] > 1e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$lnA) & names(pars$lnA) != 'VSd_A'] > 0)) {
+  if (any(pars$conc_fresh[['VSd']] > 1e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$A)] > 0)) {
     stop('Cannot have both VSd and other organic matter components being above 0')
   }
   
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  SO4_inhibition_fun = SO4_inhibition_fun)
+    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  
+                       SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun)
+    dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
+                        SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
   } 
   
   colnames(dat) <- gsub("conc_fresh.","conc_fresh_", colnames(dat))

@@ -20,6 +20,9 @@ abm <- function(
                   resid_enrich = 0.9,
                   slopes = c(urea = NA, slurry_prod_rate = NA),
                   scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
+  grz_pars = list(graze_start = "may",
+                  graze_days = 0,
+                  graze_hours = 0),
   man_pars = list(conc_fresh = list(sulfide = 0.01, urea = 2.4, sulfate = 0.2, TAN = 0.6, starch = 0, 
                                     VFA = 2.83, xa_dead = 0, CF = 0, CP = 0, RFd = 0, iNDF = 15, VSd = 75, VSd_A = 44.4, VSnd_A = 20, ash = 15), pH = 7, dens = 1000),
   init_pars = list(conc_init = man_pars$conc_fresh),
@@ -87,7 +90,7 @@ abm <- function(
   
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) {
-    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days))
+    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, grz_pars, arrh_pars, list(days = days))
   }
 
   # Create error if batch time is not determined and slurry rate should increase over a batch
@@ -210,6 +213,12 @@ abm <- function(
   pars$EF_NH3 <- coverfun(pars$cover)
   pars$EF_N2O <- ifelse(is.na(pars$cover) | pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
   
+  # calculate grazing interval of year if needed
+  if(pars$graze_days > 0){
+    pars$graze_int <- c(doy(pars$graze_start, 'March')$day, doy(pars$graze_start, 'March')$day + pars$graze_days)
+  } else {
+    pars$graze_int <- 0
+  }
 
   if(is.data.frame(pars$slurry_mass)){
     # If missing, set initial slurry mass to 0

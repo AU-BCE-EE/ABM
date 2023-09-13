@@ -113,13 +113,13 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     g_NH4 <- 0.7
     
     # Hydrolysis rate with Arrhenius function or CTM. 
-    alpha <- scale['alpha_opt'] * CTM(temp_K, alpha_T_opt, alpha_T_min, alpha_T_max, alpha_opt)
+    alpha <- scale['alpha_opt'] * CTM_cpp(temp_K, alpha_T_opt, alpha_T_min, alpha_T_max, alpha_opt)
     names(alpha) <- names(alpha_opt)
     alpha_arrh <- Arrh_func(A, E, R, temp_K)
     alpha <- c(alpha, alpha_arrh)
 
     # Microbial substrate utilization rate (vectorized calculation)
-    qhat <- scale['qhat_opt'] * CTM(temp_K, T_opt, T_min, T_max, qhat_opt)
+    qhat <- scale['qhat_opt'] * CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt)
     names(qhat) <- names(qhat_opt)
     
     # Ks temperature dependence

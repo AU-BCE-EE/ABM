@@ -10,6 +10,8 @@ Description: A single high-level function implementing the ABM model for simulat
 License: GPL-2
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
+LinkingTo: Rcpp
+Imports: Rcpp
 
 
 

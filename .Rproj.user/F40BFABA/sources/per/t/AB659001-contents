@@ -1,22 +1,16 @@
 # Runs all scenarios for sensitivity predicitons
 rm(list = ls())
-detach("package:ABM", unload = TRUE)
-install.packages("Rcpp")
-devtools::install_github('AU-BCE-EE/ABM', build_vignettes = FALSE, force = TRUE)
-remove.packages('ABM')
-install.packages('ABM')
-library(ABM)
+
 # Load R functions
 ff <- list.files('../R', full.names = TRUE) 
 for (i in ff) source(i)
 
-
-abm(365)
+library('ABM')
 # Get packages
 abm_packages()
 
 # Get C++ function
-#sourceCpp('../src/CTM_cpp.cpp')
+sourceCpp('../src/CTM_cpp.cpp')
 
 # Get input file names
 ff <- list.files('../inputs/surface_resp_sim/', full.names = TRUE)

@@ -43,7 +43,7 @@ abm <- function(
                   ki_H2S_slope = c(default = -0.10623, sr1 = -0.1495),
                   ki_H2S_int = c(default = 0.93066, sr1 = 1.2938),
                   ki_H2S_min = c(default = 0.08),
-                  km_urea = 0.913)),
+                  km_urea = c(0.913)),
   mic_pars = list(ks_SO4 = 0.00694,
                   alpha_opt = c(urea = 60, VSd = 0.04954023),
                   alpha_T_min = c(urea = 0, VSd = 0),

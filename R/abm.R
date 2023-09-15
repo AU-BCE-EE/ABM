@@ -498,6 +498,10 @@ abm <- function(
   if (value == 'ts') return(dat)
   # tsel = time series after startup period
   if (value == 'tsel') return(dat_sel)
+
+  # NTS: create and return cumulative effluent here?
+  # NTS: remove duplicate times from emptying (actually only emptying times should show up in effluent right?)
+  # NTS: can include in everything below too
   # Or everything
   return(list(pars = pars, ts = dat, tsel = dat_sel, summ = summ))
   

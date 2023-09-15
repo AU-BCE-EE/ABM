@@ -166,6 +166,8 @@ abm_variable <-
     # Fill in slurry_prod_rate
     pars$slurry_prod_rate <- slurry_prod_rate_t[i]
 
+    # NTS: problem with slurry removal at the start is around here and L 209, because out does not exist
+    # NTS: Can we create out at initial time from initial state variable vector?
     # Call lsoda and advance if time changes (i.e., if there is not a removal)
     # Note that t_call should always by 0 when there is a removal, so skipping this code is correct
     if (!removals[i]) {

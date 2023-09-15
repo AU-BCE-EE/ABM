@@ -200,7 +200,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                       (slurry_mass)) * cum_inhib[i_meth]
     
     # urea hydrolysis by Michaelis Menten
-    rut_urea <- (alpha[['urea']] * urea) / (km_urea + urea)
+    rut_urea <- (alpha[['urea']] * urea) / (km_urea + urea/slurry_mass)
     
     # Some checks for safety
     if (any(rut < 0)) stop('In rates() function rut < 0 or otherwise strange. Check qhat parameters (92gg7)')

@@ -186,7 +186,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     sub_respir <- CF + CP + RFd + starch + VSd 
     if (sub_respir <= 0) sub_respir <- 1E-20
-    respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_respir / slurry_mass) / 100 
+    respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_respir / slurry_mass) / 100
   
     # VFA uptake rates
     rut <- NA * qhat
@@ -216,7 +216,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     # surface respiration conv_COD_aer assumes 10% cell yield, but aerobic biomass is not tracked. 
     # Therefore aer cell mass should be accounted for somewhere. Suggest to add to the xa_dead pool for COD balance 
-    xa_aer <- respiration * 0.1
+    fs0 <- 0.65 # energy fraction going to growth, Rittman
+    xa_aer <- respiration * (1 - fs0)
     
     # Derivatives, all in g/d except slurry_mass = kg/d
     # NTS: Some of these repeated calculations could be moved up

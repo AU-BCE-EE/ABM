@@ -111,7 +111,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
    
     # Hard-wire NH4+ activity coefficient
     g_NH4 <- 0.7
-    
+  
     # Hydrolysis rate with Arrhenius function or CTM. 
     alpha <- scale['alpha_opt'] * CTM_cpp(temp_K, alpha_T_opt, alpha_T_min, alpha_T_max, alpha_opt)
     names(alpha) <- names(alpha_opt)
@@ -187,7 +187,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     sub_respir <- CF + CP + RFd + starch + VSd 
     if (sub_respir <= 0) sub_respir <- 1E-20
     respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_respir / slurry_mass) / 100 
-    
+  
     # VFA uptake rates
     rut <- NA * qhat
     
@@ -198,7 +198,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # VFA consumption rate by methanogen groups (g/d) affected by inhibition terms
     rut[i_meth] <- ((qhat[i_meth] * VFA / (slurry_mass) * xa[i_meth] / (slurry_mass)) / (scale['ks_coefficient'] * ks[i_meth] + VFA / (slurry_mass)) *
                       (slurry_mass)) * cum_inhib[i_meth]
-   
+    
+    # urea hydrolysis by Michaelis Menten
+    rut_urea <- (alpha[['urea']] * urea) / (km_urea + urea)
+    
     # Some checks for safety
     if (any(rut < 0)) stop('In rates() function rut < 0 or otherwise strange. Check qhat parameters (92gg7)')
 
@@ -229,8 +232,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        CP = slurry_prod_rate * conc_fresh[['CP']] - alpha[['CP']] * CP - respiration * CP/sub_respir,
        CF = slurry_prod_rate * conc_fresh[['CF']] - alpha[['CF']] * CF - respiration * CF/sub_respir,
        VFA = alpha[['xa_dead']] * xa_dead + alpha[['starch']] * starch + alpha[['CP']] * CP + alpha[['CF']] * CF + alpha[['RFd']] * RFd + alpha[['VSd']] * VSd   - sum(rut) + slurry_prod_rate * conc_fresh[['VFA']],
-       urea = slurry_prod_rate * conc_fresh[['urea']] - alpha[['urea']] * urea,
-       TAN = slurry_prod_rate * conc_fresh[['TAN']] + alpha[['urea']] * urea + alpha[['CP']] * CP / COD_conv[['N_CP']] + respiration * CP/sub_respir / COD_conv[['N_CP']] - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate,
+       urea = slurry_prod_rate * conc_fresh[['urea']] - rut_urea,
+       TAN = slurry_prod_rate * conc_fresh[['TAN']] + rut_urea + alpha[['CP']] * CP / COD_conv[['N_CP']] + respiration * CP/sub_respir / COD_conv[['N_CP']] - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate,
        sulfate = slurry_prod_rate * conc_fresh[['sulfate']] - sum(rutsr) / COD_conv[['S']],
        sulfide = slurry_prod_rate * conc_fresh[['sulfide']] + sum(rutsr) / COD_conv[['S']] - H2S_emis_rate,
        VSd_A = - VSd_A * ((exp(lnA[['VSd_A']] - E_CH4[['VSd_A']] / (R * temp_K))) * 24 / 1000 * VS_CH4) + slurry_prod_rate * conc_fresh[['VSd_A']],
@@ -239,7 +242,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        NH3_emis_cum = NH3_emis_rate_pit + NH3_emis_rate_floor,
        N2O_emis_cum = N2O_emis_rate,
        CH4_emis_cum = sum(rut[i_meth]) / COD_conv[['CH4']],
-       CO2_emis_cum = CO2_ferm_meth_sr + respiration / COD_conv[['CO2_aer']] + alpha[['urea']] * urea / COD_conv[['CO2_ureo']],
+       CO2_emis_cum = CO2_ferm_meth_sr + respiration / COD_conv[['CO2_aer']] + rut_urea / COD_conv[['CO2_ureo']],
        COD_conv_cum = sum(rut[i_meth]) + respiration + sum(rutsr),
        COD_conv_cum_meth = sum(rut[i_meth]),
        COD_conv_cum_respir = respiration,

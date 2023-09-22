@@ -26,7 +26,7 @@ abm <- function(
   man_pars = list(conc_fresh = list(sulfide = 0.01, urea = 2.4, sulfate = 0.2, TAN = 0.6, starch = 0, 
                                     VFA = 2.83, xa_dead = 0, CF = 0, CP = 0, RFd = 0, iNDF = 15, VSd = 75, VSd_A = 44.4, VSnd_A = 20, ash = 15), pH = 7, dens = 1000),
   init_pars = list(conc_init = man_pars$conc_fresh),
-  grp_pars = list(grps = c('m0','m2','sr1'),
+  grp_pars = list(grps = c('m0', 'm1', 'm2','sr1'),
                   yield = c(default = 0.05, sr1 = 0.065),
                   xa_fresh = c(default = 0.0628),
                   xa_init = c(all = 0.0628),

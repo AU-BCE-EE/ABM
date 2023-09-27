@@ -19,7 +19,7 @@ options(width = 85)
 # 1. Overview
 The ABM model predicts conversion of organic material in animal manure or other (high-moisture) organic wastes to methane (CH~4~), carbon dioxide (CO~2~) and ammonia (NH~3~) under anaerobic conditions.
 The name comes from **a**naerobic **b**iodegradation **m**odel.
-With multiple methanogen groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change and other perturbations.
+With multiple methanogen groups and a single sulfate reducer group and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change and other perturbations.
 Although it was prediction of CH~4~ emission from stored animal slurry (liquid manure) in unheated channels or tanks that prompted development of the model, the model can be used to simulate CH~4~ emission or biogas production from other organic waste under a range of conditions, including in anaerobic digesters.
 The purpose of this document is to demonstrate the use of the ABM R package, which is a flexible implementation of the model.
 Details on the model will be available in publications in the near future.
@@ -62,10 +62,10 @@ To predict in-house manure methane emission we can make the following call, spec
 out0 <- abm(days = 365) # run the simulation for 365 days
 ```
 ¨
-Lets take a look at the output 
+Lets take a look at the output of microbial groups methanogens m0, m1, m2 and sulfate reducer group sr1.
 ```{r}
-line_colors <- c('red', 'blue', 'green')
-matplot(out0$time, out0[, nn <- c('m0','m1','m2')]/1000, 
+line_colors <- c('red', 'blue', 'green','orange')
+matplot(out0$time, out0[, nn <- c('m0','m1','m2','sr1')]/1000, 
         type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Microbial biomass (kg)')
 legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
        title = "Microbial biomass", cex = 0.8)
@@ -233,5 +233,8 @@ lines(out2d$time, out2d$cum_inhib_m0, col = "red", lty = 2)
 
 ```
 The H2S inhibition constant is plotted for the methanogen "m0", as by default inhibition kinetics are similar for all groups of methanogens. Due to the TAN added, the cumulative inhibition constant is even lower than just inhibition from H2S.  
+
+A similar change in the concentration of microbial populations in the fresh manure can be simulated:
+
 
 

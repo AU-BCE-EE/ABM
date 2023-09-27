@@ -30,7 +30,7 @@ These steps should be carried out once to install both packages:
 
 ```{r, eval=FALSE}
 install.packages('devtools')
-devtools::install_github('AU-BCE-EE/ABM', build_vignettes = FALSE)
+devtools::install_github('AU-BCE-EE/ABM', build_vignettes = TRUE)
 ```
 
 And to use the ABM model, the package must be loaded.
@@ -43,11 +43,6 @@ And to view this vignette, use:
 
 ```{r}
 vignette('ABM_start')
-```
-
-```{r,eval = FALSE, echo=FALSE}
-ff <- list.files('../R', full.names = TRUE)
-for (i in ff) source(i)
 ```
 
 # 3. A demonstration of pig farm emissions
@@ -224,7 +219,7 @@ out2d <- abm(365, man_pars = man_pars)
 plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,20000))
 lines(out2d$time, out2d$CH4_emis_rate, col = "red")
 
-plot(VFA_conc ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)', ylim = c(0,10))
+plot(VFA_conc ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)', ylim = c(0,12))
 lines(out2d$time, out2d$VFA_conc, col = "red")
 
 plot(H2S_inhib_m0 ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'inhibition', ylim = c(0,1))
@@ -236,5 +231,17 @@ The H2S inhibition constant is plotted for the methanogen "m0", as by default in
 
 A similar change in the concentration of microbial populations in the fresh manure can be simulated:
 
+```{r}
+xa_fresh <- data.frame(time = c(0, 100, 101, 365), m0 = c(2, 0.0628, 0.0628, 0.0628), m1 = c(0.0628, 1, 2, 0.01), m2 = c(0.0628, 0.01, 0.01, 0.1), sr1 = c(0.0628, 1, 2, 0.01))
 
+out2e <- abm(365, man_pars = man_pars, add_pars = list(xa_fresh = xa_fresh))
+
+plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,10))
+lines(out2e$time, out2e$CH4_emis_rate, col = "red")
+
+matplot(out2e$time, out2e[, nn <- c('m0_conc','m1_conc','m2_conc','sr1_conc')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Microbial biomass (gCOD/kg)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
+       title = "Microbial biomass", cex = 0.8)
+```
 

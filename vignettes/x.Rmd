@@ -1,0 +1,37 @@
+
+```{r}
+library(ABM)
+packageVersion('ABM')
+out0 <- abm(days = 365) 
+```
+
+```{r}
+line_colors <- c('red', 'blue', 'green','orange')
+matplot(out0$time, out0[, nn <- c('m0','m1','m2','sr1')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Microbial biomass (kg)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
+       title = "Microbial biomass", cex = 0.8)
+
+matplot(out0$time, out0[, nn <- c('CH4_emis_rate', 'CO2_emis_rate', 'NH3_emis_rate')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Emission rate (kg/day)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
+       title = "Emission rates", cex = 0.8)
+
+```
+
+```{r}
+out1 <- abm(days = 365, startup = 1) 
+```
+
+```{r}
+matplot(out1$time, out1[, nn <- c('m0','m1','m2','sr1')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Microbial biomass (kg)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
+       title = "Microbial biomass", cex = 0.8)
+
+matplot(out1$time, out1[, nn <- c('CH4_emis_rate', 'CO2_emis_rate', 'NH3_emis_rate')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Emission rate (kg/day)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
+       title = "Emission rates", cex = 0.8)
+
+```

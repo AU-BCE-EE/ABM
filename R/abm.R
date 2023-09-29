@@ -64,7 +64,7 @@ abm <- function(
   # kl = mass transfer coefficient (liquid phase units) in m/d
   add_pars = NULL,
   pars = NULL,
-  startup = -Inf,
+  startup = 0, # Now number of times complete simulation should be run before returning results
   starting = NULL,
   approx_method_temp = 'linear', # NTS: combine these in 1 vector?
   approx_method_pH = 'linear',
@@ -73,7 +73,44 @@ abm <- function(
   value = 'ts',                              # Type of output
   warn = TRUE) {
   
-  
+  # If startup repetitions are requested, repeat some number of times before returning results
+  if (startup > 0) {
+
+    cat('\nRepeating ')
+
+    for (i in 1:(startup + 1)) {
+      cat(i, 'x ')
+
+      # Call abm() with arguments given in outside call except for startup and value
+      out <- abm(days = days, delta_t = delta_t, wthr_pars = wthr_pars, evap_pars = evap_pars,
+                 mng_pars = mng_pars, grz_pars = grz_pars, man_pars = man_pars, init_pars = init_pars,
+                 grp_pars = grp_pars, mic_pars = mic_pars, chem_pars = chem_pars, arrh_pars = arrh_pars,
+                 add_pars = add_pars, pars = pars, 
+                 startup = 0, 
+                 starting = starting, 
+                 approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, 
+                 approx_method_vent_air = approx_method_vent_air, 
+                 par_key = par_key, value = 'ts', warn = warn)
+ 
+      # Pull starting *concentrations* (inlcuding xa) from previous sim
+      tso <- out
+
+      # Names need to deal with possible data frame for conc_fresh
+      cf_names <- names(man_pars$conc_fresh)
+      cf_names <- cf_names[!grepl('^time', paste0(cf_names, '_conc'))]
+
+      init_pars$conc_init <- unlist(tso[nrow(tso), paste0(cf_names, '_conc')])
+      names(init_pars$conc_init) <- cf_names
+
+      grp_pars$xa_init <- unlist(tso[nrow(tso), paste0(grp_pars$grps, '_conc')])
+      names(grp_pars$xa_init) <- grp_pars$grps
+ 
+    }
+
+    # Return only final values
+    return(out)
+  } 
+
   # If starting conditions are provided from a previous simulation, move them to pars
   # Note that additional state variables are extracted from starting in abm_*.R
   if (!is.null(starting) & is.data.frame(starting)) {
@@ -321,9 +358,6 @@ abm <- function(
   dat$CO2_flux <- dat$CO2_emis_rate / pars$area
   
   ## NTS: Add others, e.g., mu
-  
-  # Cut startup period before calculating cumulative flows
-  dat <- dat[dat$time > startup, ]
   
   # Calculate COD/VS flows
   # First concentrations in g/kg

@@ -4,7 +4,7 @@
 # Note: enrich_names could also be length 1 vector: '^xa|^RFd$|^iNDF$' etc.
 
 emptyStore <- function(y, resid_mass, resid_enrich, 
-                       enrich_names = c('^xa', '^m[0-9]', '^sr[0-9]', '^RFd$', '^iNDF$', '^VSd$', '^CP$', '^CF$', '^starch$', '^ash$'),
+                       enrich_names = c('^xa', '^m[0-9]', '^sr[0-9]', '^RFd$', '^iNDF$', '^VSd$', '^CP$', '^Cfat$', '^starch$', '^ash$'),
                        ignore_names = c('_cum_', '_conv_', 'cum$')) {
 
   y <- unlist(y)

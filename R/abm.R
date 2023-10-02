@@ -24,7 +24,7 @@ abm <- function(
                   graze_days = 0,
                   graze_hours = 0),
   man_pars = list(conc_fresh = list(sulfide = 0.01, urea = 2.4, sulfate = 0.2, TAN = 0.6, starch = 0, 
-                                    VFA = 2.83, xa_dead = 0, CF = 0, CP = 0, RFd = 0, iNDF = 15, VSd = 75, VSd_A = 44.4, VSnd_A = 20, ash = 15), pH = 7, dens = 1000),
+                                    VFA = 2.83, xa_dead = 0, Cfat = 0, CP = 0, RFd = 0, iNDF = 15, VSd = 75, VSd_A = 44.4, VSnd_A = 20, ash = 15), pH = 7, dens = 1000),
   init_pars = list(conc_init = man_pars$conc_fresh),
   grp_pars = list(grps = c('m0', 'm1', 'm2','sr1'),
                   yield = c(default = 0.05, sr1 = 0.065),
@@ -50,14 +50,14 @@ abm <- function(
                   alpha_T_opt = c(urea = 50, VSd = 50),
                   alpha_T_max = c(urea = 60, VSd = 60)),
   chem_pars = list(COD_conv = c(CH4 = 1/0.2507, xa_dead = 1/0.73, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
-                                CF = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_anaer = 1/0.53, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
+                                Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_anaer = 1/0.53, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
                                 N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358,
-                                C_starch = 1/0.377, C_CF = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429), 
+                                C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429), 
                    kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02)), 
   arrh_pars = list(lnA = c(VSd_A = 31.3),
                    E_CH4 = c(VSd_A = 81000), 
-                   A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, CF = 0, CP = 181.8, RFd = 7.033*10^10), 
-                   E = c(xa_dead= 60600, starch = 109400, CF = 0, CP = 23890, RFd = 74270),  
+                   A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 7.033*10^10), 
+                   E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 74270),  
                    R = 8.314,  
                    VS_CH4 = 6.67),
   
@@ -281,7 +281,7 @@ abm <- function(
          VSd = pars$conc_init[['VSd']] * slurry_mass_init,
          starch = pars$conc_init[['starch']] * slurry_mass_init,
          CP = pars$conc_init[['CP']] * slurry_mass_init,
-         CF = pars$conc_init[['CF']] * slurry_mass_init,
+         Cfat = pars$conc_init[['Cfat']] * slurry_mass_init,
          VFA = pars$conc_init[['VFA']] * slurry_mass_init, 
          urea = pars$conc_init[['urea']] * slurry_mass_init, 
          TAN = pars$conc_init[['TAN']] * slurry_mass_init, 
@@ -295,7 +295,7 @@ abm <- function(
          COD_conv_cum_respir = 0, COD_conv_cum_sr = 0)
   
   if (!is.null(starting) & is.data.frame(starting)) {
-    start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CP', 'CF', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')
+    start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CP', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')
     y[start.vars]  <- starting[nrow(starting), start.vars]
   }  
   
@@ -320,7 +320,7 @@ abm <- function(
   mic_names <- pars$grps
   eff_names <- names(dat[grepl("_eff$", names(dat))])
   eff_conc_names <- eff_names[eff_names != "slurry_mass_eff"]
-  conc_names <-  c('TAN', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'CF', 'CP', 'VFA', 'sulfide', 'sulfate', 'VSd_A', 'VSnd_A', mic_names)
+  conc_names <-  c('TAN', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'Cfat', 'CP', 'VFA', 'sulfide', 'sulfate', 'VSd_A', 'VSnd_A', mic_names)
   dat_conc <- dat[, conc_names]/(dat$slurry_mass)
   dat_eff_conc <- dat[, eff_conc_names]/(dat$slurry_mass_eff)
   names(dat_conc) <- paste0(names(dat_conc), '_conc')
@@ -361,25 +361,25 @@ abm <- function(
   
   # Calculate COD/VS flows
   # First concentrations in g/kg
-  dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_CF + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))])
-  dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_CF + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) + dat$conc_fresh_iNDF
+  dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))])
+  dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) + dat$conc_fresh_iNDF
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
   dat$C_conc_fresh <- dat$conc_fresh_VFA / pars$COD_conv[['C_VFA']] + dat$conc_fresh_xa_dead / pars$COD_conv[['C_xa_dead']] + dat$conc_fresh_RFd / pars$COD_conv[["C_RFd"]] +
-                      dat$conc_fresh_starch / pars$COD_conv[['C_starch']] + dat$conc_fresh_CP / pars$COD_conv[['C_CP']] + dat$conc_fresh_CF / pars$COD_conv[['C_CF']] +
+                      dat$conc_fresh_starch / pars$COD_conv[['C_starch']] + dat$conc_fresh_CP / pars$COD_conv[['C_CP']] + dat$conc_fresh_Cfat / pars$COD_conv[['C_Cfat']] +
                       dat$conc_fresh_VSd / pars$COD_conv[['C_VSd']] + dat$conc_fresh_iNDF / pars$COD_conv[['C_iNDF']] + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) / pars$COD_conv[['C_xa_dead']] +
                       dat$conc_fresh_urea / pars$COD_conv[['C_N_urea']]
   
   # ndCOD is almost conserved, same everywhere always
   dat$ndCOD_conc <- ndCOD_conc <- dat$COD_conc_fresh - dat$dCOD_conc_fresh 
-  dat$dCOD_conc <- dCOD_conc <- dat$xa_dead_conc + dat$RFd_conc + dat$CF_conc + dat$CP_conc + dat$starch_conc + dat$VFA_conc + dat$VSd_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
+  dat$dCOD_conc <- dCOD_conc <- dat$xa_dead_conc + dat$RFd_conc + dat$Cfat_conc + dat$CP_conc + dat$starch_conc + dat$VFA_conc + dat$VSd_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
   dat$COD_conc <- COD_conc <- ndCOD_conc + dCOD_conc
   dat$VS_conc <- COD_conc / pars$COD_conv[['VS']] # this needs to be updated. Note this is both deg and undeg VS, whereas if VSd is given it is only deg VS
   dat$C_conc <- dat$VFA_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_conc / pars$COD_conv[['C_xa_dead']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
-                dat$starch_conc / pars$COD_conv[['C_starch']] + dat$CP_conc / pars$COD_conv[['C_CP']] + dat$CF_conc / pars$COD_conv[['C_CF']] +
+                dat$starch_conc / pars$COD_conv[['C_starch']] + dat$CP_conc / pars$COD_conv[['C_CP']] + dat$Cfat_conc / pars$COD_conv[['C_Cfat']] +
                 dat$VSd_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa_dead']] +
                 dat$urea_conc / pars$COD_conv[['C_N_urea']]
   dat$C_eff_conc <- dat$VFA_eff_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa_dead']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
-                dat$starch_eff_conc / pars$COD_conv[['C_starch']] + dat$CP_eff_conc / pars$COD_conv[['C_CP']] + dat$CF_eff_conc / pars$COD_conv[['C_CF']] +
+                dat$starch_eff_conc / pars$COD_conv[['C_starch']] + dat$CP_eff_conc / pars$COD_conv[['C_CP']] + dat$Cfat_eff_conc / pars$COD_conv[['C_Cfat']] +
                 dat$VSd_eff_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa_dead']] +
                 dat$urea_eff_conc / pars$COD_conv[['C_N_urea']]
   

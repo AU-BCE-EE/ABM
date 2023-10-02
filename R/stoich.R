@@ -3,7 +3,7 @@ stoich <- function(alpha, y, conc_fresh){
 # mole fermented per day: coefficient has unit of mole/gCOD
 mol.carb <- (alpha['RFd'] * y$RFd + alpha['starch'] * y$starch) * 0.005208333
 mol.pro <- (alpha['CP'] * y$CP) * 0.00748503
-mol.lip <- (alpha['CF'] * y$CF) * 0.0004194631
+mol.lip <- (alpha['Cfat'] * y$Cfat) * 0.0004194631
 
 # if VSd is used. based on composition of degradable cattle manure excluding vfa (Appendix 1, ABM paper)
 if(conc_fresh[['VSd']] > 1e-10){

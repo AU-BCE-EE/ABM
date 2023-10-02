@@ -62,7 +62,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       conc_fresh$starch <- conc_fresh_fun$conc_fresh_fun_starch(t + t_run)
       conc_fresh$VFA <- conc_fresh_fun$conc_fresh_fun_VFA(t + t_run)
       conc_fresh$xa_dead <- conc_fresh_fun$conc_fresh_fun_xa_dead(t + t_run)
-      conc_fresh$CF <- conc_fresh_fun$conc_fresh_fun_CF(t + t_run)
+      conc_fresh$Cfat <- conc_fresh_fun$conc_fresh_fun_Cfat(t + t_run)
       conc_fresh$CP <- conc_fresh_fun$conc_fresh_fun_CP(t + t_run)
       conc_fresh$RFd <- conc_fresh_fun$conc_fresh_fun_RFd(t + t_run)
       conc_fresh$iNDF <- conc_fresh_fun$conc_fresh_fun_iNDF(t + t_run)
@@ -184,7 +184,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     kl.oxygen <- (0.1699211 * temp_C) # from own lab experiments (Dalby et al. 2023..unpublished) 
     
-    sub_respir <- CF + CP + RFd + starch + VSd 
+    sub_respir <- Cfat + CP + RFd + starch + VSd 
     if (sub_respir <= 0) sub_respir <- 1E-20
     respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_respir / slurry_mass) / 100
   
@@ -231,8 +231,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        VSd = slurry_prod_rate * conc_fresh[['VSd']] - alpha[['VSd']] * VSd - respiration * VSd/sub_respir,
        starch = slurry_prod_rate * conc_fresh[['starch']] - alpha[['starch']] * starch - respiration * starch/sub_respir,
        CP = slurry_prod_rate * conc_fresh[['CP']] - alpha[['CP']] * CP - respiration * CP/sub_respir,
-       CF = slurry_prod_rate * conc_fresh[['CF']] - alpha[['CF']] * CF - respiration * CF/sub_respir,
-       VFA = alpha[['xa_dead']] * xa_dead + alpha[['starch']] * starch + alpha[['CP']] * CP + alpha[['CF']] * CF + alpha[['RFd']] * RFd + alpha[['VSd']] * VSd   - sum(rut) + slurry_prod_rate * conc_fresh[['VFA']],
+       Cfat = slurry_prod_rate * conc_fresh[['Cfat']] - alpha[['Cfat']] * Cfat - respiration * Cfat/sub_respir,
+       VFA = alpha[['xa_dead']] * xa_dead + alpha[['starch']] * starch + alpha[['CP']] * CP + alpha[['Cfat']] * Cfat + alpha[['RFd']] * RFd + alpha[['VSd']] * VSd   - sum(rut) + slurry_prod_rate * conc_fresh[['VFA']],
        urea = slurry_prod_rate * conc_fresh[['urea']] - rut_urea,
        TAN = slurry_prod_rate * conc_fresh[['TAN']] + rut_urea + alpha[['CP']] * CP / COD_conv[['N_CP']] + respiration * CP/sub_respir / COD_conv[['N_CP']] - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate,
        sulfate = slurry_prod_rate * conc_fresh[['sulfate']] - sum(rutsr) / COD_conv[['S']],

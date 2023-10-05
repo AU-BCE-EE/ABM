@@ -6,7 +6,7 @@ makeConcFunc <- function(dat) {
     
   names(dat) <- gsub(pattern = "conc_fresh.", replacement = "", x = names(dat))
   names <- names(dat[,!grepl("time", names(dat))])
-  tconc_fresh <- t(dat)[-c(1), ]
+  tconc_fresh <- t(dat[, names])
   ttime <- t(dat)["time", ]
   
   for (i in 1:(length(dat) - 1)) {

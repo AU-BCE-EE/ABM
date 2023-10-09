@@ -56,8 +56,8 @@ abm <- function(
                    kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02)), 
   arrh_pars = list(lnA = c(VSd_A = 31.3),
                    E_CH4 = c(VSd_A = 81000), 
-                   A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 7.033*10^10), 
-                   E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 74270),  
+                   A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12), 
+                   E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052),  
                    R = 8.314,  
                    VS_CH4 = 6.67),
   

@@ -1,14 +1,14 @@
 rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
                   SO4_inhibition_fun = SO4_inhibition_fun, 
                   conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) {
-  
+
      y[y < 1E-10] <- 1E-10
      
      # need to remove slurry mass from parms to not overwrite y['slurry_mass']
      parms$slurry_mass <- NULL
      
      with(as.list(parms), {
-    
+     
     # correct slurry production rate in periods with grazing
     if(!is.null(graze_int) & graze_int != 0) {
        slurry_prod_rate <- graze_fun(t,  t_run, days, slurry_prod_rate, graze_int, graze_hours)
@@ -221,6 +221,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     # Derivatives, all in g/d except slurry_mass = kg/d
     # NTS: Some of these repeated calculations could be moved up
+    
+    
     derivatives <- c(
        xa = scale['yield'] * yield * rut + scale['xa_fresh'] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
        slurry_mass = slurry_prod_rate + (rain - evap) * area,

@@ -66,7 +66,9 @@ abm_regular <- function(days, delta_t, y, pars, starting = NULL, temp_C_fun = te
 
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
-
+    pars$t_call <- t_call
+    pars$times <- times
+    
     # Call up ODE solver
     #cat(t_rem, '\n')
     

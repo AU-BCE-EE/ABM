@@ -10,39 +10,28 @@
 \usage{
 abm(days = 365,
     delta_t = 1,
-    mng_pars = list(slurry_prod_rate = 1000,
-                    slurry_mass = 0,
-                    max_slurry_mass = 33333,
-                    resid_frac = 0.10,
-                    area = 11,
-                    temp_C = 20),
-    man_pars = list(conc_fresh = list(S2 = 0.0, SO4 = 0.2, TAN = 1.0, VFA = 4.2, Sp = 65, COD = 160),
-                    pH = 7),
-   grp_pars = list(grps = c('m1', 'm2', 'm3', 'm4', 'm5'),
-                   yield = c(all = 0.05),
-                   xa_fresh = c(default = 0.001, m3 = 0.01),
-                   xa_init = c(m1 = 0.01, m2 = 0.005, m3 = 0.005, m4 = 0.005, m5 = 0.001),
-                   decay_rate = c(all = 0.02),
-                   ks_coefficient = c(all = 1.0),
-                   resid_enrich = c(all = 0.0),
-                   qhat_opt = c(m1 = 3.6, m2 = 5.6 , m3 = 7.2, m4 = 8, m5 = 8),
-                   T_opt = c(m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55),
-                   T_min = c(m1 = 0, m2 = 8, m3 = 15, m4 = 26.25, m5 = 30),
-                   T_max = c(m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60),
-                   ki_NH3_min = c(all = 0.015),
-                   ki_NH3_max = c(all = 0.13),
-                   ki_NH4_min = c(all = 2.7),
-                   ki_NH4_max = c(all = 4.8),
-                   pH_upr = c(all = 8.0),
-                   pH_lwr = c(all = 6.5)),
-    mic_pars = list(ks_SO4 = 0.0067,
-                    ki_H2S_meth = 0.23,
-                    ki_H2S_sr = 0.25,
-                    alpha_opt = 0.015,
-                    alpha_T_opt = 313,
-                    alpha_T_min = 273,
-                    alpha_T_max = 320.67),
-    chem_pars = list(COD_conv = c(CH4 = 0.2507, S = 0.5015, VS = 0.69, CO2_anaer = 0.57, CO2_aer = 1.3, CO2_sr = 1.3), kl = c(H2S = 0.02, oxygen = 0.5)),
+    mng_pars = list(slurry_prod_rate = 5700,   
+                  slurry_mass = 39000,          
+                  storage_depth = 0.6,        
+                  resid_depth = 0.05,         
+                  floor_area = 650,           
+                  area = 715,                 
+                  empty_int = 42,          
+                  temp_C = 20,
+                  wash_water = 75000,            
+                  wash_int = NA,
+                  rest_d = 5,
+                  cover = NA,
+                  resid_enrich = 0.9,
+                  slopes = c(urea = NA, slurry_prod_rate = NA),
+                  scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
+    grz_pars = grz_pars2.0,
+    man_pars = man_pars2.0,
+    init_pars = list(conc_init = man_pars$conc_fresh),
+    grp_pars = grp_pars2.0,
+    mic_pars = mic_pars2.0,
+    chem_pars = chem_pars2.0,
+    arrh_pars = arrh_pars2.0,
     add_pars = NULL,
     startup = -Inf,
     starting = NULL,
@@ -64,10 +53,19 @@ abm(days = 365,
   \item{mng_pars}{
     List of management parameters including slurry production rate (kg/day) (\code{slurry_prod_rate}),
     initial slurry mass in the system (kg) (\code{slurry_mass}),
-    maximum slurry capacity of the system (kg) (\code{max_slurry_mass}),
-    fraction of slurry retained in the system after being emptied (\code{resid_frac}),
-    surface area of the slurry in the system (m^2) (\code{area}),
-    slurry temperature (deg. C) (\code{temp_C}).
+    depth of slurry storage (m) (\code{storage_depth}),
+    height of slurry in the system after being emptied (m) (\code{resid_depth}),
+    surface area of the barn floor that is accesible by the animals (m^2) (\code{floor_area}),
+    surface area of the slurry storage (m^2) (\code{area}),
+    removal frequency of the slurry in the slurry storage (days), where a value of 0 = "never remove slurry"" (\code{empty_int}),
+    slurry temperature (deg. C) (\code{temp_C}),
+    wash water used per washing event (kg) (\code{wash_water}),
+    time between washing events (days), where NA = "washing not applied" (\code{wash_int}),
+    time that the animal section is empty after a batch of animals has been finished (days) (\code{rest_d}),
+    factor that determines the degree of enrichment of microbes and organic matter components in the residual slurry after emptying   (\code{resid_enrich}),
+    slopes is an expert user argument for changing the increasing the excretion rate of urea or slurry production during a growth period of an animal     . By default this argument is not used (\code{slopes}),
+    multiplyer arguments for adjusting some grp_pars arguments for all microbes at the same time (\code{scale}),
+    
     Each element may be a length-one vector or, in some cases, a list.
     See usage, examples, and vignettes.
 }
@@ -77,18 +75,27 @@ abm(days = 365,
     \code{conc_fresh}, the concentration of slurry components in fresh slurry;
     \code{pH}, pH of the slurry entering the system and in the slurry in the system.
     The \code{conc_fresh} element is a list itself, with the following elements:
-    \code{S2} (sulfide), \code{SO4} (sulfate), \code{TAN} (ammonia nitrogen), \code{VFA} (volatile fatty acids), \code{Sp} (degradable, particulate, organic substrate), \code{COD} (total COD).
-    Concentrations are on an elemental basis (N and S) or else COD (organic components).
+    \code{sulfide} (sulfide), \code{urea} (urea), \code{sulfate} (sulfate), \code{TAN} (ammonia nitrogen), \code{starch} (starch and sugars),
+    \code{VFA} (volatile fatty acids), \code{xa_dead} (dead microbial populations), \code{Cfat} (crude fat),
+    \code{CP} (crude protein), \code{RFd} (residual fiber that is degradable: defined as neutral detergent fiber - indigestible neutral detergent fiber), \code{iNDF} (indigestible neutral detergent fiber), \code{VSd} (degradable, volatile solids), \code{VSd_A} (degradable volatile solids for Arrhenius calculation), \code{VSnd_A} (non-degradable volatile solids for Arrhenius calcualtion), \code{ash} (ash content)
+    Concentrations are on an elemental basis (N/kg wet manure and S/kg wet manure) or else gCOD/kg wet manure (organic components). However, for VSd_A, VSnd_A and ash the unit is g/kg wet manure.
 }
+  \item{init_pars}{
+    List of parameters that define the intial concentrations of organic matter components in the slurry.
+    The elements are similar to the \code{conc_fresh} elements in 'man_pars'. By default the element values are the same as values in \code{conc_fresh}
+    \code{graze_start}, month in which grazing (for cattle) starts, e.g. in "may"" (month);
+    \code{graze_days}, days per year that the animals are outside grazing (days/year);
+    \code{graze_hours}, hours per day the animals are outside grazing (hours/day).
+}
+
   \item{grp_pars}{
-   List containing parameter values for the microbial groups included in the model.
+   List containing parameter values for the microbial groups included in the model. m designates methanogen and sr designates sulfate reducer.
    Elements are:
    \code{yield}, Growth yield of microbial groups (g COD-biomass / g COD-substrate) ;
    \code{xa_fresh}, Concentration of microbial groups in the slurry entering the system (g COD-biomass/kg);
    \code{xa_init}, Initial concentration of microbial groups in the slurry (g COD-biomass/kg);
    \code{decay_rate}, Deacay rate of microbial groups (1/day);
    \code{ks_coefficient}, Coefficient used to tune the half saturation constant (g COD-substrate/kg);
-   \code{resid_enrich}, Enrichment of microbial groups in the slurry after being emptied ;
    \code{qhat_opt}, Maximum specific substrate utilization rate of microbial groups at their optimum growth temperature (g COD-substrate/g COD-biomass/day);
    \code{T_opt}, Optimum growth temperature of microbial groups (K);
    \code{T_min}, Minimum viable growth temperature of microbial groups (K);
@@ -97,8 +104,10 @@ abm(days = 365,
    \code{ki_NH3_max}, NH3 concentration wher microbial groups are 100 percent inhibited (g TAN-nitrogen/kg);
    \code{ki_NH4_min}, NH4 concentration at which NH3 inhibition starts (g TAN-nitrogen/kg);
    \code{ki_NH4_max}, NH4 concentration wher microbial groups are 100 percent inhibited (g TAN-nitrogen/kg);
-   \code{pH_upr}, upper pH where 50 percent inhibition of microbial groups occurs;
-   \code{pH_upr}, lower pH where 50 percent inhibition of microbial groups occurs.
+   \code{ki_H2S_slope}, inhibition parameter1 for calculating H2S inhibition factor (g H2S-sulfur/(kg pr pH unit));
+   \code{ki_H2S_int}, inhibition parameter2 for calculating H2S inhibition factor (g H2S-sulfur/kg);
+   \code{ki_H2S_min}, inhibition parameter3 for calculating H2S inhibition factor (g H2S-sulfur/kg);
+
    Each of these elements is a vector with a named element for each group.
    See usage, examples, and vignettes.
 }
@@ -106,8 +115,7 @@ abm(days = 365,
     List of other microbial parameters.
     Elements are:
     \code{ks_SO4}, Half sulfate saturation constant for sulfate reducers (g sulfate-sulfur/kg);
-    \code{ki_H2S_meth}, hydrogen sulfide concentration at which 100 percent inhibition of methanogen groups occur (g sulfide-sulfur/kg);
-    \code{ki_H2S_sr}, hydrogen sulfide concentration at which 100 percent inhibition of sulfate reducer groups occur (g sulfide-sulfur/kg);
+    \code{km_urea}, half urea-N saturation constant for Michaelis-Menten urea hydrolysis (g urea-N/kg);
     \code{alpha_opt}, hydrolysis rate constant at the optimum hydrolysis temperature (1/day);
     \code{alpha_T_opt}, optimum temperature for hydrolysis (K);
     \code{alpha_T_min}, minimum temperature where hydrolysis occurs (K);
@@ -118,13 +126,46 @@ abm(days = 365,
     Elements are:
     \code{kl}, Mass transfer coefficient of oxygen and hydrogen sulfide through the slurry/air interface, liquid-phase units (m/day);
     \code{COD_conv}, conversion factors for using a COD mass basis with the following named elements:
-    \code{CH4}, Methane productivity coefficient (g CH4/g COD-substrate) ;
+    \code{CH4}, Methane productivity coefficient (g COD-substrate/g CH4) ;
+    \code{xa_dead}, COD to g dry matter mass of dead microbial populations (g COD/g dry xa dead);
+    \code{RFd}, COD to g RFd (g COD/g RFd);
+    \code{iNDF}, COD to g iNDF (g COD/g iNDF);
+    \code{starch}, COD to g starch (g COD/g starch);
+    \code{Cfat}, COD to g Cfat (g COD/g Cfat);
+    \code{CP}, COD to g CP (g COD/g CP);
+    \code{VFA}, COD to g VFA (g COD/g VFA);
+    \code{RFd}, COD to g RFd (g COD/g RFd);
     \code{S}, COD-substrate to sulfur (g sulfur/g COD-substrate) ;
-    \code{VS}, COD to volatile solids (VS) (g VS/g COD), ;
-    \code{CO2_anaer}, Anaerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate);
+    \code{VS}, COD to g volatile solids (g COD/g volatile solids);
     \code{CO2_aer}, Aerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate);
-    \code{CO2_sr}, carbon dioxide productivity coefficient for sulfate reduction (g CO2/g COD-substrate).
+    \code{CO2_sr}, carbon dioxide productivity coefficient for sulfate reduction (g CO2/g COD-substrate);
+    \code{CO2_ureo}, carbon dioxide productivity coefficient for urea hydrolysis (g CO2/g urea-N);
+    \code{N_CP}, nitrogen per COD of crude protein (g N/g CP-COD).
+    \code{C_N_urea}, carbon to nitrogen (g C/g urea-N)
+    \code{kl}, mass transfer coefficient of ammonia from the slurry pit [NH3] (unit) and from the barn floor [NH3_floor] (unit) and mass transfer coefficient of H2S from the slurry (unit).
+    Other conversion factors designated \code{C_} are carbon to COD of the named substrate (gC/gCOD) 
 }
+
+  \item{arrh_pars}{
+    List of hydrolysis parameters that are related to arrhenius kinetics.
+    Elements are:
+    \code{lnA}, frequency factor used in danish methane emission inventory calculations, only used for comparing to ABM model (g CH4/ (kgVS * hour));
+    \code{E_CH4}, Activation energy used in danish methane emission inventory calculations, only used for comparing to ABM model (J/mol);
+    \code{R}, universal gas constant (J/(K * mol));
+    \code{VS_CH4}, volatile solids consumed per methane produced (g VS/g CH4); 
+    \code{A}, Arrhenius factor for calculating the temperature sensitive hydrolysis rate constant of organic amtter compoenents (1/day);
+    \code{E}, Activation energy for calculating the temperature sensitive hydrolysis rate constant of organic amtter compoenents (J/mol).
+
+}
+
+  \item{grz_pars}{
+    List of parameters used for simualting periods of grazing.
+    Elements are:
+    \code{graze_start}, month in which grazing (for cattle) starts, e.g. in "may"" (month);
+    \code{graze_days}, days per year that the animals are outside grazing (days/year);
+    \code{graze_hours}, hours per day the animals are outside grazing (hours/day).
+}
+
   \item{add_pars}{
     List of other additional parameters not set in other arguments, or to be modified from defaults.
     See vignette.
@@ -205,26 +246,25 @@ plot(CH4_emis_cum ~ time, data = out1, type = 'l')
 plot(CH4_emis_rate ~ time, data = out1, type = 'l')
 
 # Plot microbial biomass
-matplot(out1$time, out1[, nn <- c('m1', 'm2', 'm3', 'm4', 'm5')],
+matplot(out1$time, out1[, nn <- c('m0', 'm1', 'm2', 'sr1')],
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (g)')
-legend('topleft', nn, col = 1:6, lty = 1)
+legend('topleft', nn, col = 1:4, lty = 1)
 
 # Simulation 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Anaerobic digester with variable temperature
+# Run model with variable temperature and constant slurry mass
 temp_dat <- data.frame(time = 300 + c(0,  1,  6, 100),
-                       temp_C =    c(35, 25, 35,  25))
+                       temp_C =    c(10, 25, 10, 25))
 
-out2 <- abm(600, 1, add_pars = list(temp_C = temp_dat, resid_frac = 0.95,
-                                    slurry_mass = 0.95 * 33333, slurry_prod_rate = 500),
-            approx_method_temp = 'constant')
+out2 <- abm(600, 1, add_pars = list(temp_C = temp_dat, slurry_mass = 8000, slurry_prod_rate = 0,
+            approx_method_temp = 'linear')
 
 # Plot results
 plot(temp_C ~ time, type = 'l', col = 'red', data = out2)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
-matplot(out2$time, out2[, nn <- c('m1_conc', 'm2_conc', 'm3_conc', 'm4_conc', 'm5_conc')],
+matplot(out2$time, out2[, nn <- c('m0_conc', 'm1_conc', 'm2_conc')],
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
-legend('topleft', nn, col = 1:5, lty = 1)
+legend('topleft', nn, col = 1:3, lty = 1)
 abline(v = temp_dat$time, lty = 2, col = 'gray45')
 
 plot(CH4_emis_rate_VS ~ time, data = out2, type = 'l')

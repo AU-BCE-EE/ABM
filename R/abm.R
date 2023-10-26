@@ -13,7 +13,7 @@ abm <- function(
                   area = 715,                 # Area (assume vertical sides, but slurry also underneath the walking path) (m2)
                   empty_int = 42,            # (days, every 6th week)
                   temp_C = 20,
-                  wash_water = 75,            
+                  wash_water = 75000,            
                   wash_int = NA,
                   rest_d = 5,
                   cover = NA,

@@ -51,10 +51,11 @@ For a more incremental introduction to the function, see the following sections.
 
 First we will start with a demonstration using the default input parameters, which reflect manure production in a pig-house with 1000 grower-finisher pigs. In-house slurry pits are 0.6 m deep and the slurry is flushed out of the pig-house every 6 weeks, leaving 5 cm of residual slurry inside the in-house slurry pits. The slurry temperature is 20&degC. The amount of degradable VS content of raw pig manure is set to 75 gCOD/kg manure (feces + urine). 
 
-To predict in-house manure methane emission we can make the following call, specifying that we want to run the model for 365 days 
+To predict in-house manure methane emission we can make the following call, specifying that we want to run the model for 365 days.
+We start using parameter sets (v.1.0) that where found in Dalby et al. 2023, where substrate input is degradable VS.
 
 ```{r}
-out0 <- abm(days = 365) # run the simulation for 365 days
+out0 <- abm(days = 365, man_pars = man_pars1.0, grp_pars = grp_pars1.0) # run the simulation for 365 days
 ```
 ¨
 Lets take a look at the output of microbial groups methanogens m0, m1, m2 and sulfate reducer group sr1.
@@ -117,7 +118,7 @@ plot(temp_dat$time, temp_dat$temp_C, ylab = 'Temperature (deg C)', xlab = 'Time 
 We need to adjust dimensions of outside slury storage, height = 4 m, surface area = 1000
 ```{r}
 
-out1 <- abm(365, add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0))
+out1 <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0))
 
 ```
 
@@ -136,7 +137,7 @@ plot(VFA_conc ~ time, data = out1, type = 'l', xlab = 'Time (d)', ylab = 'VFA co
 Because we would ideally like a stabilization period, we can run the model for three years and take a look only at the last year by using the `startup` argument. Furthermore, we can also focus on total emission in the last year (`value = "summ"`).
 
 ```{r}
-out1a <- abm(3*365, add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0), startup = 2, value = 'summ')
+out1a <- abm(3*365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0), startup = 2, value = 'summ')
 out1a
 ```
 
@@ -147,7 +148,7 @@ We can easily make a comparison to a scenario with pH reduced to 6, with everyth
 
 
 ```{r}
-out1b <- abm(3*365, add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0, pH = 5.5), startup = 2, value = 'summ')
+out1b <- abm(3*365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0, pH = 5.5), startup = 2, value = 'summ')
 out1b
 ```
 
@@ -178,8 +179,7 @@ There are also some built-in shortcuts to make small tweaks simple.
 In particular, the `add_pars` argument makes life easy, and was used in the first demonstration.
 
 As an example, the composition of the fresh slurry (influent, or feed) is set with the `man_pars` argument, which is a list of solute concentrations and pH.
-An example with CP, Cfat, RFd specified rather than VSd is given below and with a simple change in VFA_concentration using the add_pars argument. 
-
+An example with CP, Cfat, RFd specified rather than VSd is given below and with a simple change in VFA_concentration using the add_pars argument.The default setting of the ABM model is also using CP, Cfat, and RFd rather than a VSd input. This default parameter set is called `man_pars2.0`, but below we specify it directly instead.Since we are not using VSd input anymore when don't use grp_pars1.0 anymore, but instead the default (grp_pars2.0). 
 
 ```{r}
 man_pars = list(conc_fresh = list(sulfide = 0.01, urea = 2.4, sulfate = 0.2, TAN = 0.0, starch = 1, 
@@ -224,6 +224,7 @@ lines(out2d$time, out2d$H2S_inhib_m0, col = "red")
 lines(out2d$time, out2d$cum_inhib_m0, col = "red", lty = 2)
 
 ```
+
 The H2S inhibition constant is plotted for the methanogen "m0", as by default inhibition kinetics are similar for all groups of methanogens. Due to the TAN added, the cumulative inhibition constant is even lower than just inhibition from H2S.  
 
 A similar change in the concentration of microbial populations in the fresh manure can be simulated:

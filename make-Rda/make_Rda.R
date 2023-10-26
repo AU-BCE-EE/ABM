@@ -1,5 +1,5 @@
 # Creates parameter objects
-
+# best fit grp_pars2.0 based on multiple datasets using CP, RFd, starch and Cfat as inputs
 grp_pars2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                  yield = c(default = 0.05, sr1 = 0.065),
                  xa_fresh = c(default = 0.0628),
@@ -19,3 +19,31 @@ grp_pars2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                  ki_H2S_min = c(default = 0.08))
 
 save(grp_pars2.0, file = '../data/grp_pars2.0.rda')
+
+# best fit grp_pars for Dalby et al. 2023, EST using VSd as input
+grp_pars1.0 <- grp_pars = list(grps = c('m0','m1','m2', 'sr1'),
+                               yield = c(default = 0.05, sr1 = 0.065),
+                               xa_fresh = c(default = 0.0628),
+                               xa_init = c(all = 0.0628),
+                               decay_rate = c(all = 0.02),
+                               ks_coefficient = c(default = 1.17071975112963, sr1 = 0.4682879),
+                               qhat_opt = c(m0 = 0.4742862, m1 = 1.138287, m2 = 1.770668 , m3 = 7.2, m4 = 8, m5 = 8, sr1 = 2.529526),
+                               T_opt = c(m0 = 18, m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55, sr1 = 43.75),
+                               T_min = c(m0 = 0, m1 = 10, m2 = 10, m3 = 15, m4 = 26.25, m5 = 30, sr1 = 0),
+                               T_max = c(m0 = 25, m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60, sr1 = 51.25),
+                               ki_NH3_min = c(all = 0.015),
+                               ki_NH3_max = c(all = 0.13),
+                               ki_NH4_min = c(all = 2.7),
+                               ki_NH4_max = c(all = 4.8),
+                               ki_H2S_slope = c(default = -0.10623, sr1 = -0.1495),
+                               ki_H2S_int = c(default = 0.93066, sr1 = 1.2938),
+                               ki_H2S_min = c(default = 0.08))
+  
+save(grp_pars1.0, file = '../data/grp_pars1.0.rda')
+
+outside_slurry_temp <- 
+  data.frame(time = c(0, 15, 45, 76, 106, 137, 167, 198, 228, 289, 259, 320, 350, 365),
+           temp_C = c(6.121, 7.783, 11.9, 14.49, 15.73, 16.39, 15.2, 13, 10.47, 7.937, 6.132, 4.648, 4.46, 6.121))
+
+save(outside_slurry_temp, file = '../data/outside_slurry_temp.rda')
+

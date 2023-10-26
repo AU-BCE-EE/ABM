@@ -41,7 +41,7 @@ library(ABM)
 
 And to view this vignette, use:
 
-```{r}
+```{r,eval=FALSE}
 vignette('ABM_start')
 ```
 
@@ -57,7 +57,7 @@ We start using parameter sets (v.1.0) that where found in Dalby et al. 2023, whe
 ```{r}
 out0 <- abm(days = 365, man_pars = man_pars1.0, grp_pars = grp_pars1.0) # run the simulation for 365 days
 ```
-¨
+
 Lets take a look at the output of microbial groups methanogens m0, m1, m2 and sulfate reducer group sr1.
 ```{r}
 line_colors <- c('red', 'blue', 'green','orange')
@@ -74,9 +74,10 @@ legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 
 ```
 Methane and carbon dioxide emission rates follow a clear pattern correlated with the amount of slurry in the slurry pits, which is flushed out every 28 days. 
 
-So how much methane per pig per year from the in-house emission?
+So how much methane is produced per pig per year in-house?
 We can use the cumulative methane output and the fact that slurry production rate default is for 1000 pigs.
-For ammonia we might want to have emissions per production area. Since we assume that the floor is fully slatted, we can assume that the production area of the pigs are equal to the slurry surface area 
+For ammonia we might want to have emissions per production area. 
+Since we assume that the floor is fully slatted, we can assume that the production area is equal to the slurry surface area. 
 
 ```{r}
 pigs <- 1000
@@ -118,10 +119,16 @@ plot(temp_dat$time, temp_dat$temp_C, ylab = 'Temperature (deg C)', xlab = 'Time 
 We need to adjust dimensions of outside slury storage, height = 4 m, surface area = 1000
 ```{r}
 
-out1 <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0))
+out1 <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, 
+            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, 
+                            slurry_mass = slurry_mass_dat, temp_C = temp_dat, 
+                            conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0,
+                            wash_water = NA))
 
 ```
-We are getting a warning now, because default settings tells the model that it should use wash water between the batches of pigs. However this is not relevant anymore since we are modelling the outside storage emission. Further when a variable slurry mass is used as input, the wash_water needs to be passed through the slurry_mass data.frame as well. Thus here it is ignored.
+The addition of `wash_water = NA` is only to avoid a warning. 
+Alternatively, the complete `mgn_pars` argument can be specified.
+When a variable slurry mass is used as input, the `wash_water` needs to be passed through the `slurry_mass` data frame as well, but here, in outside storage, there is no washing after emptying. 
 
 Clearly emissions peak during the summer period, due to higher methanogenesis activity. 
 
@@ -129,59 +136,90 @@ Clearly emissions peak during the summer period, due to higher methanogenesis ac
 plot(CH4_emis_rate ~ time, data = out1, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emission rate (g/d)')
 plot(CH4_emis_cum ~ time, data = out1, type = 'l', xlab = 'Time (d)', ylab = 'CH4 cumulative emission (g)')
 ```
-We can even look at the VFA dynamics durign the year
+We can even look at the VFA dynamics during the year
 
 ```{r}
 plot(VFA_conc ~ time, data = out1, type = 'l', xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)')
 ```
 
-Because we would ideally like a stabilization period, we can run the model for three years and take a look only at the last year by using the `startup` argument. Furthermore, we can also focus on total emission in the last year (`value = "summ"`).
+Because we would ideally like a stabilization period, we can run the model for three years and take a look only at the last year by using the `startup` argument. 
+Furthermore, we can also focus on total emission in the last year (`value = "summ"`).
 
 ```{r, warning = F}
-out1a <- abm(3*365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0), startup = 2, value = 'summ')
+out1a <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, 
+             add_pars = list(storage_depth = 4, area = 1000, 
+                             floor_area = 0, slurry_mass = slurry_mass_dat, 
+                             temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, 
+                             conc_fresh.urea = 0, wash_water = NA), 
+             startup = 2, value = 'summ')
 out1a
 ```
 
-Results show total annual emission from the outside storage of about 5.5 kg CH~4 per pig (CH4_emis_cum/1000 pigs / 1000 g pr kg)
+Results show total annual emission from the outside storage of about 5.5 kg CH~4 per pig (`CH4_emis_cum/1000` pigs / 1000 g pr kg)
 
 How much might acidification reduce emission?
-We can easily make a comparison to a scenario with pH reduced to 6, with everything else the same.pH is indirectly affecting methane because reduced pH increase concentration of toxic H2S, and protonated VFAs.
+We can easily make a comparison to a scenario with pH reduced to 6, with everything else the same.
+Slurry pH indirectly affects methane by increasing the concentration of toxic H~2~S and protonated (uncharged) VFAs.
 
 
 ```{r, warning = F}
-out1b <- abm(3*365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, conc_fresh.urea = 0, pH = 5.5), startup = 2, value = 'summ')
+out1b <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, 
+             add_pars = list(storage_depth = 4, area = 1000, 
+                             floor_area = 0, slurry_mass = slurry_mass_dat, 
+                             temp_C = temp_dat, conc_fresh.VSd = VSd_fresh, 
+                             conc_fresh.urea = 0, wash_water = NA, pH = 5.5), 
+             startup = 2, value = 'summ')
 out1b
 ```
 
-The predicted reduction is 95.1%.
+The predicted reduction is 95%.
 
 ```{r}
 1 - out1b['CH4_emis_cum'] / out1a['CH4_emis_cum']
 ```
 # 4. Setting parameter values
 Although the ABM model is relatively simple, explicitly simulating the activity of multiple microbial groups means there are many parameters. 
-The complete list and definitions can be seen in the help file, accessible with the following command.
+For convenience in setting up simulations and to facilitate reproducibility, parameters are organized in groups and saved as numbered versions as data objects that are included with the package.
+A look at the help files or argument list shows how parameters are grouped and shows default sets.
 
 ```{r,eval=FALSE}
 ?abm
 ```
 
-Alternatively, use `args()` just to see the arguments and default values.Here it is also seen what parameter sets are used (v1.0 or v2.0). The default parameter sets v2.0. The parameter sets can be checked out directly:
-
 ```{r}
 args(abm)
+```
+
+Here it is also seen what parameter sets are used.
+Currently v1.0 and v2.0 are available and the default parameter set is v2.0. 
+Simply print parameter objects to check values.
+Microbial parameters are in `grp_pars` and `mic_pars`.
+
+```{r}
 grp_pars2.0
+mic_pars2.0
 ```
 
 Parameters are grouped to make changes easier (and to prevent input mistakes) and to limit the number of parameter names that are needed.
-The `mng_pars` argument contains parameters related to management; `man_pars` describes the incoming manure or feed; `grp_pars`, the most extensive argument, is used to define the microbial groups; `mic_pars` contains other microbial parameters that do not vary among groups; `chem_pars` sets some chemical/physical parameters; `arrh_pars` sets kinetic parameters controlling hydrolysis rates of different organic matter components. The `arrh_pars` is used when instead of specifying substrate input as degradable volatile solids, we can specify: 
-crude protein (CP), crude fats (Cfat), residual degradable fiber (RFd), starch and sugars (starch), and even more componenets. In that case VSd should be set to 0. `init_pars` are the initial concentrations of organic matter componenets in the storage, which by default is equal to the concentration i the excreted manure, but it can be changed here.  
+The `mng_pars` argument contains parameters related to management; 
+`man_pars` describes the incoming manure or feed; 
+`grp_pars`, the most extensive argument, is used to define the microbial groups; 
+`mic_pars` contains other microbial parameters that do not vary among groups; 
+`chem_pars` sets some chemical/physical parameters; 
+`arrh_pars` sets kinetic parameters controlling hydrolysis rates of different organic matter components. 
+Values in `arrh_pars` are used when instead of specifying substrate input as degradable volatile solids, we can specify: 
+crude protein (CP), crude fats (Cfat), residual degradable fiber (RFd), starch and sugars (starch), and even more components. 
+In that case VSd should be set to 0. 
+Values in `init_pars` are the initial concentrations of organic matter components in the storage, which by default is equal to the concentration in the excreted manure, but it can be changed here.  
 
 There are also some built-in shortcuts to make small tweaks simple.
 In particular, the `add_pars` argument makes life easy, and was used in the first demonstration.
 
 As an example, the composition of the fresh slurry (influent, or feed) is set with the `man_pars` argument, which is a list of solute concentrations and pH.
-An example with CP, Cfat, RFd specified rather than VSd is given below and with a simple change in VFA_concentration using the add_pars argument.The default setting of the ABM model is also using CP, Cfat, and RFd rather than a VSd input. This default parameter set is called `man_pars2.0`, but below we specify it directly instead.Since we are not using VSd input anymore when don't use grp_pars1.0 anymore, but instead the default (grp_pars2.0). 
+An example with CP, Cfat, RFd specified rather than VSd is given below and with a simple change in VFA_concentration using the add_pars argument.
+The default setting of the ABM model is also using CP, Cfat, and RFd rather than a VSd input. 
+This default parameter set is called `man_pars2.0`, but below we specify it directly instead.
+Since we are not using VSd input anymore when don't use grp_pars1.0 anymore, but instead the default (grp_pars2.0). 
 
 ```{r}
 man_pars = list(conc_fresh = list(sulfide = 0.01, urea = 2.4, sulfate = 0.2, TAN = 0.0, starch = 1, 

@@ -127,7 +127,7 @@ out1 <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
 
 ```
 The addition of `wash_water = NA` is only to avoid a warning. 
-Alternatively, the complete `mgn_pars` argument can be specified.
+Alternatively, the complete `mng_pars` argument can be specified.
 When a variable slurry mass is used as input, the `wash_water` needs to be passed through the `slurry_mass` data frame as well, but here, in outside storage, there is no washing after emptying. 
 
 Clearly emissions peak during the summer period, due to higher methanogenesis activity. 
@@ -215,28 +215,23 @@ Values in `init_pars` are the initial concentrations of organic matter component
 There are also some built-in shortcuts to make small tweaks simple.
 In particular, the `add_pars` argument makes life easy, and was used in the first demonstration.
 
-As an example, the composition of the fresh slurry (influent, or feed) is set with the `man_pars` argument, which is a list of solute concentrations and pH.
-An example with CP, Cfat, RFd specified rather than VSd is given below and with a simple change in VFA_concentration using the add_pars argument.
+An example with a simple change in VFA_concentration using the add_pars argument.
 The default setting of the ABM model is also using CP, Cfat, and RFd rather than a VSd input. 
-This default parameter set is called `man_pars2.0`, but below we specify it directly instead.
+This default parameter set is called `man_pars2.0`
 Since we are not using VSd input anymore when don't use grp_pars1.0 anymore, but instead the default (grp_pars2.0). 
 
 ```{r}
-man_pars = list(conc_fresh = list(sulfide = 0.01, urea = 2.4, sulfate = 0.2, TAN = 0.0, starch = 1, 
-                                    VFA = 2.83, xa_dead = 0, Cfat = 12, CP = 20, RFd = 29, iNDF = 10, VSd = 0, 
-                                    VSd_A = 44.4, VSnd_A = 20, ash = 15), pH = 7, dens = 1000)
-
-out2a <- abm(365, man_pars = man_pars)
-out2b <- abm(365, man_pars = man_pars, add_pars = list(conc_fresh.VFA = 10))
+out2a <- abm(365)
+out2b <- abm(365, add_pars = list(conc_fresh.VFA = 10))
 
 plot(VFA_conc ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)', ylim = c(0,20))
 lines(out2b$time, out2b$VFA_conc, col = "red")
 ```
-If the we use the add_pars to change a variable that is not within a sublist like VFA in "conc_fresh", we can simply type the variable directly without punctuation.  
+If we use the add_pars to change a variable that is not within a sublist like VFA in "conc_fresh", we can simply type the variable directly without punctuation.  
 
 ```{r}
 
-out2c <- abm(365, man_pars = man_pars, add_pars = list(slurry_prod_rate = 8000))
+out2c <- abm(365, add_pars = list(slurry_prod_rate = 8000))
 
 plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,20000))
 lines(out2c$time, out2c$CH4_emis_rate, col = "red")

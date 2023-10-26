@@ -31,9 +31,9 @@ man_pars2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2
 
 wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
 
-grz_pars2.0 <- list(graze_start = "may",
-                graze_days = 0,
-                graze_hours = 0)
+grz_pars2.0 <- list(graze_start = 'May',
+                    graze_days = 0,
+                    graze_hours = 0)
 
 chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa_dead = 1/0.73, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                               Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,

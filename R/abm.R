@@ -25,7 +25,7 @@ abm <- function(
   init_pars = list(conc_init = man_pars$conc_fresh),
   grp_pars = grp_pars2.0,
   mic_pars = mic_pars2.0,
-  chem_pars = chem_pars2.0
+  chem_pars = chem_pars2.0,
   arrh_pars = arrh_pars2.0,
   
   # kl = mass transfer coefficient (liquid phase units) in m/d

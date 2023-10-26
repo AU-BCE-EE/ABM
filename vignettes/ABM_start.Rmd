@@ -52,22 +52,24 @@ For a more incremental introduction to the function, see the following sections.
 First we will start with a demonstration using the default input parameters, which reflect manure production in a pig-house with 1000 grower-finisher pigs. In-house slurry pits are 0.6 m deep and the slurry is flushed out of the pig-house every 6 weeks, leaving 5 cm of residual slurry inside the in-house slurry pits. The slurry temperature is 20&degC. The amount of degradable VS content of raw pig manure is set to 75 gCOD/kg manure (feces + urine). 
 
 To predict in-house manure methane emission we can make the following call, specifying that we want to run the model for 365 days.
-We start using parameter sets (v.1.0) that where found in Dalby et al. 2023, where substrate input is degradable VS.
+We start using parameter sets (v1.0) from Dalby et al. 2023, where substrate input is degradable VS.
 
 ```{r}
-out0 <- abm(days = 365, man_pars = man_pars1.0, grp_pars = grp_pars1.0) # run the simulation for 365 days
+out0 <- abm(days = 365, man_pars = man_pars1.0, grp_pars = grp_pars1.0)
 ```
 
 Lets take a look at the output of microbial groups methanogens m0, m1, m2 and sulfate reducer group sr1.
 ```{r}
 line_colors <- c('red', 'blue', 'green','orange')
 matplot(out0$time, out0[, nn <- c('m0','m1','m2','sr1')]/1000, 
-        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Microbial biomass (kg)')
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', 
+        ylab = 'Microbial biomass (kg)')
 legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
        title = "Microbial biomass", cex = 0.8)
 
 matplot(out0$time, out0[, nn <- c('CH4_emis_rate', 'CO2_emis_rate', 'NH3_emis_rate')]/1000, 
-        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Emission rate (kg/day)')
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', 
+        ylab = 'Emission rate (kg/day)')
 legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
        title = "Emission rates", cex = 0.8)
 
@@ -155,7 +157,7 @@ out1a <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
 out1a
 ```
 
-Results show total annual emission from the outside storage of about 5.5 kg CH~4 per pig (`CH4_emis_cum/1000` pigs / 1000 g pr kg)
+Results show total annual emission from the outside storage of about 5.5 kg CH~4 per pig (`CH4_emis_cum` / 1000 pigs / 1000 g pr kg)
 
 How much might acidification reduce emission?
 We can easily make a comparison to a scenario with pH reduced to 6, with everything else the same.
@@ -177,6 +179,7 @@ The predicted reduction is 95%.
 ```{r}
 1 - out1b['CH4_emis_cum'] / out1a['CH4_emis_cum']
 ```
+
 # 4. Setting parameter values
 Although the ABM model is relatively simple, explicitly simulating the activity of multiple microbial groups means there are many parameters. 
 For convenience in setting up simulations and to facilitate reproducibility, parameters are organized in groups and saved as numbered versions as data objects that are included with the package.
@@ -192,7 +195,7 @@ args(abm)
 
 Here it is also seen what parameter sets are used.
 Currently v1.0 and v2.0 are available and the default parameter set is v2.0. 
-Simply print parameter objects to check values.
+Simply display parameter objects to check values.
 Microbial parameters are in `grp_pars` and `mic_pars`.
 
 ```{r}
@@ -215,7 +218,7 @@ Values in `init_pars` are the initial concentrations of organic matter component
 There are also some built-in shortcuts to make small tweaks simple.
 In particular, the `add_pars` argument makes life easy, and was used in the first demonstration.
 
-An example with a simple change in VFA_concentration using the add_pars argument.
+An example with a simple change in `VFA_concentration` using the `add_pars` argument.
 The default setting of the ABM model is also using CP, Cfat, and RFd rather than a VSd input. 
 This default parameter set is called `man_pars2.0`
 Since we are not using VSd input anymore when don't use grp_pars1.0 anymore, but instead the default (grp_pars2.0). 

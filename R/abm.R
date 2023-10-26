@@ -19,6 +19,7 @@ abm <- function(
                   cover = NA,
                   resid_enrich = 0.9,
                   slopes = c(urea = NA, slurry_prod_rate = NA),
+                  graze = c(start = 'May', duration = 0, hours_day = 0),
                   scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
   grz_pars = grz_pars2.0,
   man_pars = man_pars2.0,
@@ -228,8 +229,8 @@ abm <- function(
   pars$EF_N2O <- ifelse(is.na(pars$cover) | pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
   
   # calculate grazing interval of year if needed
-  if(pars$graze_days > 0){
-    pars$graze_int <- c(doy(pars$graze_start, 'March')$day, doy(pars$graze_start, 'March')$day + pars$graze_days)
+  if(pars$graze[['duration']] > 0){
+    pars$graze_int <- c(doy(pars$graze[['start']])$day, doy(pars$graze[['start']])$day + pars$graze[['duration']])
   } else {
     pars$graze_int <- 0
   }

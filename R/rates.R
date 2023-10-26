@@ -11,7 +11,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
      
     # correct slurry production rate in periods with grazing
     if(!is.null(graze_int) & graze_int != 0) {
-       slurry_prod_rate <- graze_fun(t,  t_run, days, slurry_prod_rate, graze_int, graze_hours)
+       slurry_prod_rate <- graze_fun(t,  t_run, days, slurry_prod_rate, graze_int, graze_hours = graze[['hours']])
     }
        
     # pH, numeric, variable, or from H2SO4

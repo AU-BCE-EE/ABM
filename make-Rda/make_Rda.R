@@ -31,10 +31,6 @@ man_pars2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2
 
 wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
 
-grz_pars2.0 <- list(graze_start = 'May',
-                    graze_days = 0,
-                    graze_hours = 0)
-
 chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa_dead = 1/0.73, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                               Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
                               N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358,
@@ -52,7 +48,6 @@ save(grp_pars2.0, file = '../data/grp_pars2.0.rda')
 save(mic_pars2.0, file = '../data/mic_pars2.0.rda')
 save(man_pars2.0, file = '../data/man_pars2.0.rda')
 save(wthr_pars2.0, file = '../data/wthr_pars2.0.rda')
-save(grz_pars2.0, file = '../data/grz_pars2.0.rda')
 save(chem_pars2.0, file = '../data/chem_pars2.0.rda')
 save(arrh_pars2.0, file = '../data/arrh_pars2.0.rda')
 
@@ -94,7 +89,7 @@ save(man_pars1.0, file = '../data/man_pars1.0.rda')
 # make data.frame for outside temperature
 outside_slurry_temp <- 
   data.frame(time = c(0, 15, 45, 76, 106, 137, 167, 198, 228, 259, 289, 320, 350, 365),
-           temp_C = c(6.121, 7.783, 11.9, 14.49, 15.73, 16.39, 15.2, 13, 10.47, 7.937, 6.132, 4.648, 4.46, 6.121))
+           temp_C = c(7.0345, 6.132, 4.648, 4.46, 7.783, 11.9, 14.49, 15.73, 16.39, 15.2, 13, 10.47, 7.937, 7.0345))
 
 save(outside_slurry_temp, file = '../data/outside_slurry_temp.rda')
 

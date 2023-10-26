@@ -1,4 +1,4 @@
-doy <- function(month, begin){
+doy <- function(month, begin = 'January'){
   doyd <- data.frame(month = c("January", "February", "March", "April",
                                "May", "June", "July", "August", "September",
                                "October", "November", "December"),

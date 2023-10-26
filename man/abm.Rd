@@ -142,7 +142,7 @@ abm(days = 365,
     \code{CO2_ureo}, carbon dioxide productivity coefficient for urea hydrolysis (g CO2/g urea-N);
     \code{N_CP}, nitrogen per COD of crude protein (g N/g CP-COD).
     \code{C_N_urea}, carbon to nitrogen (g C/g urea-N)
-    \code{kl}, mass transfer coefficient of ammonia from the slurry pit [NH3] (unit) and from the barn floor [NH3_floor] (unit) and mass transfer coefficient of H2S from the slurry (unit).
+    \code{kl}, mass transfer coefficient of ammonia from the slurry pit [NH3] (m/day) and from the barn floor [NH3_floor] (m/day) and mass transfer coefficient of H2S from the slurry (m/day).
     Other conversion factors designated \code{C_} are carbon to COD of the named substrate (gC/gCOD) 
 }
 

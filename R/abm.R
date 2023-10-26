@@ -45,8 +45,15 @@ abm <- function(
 
     cat('\nRepeating ')
 
+    value.orig <- value
+    value <- 'ts'
+
     for (i in 1:(startup + 1)) {
       cat(i, 'x ')
+
+      if (i > startup) {
+        value <- value.orig
+      }
 
       # Call abm() with arguments given in outside call except for startup and value
       out <- abm(days = days, delta_t = delta_t, wthr_pars = wthr_pars, evap_pars = evap_pars,
@@ -57,7 +64,7 @@ abm <- function(
                  starting = starting, 
                  approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, 
                  approx_method_vent_air = approx_method_vent_air, 
-                 par_key = par_key, value = 'ts', warn = warn)
+                 par_key = par_key, value = value, warn = warn)
  
       # Pull starting *concentrations* (inlcuding xa) from previous sim
       tso <- out

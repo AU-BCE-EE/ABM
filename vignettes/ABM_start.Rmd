@@ -49,7 +49,7 @@ vignette('ABM_start')
 A demonstration is presented in this section to show what the abm() function can do.
 For a more incremental introduction to the function, see the following sections.
 
-First we will start with a demonstration using the default input parameters, which reflect manure production in a pig-house with 1000 finisher growing pigs. In-house slurry pits are 0.6 m deep and the slurry is flushed out of the pig-house every 28 days, leaving 5 cm of residual slurry inside the in-house slurry pits. The slurry temperature is 20&degC. The amount of degradable VS content of raw pig manure is set to 75 gCOD/kg manure (feces + urine). 
+First we will start with a demonstration using the default input parameters, which reflect manure production in a pig-house with 1000 grower-finisher pigs. In-house slurry pits are 0.6 m deep and the slurry is flushed out of the pig-house every 28 days, leaving 5 cm of residual slurry inside the in-house slurry pits. The slurry temperature is 20&degC. The amount of degradable VS content of raw pig manure is set to 75 gCOD/kg manure (feces + urine). 
 
 To predict in-house manure methane emission we can make the following call, specifying that we want to run the model for 365 days 
 
@@ -102,7 +102,7 @@ slurry_mass_dat <- data.frame(time = out0$time, slurry_mass = slurry_mass_cum)
 slurry_mass_dat
 VSd_fresh <- mean(out0$VSd_eff_conc, na.rm = T)
 VSd_fresh
-temp_dat <- read.csv('../dat/outside_slurry_temp.csv', sep = ';')
+temp_dat <- outside_slurry_temp
 temp_dat
 
 ```

@@ -65,6 +65,7 @@ abm(days = 365,
     time that the animal section is empty after a batch of animals has been finished (days) (\code{rest_d}),
     factor that determines the degree of enrichment of microbes and organic matter components in the residual slurry after emptying   (\code{resid_enrich}),
     slopes is an expert user argument for changing the increasing the excretion rate of urea or slurry production during a growth period of an animal     . By default this argument is not used (\code{slopes}),
+    (\code{graze}) is a list with parameters to adjust the grazing outdoor, which affects the amount of slurry excreted in the barn. 'Duration' is the number of days per year that the animals are allowed to graze and 'hours_day' are the number of hours animals graze per day during the grazing period,
     multiplyer arguments for adjusting some grp_pars arguments for all microbes at the same time (\code{scale}),
     
     Each element may be a length-one vector or, in some cases, a list.
@@ -157,14 +158,6 @@ abm(days = 365,
     \code{A}, Arrhenius factor for calculating the temperature sensitive hydrolysis rate constant of organic amtter compoenents (1/day);
     \code{E}, Activation energy for calculating the temperature sensitive hydrolysis rate constant of organic amtter compoenents (J/mol).
 
-}
-
-  \item{grz_pars}{
-    List of parameters used for simualting periods of grazing.
-    Elements are:
-    \code{graze_start}, month in which grazing (for cattle) starts, e.g. in "may"" (month);
-    \code{graze_days}, days per year that the animals are outside grazing (days/year);
-    \code{graze_hours}, hours per day the animals are outside grazing (hours/day).
 }
 
   \item{add_pars}{

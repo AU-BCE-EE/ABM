@@ -57,7 +57,7 @@ abm <- function(
 
       # Call abm() with arguments given in outside call except for startup and value
       out <- abm(days = days, delta_t = delta_t, wthr_pars = wthr_pars, evap_pars = evap_pars,
-                 mng_pars = mng_pars, grz_pars = grz_pars, man_pars = man_pars, init_pars = init_pars,
+                 mng_pars = mng_pars, man_pars = man_pars, init_pars = init_pars,
                  grp_pars = grp_pars, mic_pars = mic_pars, chem_pars = chem_pars, arrh_pars = arrh_pars,
                  add_pars = add_pars, pars = pars, 
                  startup = 0, 
@@ -104,7 +104,7 @@ abm <- function(
   
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) {
-    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, grz_pars, arrh_pars, list(days = days))
+    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days))
   }
 
   # Create error if batch time is not determined and slurry rate should increase over a batch

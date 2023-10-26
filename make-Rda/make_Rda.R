@@ -93,7 +93,7 @@ save(man_pars1.0, file = '../data/man_pars1.0.rda')
 
 # make data.frame for outside temperature
 outside_slurry_temp <- 
-  data.frame(time = c(0, 15, 45, 76, 106, 137, 167, 198, 228, 289, 259, 320, 350, 365),
+  data.frame(time = c(0, 15, 45, 76, 106, 137, 167, 198, 228, 259, 289, 320, 350, 365),
            temp_C = c(6.121, 7.783, 11.9, 14.49, 15.73, 16.39, 15.2, 13, 10.47, 7.937, 6.132, 4.648, 4.46, 6.121))
 
 save(outside_slurry_temp, file = '../data/outside_slurry_temp.rda')

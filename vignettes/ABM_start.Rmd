@@ -89,7 +89,7 @@ NH3_kg_pr_pig_pr_year
 C_ratio <- (CH4_kg_pr_pig_pr_year * 12/16) / (CO2_kg_pr_pig_pr_year * 12/44 + CH4_kg_pr_pig_pr_year * 12/16)
 C_ratio
 ```
-Only ~26% of carbon emission is methane, suggesting that a lot of carbon dioxide comes from non-methanogenic processes (urea hydrolysis and surface respiration).  
+around 31% of carbon emission is methane, suggesting that a lot of carbon dioxide comes from non-methanogenic processes (urea hydrolysis and surface respiration).  
 
 We can continue our calculations by doing another simulation of emissions coming from the outside slurry tank, by using the effluents from the in-house simulation as input for our storage simulation. 
 To do this we extract the effluent slurry masses and pass to the new simulation as a data.frame using the add_pars argument. With add_pars we can change the default input parameters. In the outside storage, the temperature will also changes considerably over the year, so temperature will also be passed as a data.frame(). We will get our temperature data another file. Since Some VS was degraded in the barn we have to change the VS in the manure going to the outside storage also.

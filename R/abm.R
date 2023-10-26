@@ -66,18 +66,20 @@ abm <- function(
                  approx_method_vent_air = approx_method_vent_air, 
                  par_key = par_key, value = value, warn = warn)
  
-      # Pull starting *concentrations* (inlcuding xa) from previous sim
-      tso <- out
+      if (i <= startup) {
+        # Pull starting *concentrations* (inlcuding xa) from previous sim
+        tso <- out
 
-      # Names need to deal with possible data frame for conc_fresh
-      cf_names <- names(man_pars$conc_fresh)
-      cf_names <- cf_names[!grepl('^time', paste0(cf_names, '_conc'))]
+        # Names need to deal with possible data frame for conc_fresh
+        cf_names <- names(man_pars$conc_fresh)
+        cf_names <- cf_names[!grepl('^time', paste0(cf_names, '_conc'))]
 
-      init_pars$conc_init <- unlist(tso[nrow(tso), paste0(cf_names, '_conc')])
-      names(init_pars$conc_init) <- cf_names
+        init_pars$conc_init <- unlist(tso[nrow(tso), paste0(cf_names, '_conc')])
+        names(init_pars$conc_init) <- cf_names
 
-      grp_pars$xa_init <- unlist(tso[nrow(tso), paste0(grp_pars$grps, '_conc')])
-      names(grp_pars$xa_init) <- grp_pars$grps
+        grp_pars$xa_init <- unlist(tso[nrow(tso), paste0(grp_pars$grps, '_conc')])
+        names(grp_pars$xa_init) <- grp_pars$grps
+      }
  
     }
 

@@ -26,7 +26,6 @@ abm(days = 365,
                   slopes = c(urea = NA, slurry_prod_rate = NA),
                   graze = c(start = 'May', duration = 0, hours_day = 0),
                   scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
-    grz_pars = grz_pars2.0,
     man_pars = man_pars2.0,
     init_pars = list(conc_init = man_pars$conc_fresh),
     grp_pars = grp_pars2.0,
@@ -65,7 +64,7 @@ abm(days = 365,
     time that the animal section is empty after a batch of animals has been finished (days) (\code{rest_d}),
     factor that determines the degree of enrichment of microbes and organic matter components in the residual slurry after emptying   (\code{resid_enrich}),
     slopes is an expert user argument for changing the increasing the excretion rate of urea or slurry production during a growth period of an animal     . By default this argument is not used (\code{slopes}),
-    (\code{graze}) is a list with parameters to adjust the grazing outdoor, which affects the amount of slurry excreted in the barn. 'Duration' is the number of days per year that the animals are allowed to graze and 'hours_day' are the number of hours animals graze per day during the grazing period,
+    (\code{graze}) is a list with parameters to adjust the grazing activity outdoor, which affects the amount of slurry excreted in the barn. 'Duration' is the number of days per year that the animals are allowed to graze and 'hours_day' are the number of hours animals graze per day during the grazing period, the 'start' argument is the month, where grazing starts, e.g. "May". When the (\code{graze}) arguments are not 0, then the model simulation is with time reference to 1. January 00:00:00. Effectively, if start = 'May', the model simulates grazing from time = 120. Therefore, when combined with variable temperature, temperature should also be with time = 0 referencing to 1. January 00:00:00. 
     multiplyer arguments for adjusting some grp_pars arguments for all microbes at the same time (\code{scale}),
     
     Each element may be a length-one vector or, in some cases, a list.

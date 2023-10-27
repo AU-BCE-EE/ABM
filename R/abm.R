@@ -496,6 +496,9 @@ abm <- function(
   # Add slurry depth
   dat$slurry_depth <- dat$slurry_mass / pars$area / pars$dens
 
+  # Get effluent-only lines
+  eff <- dat[dat$slurry_mass_eff > 0, ]
+
   # Check slurry mass, warn if needed
   if (any(dat$slurry_mass > pars$max_slurry_mass)) {
     warning('Maximum slurry mass exceeded.\nCheck output.')
@@ -508,6 +511,7 @@ abm <- function(
   if (value == 'ts') return(dat)
   # tsel = time series after startup period
   if (value == 'tsel') return(dat_sel)
+  if (value == 'eff') return(eff)
 
   # NTS: create and return cumulative effluent here?
   # NTS: remove duplicate times from emptying (actually only emptying times should show up in effluent right?)

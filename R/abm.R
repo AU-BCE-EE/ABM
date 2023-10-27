@@ -498,6 +498,7 @@ abm <- function(
 
   # Get effluent-only lines
   eff <- dat[dat$slurry_mass_eff > 0, ]
+  eff$slurry_mass_eff_cum <- cumsum(eff$slurry_mass_eff)
 
   # Check slurry mass, warn if needed
   if (any(dat$slurry_mass > pars$max_slurry_mass)) {

@@ -12,8 +12,8 @@ vignette: >
 ---
 
 ```{r,echo=FALSE}
-knitr::opts_chunk$set(fig.width=6, fig.height=4)
-options(width = 85)
+#knitr::opts_chunk$set(fig.width=6, fig.height=4)
+#options(width = 85)
 ```
 
 # 1. Overview
@@ -95,32 +95,40 @@ C_ratio
 around 31% of carbon emission is methane, suggesting that a lot of carbon dioxide comes from non-methanogenic processes (urea hydrolysis and surface respiration).  
 
 We can continue our calculations by doing another simulation of emissions coming from the outside slurry tank, by using the effluents from the in-house simulation as input for our storage simulation. 
-To do this we extract the effluent slurry masses and pass to the new simulation as a data.frame using the add_pars argument. With add_pars we can change the default input parameters. In the outside storage, the temperature will also changes considerably over the year, so temperature will also be passed as a data.frame(). We will get our temperature data another file. Since Some VS was degraded in the barn we have to change the VS in the manure going to the outside storage also.
+To do this we extract the effluent slurry masses and pass to the new simulation as a data frame using the `add_pars` argument. 
+First, while we could extract the rows of effluent data from `out0` by finding those that have `slurry_mass_eff > 0` it is easier to just run the simulation again and specify that we want effluent results with `value = "eff"`.
+we can get the effluent data 
+
 
 ```{r}
-# fix this. 
-out0 <- out0[!duplicated(out0$time), ]
-slurry_mass_intp <- approx(out0$time, out0$slurry_mass_eff, xout = out0$time)$y
-slurry_mass_cum <- cumsum(slurry_mass_intp)
-slurry_mass_dat <- data.frame(time = out0$time, slurry_mass = slurry_mass_cum)
+out0e <- abm(days = 365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, value = 'eff')
+```
+
+With `add_pars` we can change the default input parameters. 
+In the outside storage, the temperature will also changes considerably over the year, so temperature will also be passed as a data frame. 
+We will get our temperature data another file. 
+Since some VS was degraded in the barn we have to change the VS in the manure going to the outside storage also.
+
+```{r}
+slurry_mass_dat <- data.frame(time = out0e$time, slurry_mass = out0e$slurry_mass_eff_cum)
 slurry_mass_dat
-VSd_fresh <- mean(out0$VSd_eff_conc, na.rm = T)
+VSd_fresh <- mean(out0e$VSd_eff_conc)
 VSd_fresh
 temp_dat <- outside_slurry_temp
 temp_dat
-
 ```
 
-Lets look at temperature and slurry data before we continue
+Lets look at temperature and slurry data before we continue.
 
 ```{r}
 plot(slurry_mass_dat$time, slurry_mass_dat$slurry_mass, ylab = 'Slurry_mass (kg)', 
      xlab = 'Time (days from 1. Apr)')
-plot(temp_dat$time, temp_dat$temp_C, ylab = 'Temperature (deg C)', xlab = 'Time (days from 1. Apr)')
+plot(temp_dat$time, temp_dat$temp_C, ylab = 'Temperature (deg C)', 
+     xlab = 'Time (days from 1. Apr)')
 ```
 We need to adjust dimensions of outside slury storage, height = 4 m, surface area = 1000
-```{r}
 
+```{r}
 out1 <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, 
             add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, 
                             slurry_mass = slurry_mass_dat, temp_C = temp_dat, 
@@ -128,6 +136,7 @@ out1 <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
                             wash_water = NA))
 
 ```
+
 The addition of `wash_water = NA` is only to avoid a warning. 
 Alternatively, the complete `mng_pars` argument can be specified.
 When a variable slurry mass is used as input, the `wash_water` needs to be passed through the `slurry_mass` data frame as well, but here, in outside storage, there is no washing after emptying. 
@@ -135,13 +144,16 @@ When a variable slurry mass is used as input, the `wash_water` needs to be passe
 Clearly emissions peak during the summer period, due to higher methanogenesis activity. 
 
 ```{r}
-plot(CH4_emis_rate ~ time, data = out1, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emission rate (g/d)')
-plot(CH4_emis_cum ~ time, data = out1, type = 'l', xlab = 'Time (d)', ylab = 'CH4 cumulative emission (g)')
+plot(CH4_emis_rate ~ time, data = out1, type = 'l', xlab = 'Time (d)', 
+     ylab = 'CH4 emission rate (g/d)')
+plot(CH4_emis_cum ~ time, data = out1, type = 'l', xlab = 'Time (d)', 
+     ylab = 'CH4 cumulative emission (g)')
 ```
 We can even look at the VFA dynamics during the year
 
 ```{r}
-plot(VFA_conc ~ time, data = out1, type = 'l', xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)')
+plot(VFA_conc ~ time, data = out1, type = 'l', xlab = 'Time (d)', 
+     ylab = 'VFA conc. (g/kg)')
 ```
 
 Because we would ideally like a stabilization period, we can run the model for three years and take a look only at the last year by using the `startup` argument. 
@@ -215,13 +227,57 @@ crude protein (CP), crude fats (Cfat), residual degradable fiber (RFd), starch a
 In that case VSd should be set to 0. 
 Values in `init_pars` are the initial concentrations of organic matter components in the storage, which by default is equal to the concentration in the excreted manure, but it can be changed here.  
 
-There are also some built-in shortcuts to make small tweaks simple.
-In particular, the `add_pars` argument makes life easy, and was used in the first demonstration.
+There are also some built-in shortcuts to make small tweaks simpler than defining complete parameter objects.
+In particular, the `add_pars` argument makes life easy (and was used in the demonstration above).
+The argument can be used to add or change variables normally given in specific parameter arguments.
+For example, perhaps all the elements in the default `mng_pars` argument are correct for a particular case except for the slurry production rate, which should be 8000 kg/d.
 
-An example with a simple change in `VFA_concentration` using the `add_pars` argument.
-The default setting of the ABM model is also using CP, Cfat, and RFd rather than a VSd input. 
-This default parameter set is called `man_pars2.0`
-Since we are not using VSd input anymore when don't use grp_pars1.0 anymore, but instead the default (grp_pars2.0). 
+```{r}
+args(abm)
+```
+
+We can use a different value with `add_pars`.
+
+
+```{r}
+out2c <- abm(365, add_pars = list(slurry_prod_rate = 8000))
+
+plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,20000))
+lines(out2c$time, out2c$CH4_emis_rate, col = "red")
+```
+
+Of course this approach also works if we have explicitly defined our own `mng_pars` values and then want to modify it in a later call.
+
+```{r}
+mng_pars2c <- list(slurry_prod_rate = 5700, slurry_mass = 39000,
+                   storage_depth = 0.6, resid_depth = 0.05, floor_area = 650,
+                   area = 715, empty_int = 42, temp_C = 20, wash_water = 75000,
+                   wash_int = NA, rest_d = 5, cover = NA, resid_enrich = 0.9,
+                   slopes = c(urea = NA, slurry_prod_rate = NA), 
+                   graze = c(start = "May", duration = 0, hours_day = 0), 
+                   scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, 
+                             yield = 1, alpha_opt = 1))
+```
+
+```{r}
+out2d <- abm(365, mng_pars = mng_pars2c, add_pars = list(slurry_prod_rate = 8000))
+all.equal(out2c, out2d)
+```
+
+Or to change a value in one of the default parameter sets.
+
+```{r}
+out2e <- abm(365, add_pars = list(pH = 6))
+```
+
+As in the above example `out1` multiple parameters can be combined in a list for use with `add_pars`.
+But for parameter values that come from sets with a nested structure, we have to provide more details on what value we are trying to change.
+To change `VFA_concentration` in fresh manure, use `conc_fresh.VFA`, for example.
+All the other values from the default parameter set would be used.
+
+```{r}
+man_pars2.0
+```
 
 ```{r}
 out2a <- abm(365)
@@ -230,53 +286,53 @@ out2b <- abm(365, add_pars = list(conc_fresh.VFA = 10))
 plot(VFA_conc ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)', ylim = c(0,20))
 lines(out2b$time, out2b$VFA_conc, col = "red")
 ```
-If we use the add_pars to change a variable that is not within a sublist like VFA in "conc_fresh", we can simply type the variable directly without punctuation.  
+
+We can also change any OM concentrations in the influent manure over time by passing it to `conc_fresh` as a data frame. 
+Below example with changed VFA (which increase methane production), sulfide concentrations (which inhibit methanogens) and total ammonia nitrogen (TAN).
 
 ```{r}
 
-out2c <- abm(365, add_pars = list(slurry_prod_rate = 8000))
-
-plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,20000))
-lines(out2c$time, out2c$CH4_emis_rate, col = "red")
-```
-We can also change any OM concentrations in the excreted manure over time by passing it as a conc_fresh as a data.frame. Below example with changed VFA (which increase methane production), sulfide concentrations (which inhibit methanogens) and total ammonia nitrogen (TAN).
-
-```{r}
-
-man_pars = list(conc_fresh = data.frame(time = c(0, 100, 101, 365), sulfide = c(0.01, 0.01, 0.1, 0.1), urea = 0, 
+man_pars <- list(conc_fresh = data.frame(time = c(0, 100, 101, 365), sulfide = c(0.01, 0.01, 0.1, 0.1), urea = 0, 
                                         sulfate = 0.2, TAN = c(0, 3, 5, 6), starch = 1, 
                                         VFA = c(2.83, 2.83, 10, 10), 
                                         xa_dead = 0, Cfat = 12, CP = 20, RFd = 29, iNDF = 10, VSd = 0, 
                                         VSd_A = 44.4, VSnd_A = 20, ash = 15), pH = 7, dens = 1000)
 
+man_pars
+
 out2d <- abm(365, man_pars = man_pars)
 
-plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,20000))
-lines(out2d$time, out2d$CH4_emis_rate, col = "red")
+plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)')
+lines(CH4_emis_rate ~ time, data = out2d, col = "red")
 
-plot(VFA_conc ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)', ylim = c(0,12))
-lines(out2d$time, out2d$VFA_conc, col = "red")
+plot(VFA_conc ~ time, data = out2d, type = 'l', col = "red", xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)')
+lines(VFA_conc ~ time, data = out2a)
 
 plot(H2S_inhib_m0 ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'inhibition', ylim = c(0,1))
-lines(out2d$time, out2d$H2S_inhib_m0, col = "red")
-lines(out2d$time, out2d$cum_inhib_m0, col = "red", lty = 2)
+lines(H2S_inhib_m0 ~ time, data = out2d,  col = "red")
+lines(cum_inhib_m0 ~ time, data = out2d, col = "red", lty = 2)
 
 ```
 
-The H2S inhibition constant is plotted for the methanogen "m0", as by default inhibition kinetics are similar for all groups of methanogens. Due to the TAN added, the cumulative inhibition constant is even lower than just inhibition from H2S.  
+The H2S inhibition constant is plotted for the methanogen "m0", as by default inhibition kinetics are similar for all groups of methanogens. 
+Due to the TAN added, the cumulative inhibition constant is even lower than just inhibition from H2S.  
 
 A similar change in the concentration of microbial populations in the fresh manure can be simulated:
 
 ```{r}
-xa_fresh <- data.frame(time = c(0, 100, 101, 365), m0 = c(2, 0.0628, 0.0628, 0.0628), m1 = c(0.0628, 1, 2, 0.01), m2 = c(0.0628, 0.01, 0.01, 0.1), sr1 = c(0.0628, 1, 2, 0.01))
+xa_fresh <- data.frame(time = c(0, 100, 101, 365), m0 = c(2, 0.0628, 0.0628, 0.0628), 
+                       m1 = c(0.0628, 1, 2, 0.01), m2 = c(0.0628, 0.01, 0.01, 0.1), 
+                       sr1 = c(0.0628, 1, 2, 0.01))
 
 out2e <- abm(365, man_pars = man_pars, add_pars = list(xa_fresh = xa_fresh))
 
-plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,10))
-lines(out2e$time, out2e$CH4_emis_rate, col = "red")
+plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', 
+     ylab = 'CH4 emis rate (g/day)')
+lines(CH4_emis_rate ~ time, data = out2e, col = "red")
 
 matplot(out2e$time, out2e[, nn <- c('m0_conc','m1_conc','m2_conc','sr1_conc')]/1000, 
-        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', ylab = 'Microbial biomass (gCOD/kg)')
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', 
+        ylab = 'Microbial biomass (gCOD/kg)')
 legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
        title = "Microbial biomass", cex = 0.8)
 ```

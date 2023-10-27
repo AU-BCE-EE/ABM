@@ -106,7 +106,7 @@ out0e <- abm(days = 365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, value =
 
 With `add_pars` we can change the default input parameters. 
 In the outside storage, the temperature will also changes considerably over the year, so temperature will also be passed as a data frame. 
-We will get our temperature data another file. 
+We will get our temperature data from another file. 
 Since some VS was degraded in the barn we have to change the VS in the manure going to the outside storage also.
 
 ```{r}
@@ -122,11 +122,11 @@ Lets look at temperature and slurry data before we continue.
 
 ```{r}
 plot(slurry_mass_dat$time, slurry_mass_dat$slurry_mass, ylab = 'Slurry_mass (kg)', 
-     xlab = 'Time (days from 1. Apr)')
+     xlab = 'Time (days from 1. Jan)')
 plot(temp_dat$time, temp_dat$temp_C, ylab = 'Temperature (deg C)', 
-     xlab = 'Time (days from 1. Apr)')
+     xlab = 'Time (days from 1. Jan)')
 ```
-We need to adjust dimensions of outside slury storage, height = 4 m, surface area = 1000
+We need to adjust dimensions of outside slurry storage, height = 4 m, surface area = 1000
 
 ```{r}
 out1 <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, 

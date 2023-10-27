@@ -240,10 +240,11 @@ We can use a different value with `add_pars`.
 
 
 ```{r}
-out2c <- abm(365, add_pars = list(slurry_prod_rate = 8000))
+out2a <- abm(365)
+out2b <- abm(365, add_pars = list(slurry_prod_rate = 8000))
 
 plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,20000))
-lines(out2c$time, out2c$CH4_emis_rate, col = "red")
+lines(CH4_emis_rate ~ time, data = out2b, col = "red")
 ```
 
 Of course this approach also works if we have explicitly defined our own `mng_pars` values and then want to modify it in a later call.
@@ -260,14 +261,14 @@ mng_pars2c <- list(slurry_prod_rate = 5700, slurry_mass = 39000,
 ```
 
 ```{r}
-out2d <- abm(365, mng_pars = mng_pars2c, add_pars = list(slurry_prod_rate = 8000))
-all.equal(out2c, out2d)
+out2c <- abm(365, mng_pars = mng_pars2c, add_pars = list(slurry_prod_rate = 8000))
+all.equal(out2c, out2b)
 ```
 
 Or to change a value in one of the default parameter sets.
 
 ```{r}
-out2e <- abm(365, add_pars = list(pH = 6))
+out2d <- abm(365, add_pars = list(pH = 6))
 ```
 
 As in the above example `out1` multiple parameters can be combined in a list for use with `add_pars`.
@@ -280,11 +281,10 @@ man_pars2.0
 ```
 
 ```{r}
-out2a <- abm(365)
-out2b <- abm(365, add_pars = list(conc_fresh.VFA = 10))
+out2e <- abm(365, add_pars = list(conc_fresh.VFA = 10))
 
 plot(VFA_conc ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)', ylim = c(0,20))
-lines(out2b$time, out2b$VFA_conc, col = "red")
+lines(VFA_conc ~ time, data = out2e, col = "red")
 ```
 
 We can also change any OM concentrations in the influent manure over time by passing it to `conc_fresh` as a data frame. 
@@ -300,17 +300,17 @@ man_pars <- list(conc_fresh = data.frame(time = c(0, 100, 101, 365), sulfide = c
 
 man_pars
 
-out2d <- abm(365, man_pars = man_pars)
+out2f <- abm(365, man_pars = man_pars)
 
 plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)')
-lines(CH4_emis_rate ~ time, data = out2d, col = "red")
+lines(CH4_emis_rate ~ time, data = out2f, col = "red")
 
-plot(VFA_conc ~ time, data = out2d, type = 'l', col = "red", xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)')
+plot(VFA_conc ~ time, data = out2f, type = 'l', col = "red", xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)')
 lines(VFA_conc ~ time, data = out2a)
 
 plot(H2S_inhib_m0 ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'inhibition', ylim = c(0,1))
-lines(H2S_inhib_m0 ~ time, data = out2d,  col = "red")
-lines(cum_inhib_m0 ~ time, data = out2d, col = "red", lty = 2)
+lines(H2S_inhib_m0 ~ time, data = out2f,  col = "red")
+lines(cum_inhib_m0 ~ time, data = out2f, col = "red", lty = 2)
 
 ```
 
@@ -324,13 +324,13 @@ xa_fresh <- data.frame(time = c(0, 100, 101, 365), m0 = c(2, 0.0628, 0.0628, 0.0
                        m1 = c(0.0628, 1, 2, 0.01), m2 = c(0.0628, 0.01, 0.01, 0.1), 
                        sr1 = c(0.0628, 1, 2, 0.01))
 
-out2e <- abm(365, man_pars = man_pars, add_pars = list(xa_fresh = xa_fresh))
+out2g <- abm(365, man_pars = man_pars, add_pars = list(xa_fresh = xa_fresh))
 
 plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', 
      ylab = 'CH4 emis rate (g/day)')
-lines(CH4_emis_rate ~ time, data = out2e, col = "red")
+lines(CH4_emis_rate ~ time, data = out2g, col = "red")
 
-matplot(out2e$time, out2e[, nn <- c('m0_conc','m1_conc','m2_conc','sr1_conc')]/1000, 
+matplot(out2g$time, out2g[, nn <- c('m0_conc','m1_conc','m2_conc','sr1_conc')]/1000, 
         type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', 
         ylab = 'Microbial biomass (gCOD/kg)')
 legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,

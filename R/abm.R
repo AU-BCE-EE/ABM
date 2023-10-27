@@ -4,7 +4,7 @@ abm <- function(
   delta_t = 1,                               # Time step for output
   times = NA,
   wthr_pars = wthr_pars2.0,
-  evap_pars = list(evap = 0.5 * et(temp_C = wthr_pars2.0$temp_air_C, pres_kpa = wthr_pars2.0$pres_kpa, rs = wthr_pars2.0$rs)),                # mm/d
+  evap_pars = list(evap = 0.5 * et(temp_C = wthr_pars$temp_air_C, pres_kpa = wthr_pars$pres_kpa, rs = wthr_pars$rs)),                # mm/d
   mng_pars = list(slurry_prod_rate = 5700,   # kg/d
                   slurry_mass = 39000,           # Initial slurry mass (kg) NTS: convert to depth??
                   storage_depth = 0.6,         # Storge structure depth, assued to be maximum slurry depth (m)

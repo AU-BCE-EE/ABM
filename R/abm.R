@@ -43,13 +43,17 @@ abm <- function(
   # If startup repetitions are requested, repeat some number of times before returning results
   if (startup > 0) {
 
-    cat('\nRepeating ')
+    cat('\nStartup run ')
 
     value.orig <- value
     value <- 'ts'
 
     for (i in 1:(startup + 1)) {
-      cat(i, 'x ')
+      if (i > startup) {
+        cat('And final run')
+      } else {
+        cat(paste0(i, 'x '))
+      }
 
       if (i > startup) {
         value <- value.orig

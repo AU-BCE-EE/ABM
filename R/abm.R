@@ -50,9 +50,10 @@ abm <- function(
 
     for (i in 1:(startup + 1)) {
       if (i > startup) {
-        cat('And final run')
+        cat('and final run')
+        cat('\n')
       } else {
-        cat(paste0(i, 'x '))
+        cat(paste0(i, 'x -> '))
       }
 
       if (i > startup) {

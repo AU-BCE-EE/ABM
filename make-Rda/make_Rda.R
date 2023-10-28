@@ -93,3 +93,14 @@ outside_slurry_temp <-
 
 save(outside_slurry_temp, file = '../data/outside_slurry_temp.rda')
 
+outside_slurry_temp_vechi <- 
+  data.frame(time = c(0, 15, 45, 76, 106, 137, 167, 198, 228, 259, 289, 320, 350, 365),
+             temp_C = c(7.7, 7.4, 7.2, 8.6, 11.9, 14.9, 17.3, 19.4, 19.2, 16.7, 13.4, 10.6, 8, 7.7))
+
+save(outside_slurry_temp_vechi, file = '../data/outside_slurry_temp_vechi.rda')
+
+outside_digestate_temp_vechi <- 
+  data.frame(time = c(0, 15, 45, 76, 106, 137, 167, 198, 228, 259, 289, 320, 350, 365),
+             temp_C = c(18.75, 18, 16.5, 12.75, 9, 11, 18, 23, 27.5, 20, 18.67, 17, 19.5, 18.75))
+
+save(outside_digestate_temp_vechi, file = '../data/outside_digestate_temp_vechi.rda')

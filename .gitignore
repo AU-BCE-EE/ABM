@@ -18,6 +18,9 @@
 # Output files from R CMD check
 /*.Rcheck/
 
+# Ignore test files
+test/
+
 # RStudio files
 .Rproj.user/
 *.Rproj

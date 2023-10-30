@@ -118,3 +118,4 @@ outside_slurry_temp_dig_vechi <-
              temp_C = c(18.75, 18, 16.5, 12.75, 9, 11, 18, 23, 27.5, 20, 18.67, 17, 19.5, 18.75))
 
 save(outside_slurry_temp_dig_vechi, file = '../data/outside_slurry_temp_dig_vechi.rda')
+

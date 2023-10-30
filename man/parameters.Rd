@@ -10,7 +10,6 @@
 }
 
 \usage{
-
   data(grp_pars2.0), the grp_pars default parameter set (v2.0) 
   data(grp_pars1.0), An alternative grp_pars parameter set (v1.0) used in Dalby et al. 2023, DOI: 10.1021/acs.est.2c08891
   data(man_pars2.0), the man_pars default parameter set which is based on an average Danish pig diet and with substrates defiend as RFd, CP, Cfat and starch rather than VSd
@@ -19,7 +18,6 @@
   data(wthr_pars2.0), the wthr_pars default parameter set (v2.0)
   data(chem_pars2.0), the chem_pars default parameter set (v2.0)
   data(arrh_pars2.0), the arrh_pars default parameter set (v2.0)
-  
   
 }
 

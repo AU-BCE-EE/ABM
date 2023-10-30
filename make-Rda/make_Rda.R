@@ -71,20 +71,12 @@ grp_pars1.0 <- list(grps = c('m0','m1','m2', 'sr1'),
                                ki_H2S_int = c(default = 0.93066, sr1 = 1.2938),
                                ki_H2S_min = c(default = 0.08))
 
-mic_pars1.0 <- list(ks_SO4 = 0.00694,
-                    km_urea = 0.913,
-                    alpha_opt = c(urea = 60, VSd = 0.04954023),
-                    alpha_T_min = c(urea = 0, VSd = 0),
-                    alpha_T_opt = c(urea = 50, VSd = 50),
-                    alpha_T_max = c(urea = 60, VSd = 60))
-
 
 man_pars1.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 0, 
                                       VFA = 2, xa_dead = 0, Cfat = 0, CP = 0, RFd = 0, iNDF = 0, VSd = 75, 
                                       VSd_A = 55, VSnd_A = 22, ash = 15), pH = 7, dens = 1000)
 
 save(grp_pars1.0, file = '../data/grp_pars1.0.rda')
-save(mic_pars1.0, file = '../data/mic_pars1.0.rda')
 save(man_pars1.0, file = '../data/man_pars1.0.rda')
 
 # make data.frame for outside temperature

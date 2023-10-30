@@ -58,7 +58,7 @@ abm(days = 365,
     surface area of the barn floor that is accesible by the animals (m^2) (\code{floor_area}),
     surface area of the slurry storage (m^2) (\code{area}),
     removal frequency of the slurry in the slurry storage (days), where a value of 0 = "never remove slurry"" (\code{empty_int}),
-    slurry temperature (deg. C) (\code{temp_C}),
+    slurry temperature (deg. C) (\code{temp_C}). The model provides some datasets for outside slurry temperatures in Denmark \code{\link{temperatures}},
     wash water used per washing event (kg) (\code{wash_water}),
     time between washing events (days), where NA = "washing not applied" (\code{wash_int}),
     time that the animal section is empty after a batch of animals has been finished (days) (\code{rest_d}),
@@ -71,7 +71,7 @@ abm(days = 365,
     See usage, examples, and vignettes.
 }
   \item{man_pars}{
-    List of manure parameters.
+    List of manure parameters. The default and alternative parameter values are detailed in \code{\link{parameters}}.
     Elements are:
     \code{conc_fresh}, the concentration of slurry components in fresh slurry;
     \code{pH}, pH of the slurry entering the system and in the slurry in the system.
@@ -90,7 +90,7 @@ abm(days = 365,
 }
 
   \item{grp_pars}{
-   List containing parameter values for the microbial groups included in the model. m designates methanogen and sr designates sulfate reducer.
+   List containing parameter values for the microbial groups included in the model. m designates methanogen and sr designates sulfate reducer. The default and alternative parameter values are detailed in \code{\link{parameters}}.
    Elements are:
    \code{yield}, Growth yield of microbial groups (g COD-biomass / g COD-substrate) ;
    \code{xa_fresh}, Concentration of microbial groups in the slurry entering the system (g COD-biomass/kg);
@@ -113,7 +113,7 @@ abm(days = 365,
    See usage, examples, and vignettes.
 }
   \item{mic_pars}{
-    List of other microbial parameters.
+    List of other microbial parameters. The default and alternative parameter values are detailed in \code{\link{parameters}}.
     Elements are:
     \code{ks_SO4}, Half sulfate saturation constant for sulfate reducers (g sulfate-sulfur/kg);
     \code{km_urea}, half urea-N saturation constant for Michaelis-Menten urea hydrolysis (g urea-N/kg);
@@ -123,7 +123,7 @@ abm(days = 365,
     \code{alpha_T_max}, maximum temperature where hydrolysis occurs (K).
 }
   \item{chem_pars}{
-    List of other chemical parameters.
+    List of other chemical parameters. The default parameter values are detailed in \code{\link{parameters}}.
     Elements are:
     \code{kl}, Mass transfer coefficient of oxygen and hydrogen sulfide through the slurry/air interface, liquid-phase units (m/day);
     \code{COD_conv}, conversion factors for using a COD mass basis with the following named elements:
@@ -148,7 +148,7 @@ abm(days = 365,
 }
 
   \item{arrh_pars}{
-    List of hydrolysis parameters that are related to arrhenius kinetics.
+    List of hydrolysis parameters that are related to arrhenius kinetics. The default parameter values are detailed in \code{\link{parameters}}.
     Elements are:
     \code{lnA}, frequency factor used in danish methane emission inventory calculations, only used for comparing to ABM model (g CH4/ (kgVS * hour));
     \code{E_CH4}, Activation energy used in danish methane emission inventory calculations, only used for comparing to ABM model (J/mol);

@@ -95,10 +95,10 @@ outside_slurry_temp_NIR <- weather_dat_DK %>% filter(decade >= 2000) %>% group_b
   summarise(air_temp = mean(temp.mean)) %>% 
   mutate(temp_C = 0.511 * air_temp + 5.1886) %>% mutate(time = c(15, 45, 76, 106, 137, 167, 198, 228, 259, 289, 320, 350))
 outside_slurry_temp_NIR <- 
-  rbind(outside_slurry_temp_NIR, data.frame(month = c(0,13), 
+  as.data.frame(rbind(outside_slurry_temp_NIR, data.frame(month = c(0,13), 
                                             air_temp = rep(mean(outside_slurry_temp_NIR$air_temp[outside_slurry_temp_NIR$month %in% c(1, 12)]), 2),
                                             temp_C = rep(mean(outside_slurry_temp_NIR$air_temp[outside_slurry_temp_NIR$month %in% c(1, 12)]) * 0.511 + 5.1886, 2),
-                                            time = c(0, 365))) %>% arrange(time) %>% select(time, temp_C)
+                                            time = c(0, 365))) %>% arrange(time) %>% select(time, temp_C))
 
 save(outside_slurry_temp_NIR, file = '../data/outside_slurry_temp_NIR.rda')
 
@@ -106,10 +106,10 @@ outside_slurry_temp_dig_NIR <- weather_dat_DK %>% filter(decade >= 2000) %>% gro
   summarise(air_temp = mean(temp.mean)) %>% 
   mutate(temp_C = 0.75 * air_temp + 6.23) %>% mutate(time = c(15, 45, 76, 106, 137, 167, 198, 228, 259, 289, 320, 350))
 outside_slurry_temp_dig_NIR <- 
-  rbind(outside_slurry_temp_dig_NIR, data.frame(month = c(0,13), 
+ as.data.frame(rbind(outside_slurry_temp_dig_NIR, data.frame(month = c(0,13), 
                                             air_temp = rep(mean(outside_slurry_temp_dig_NIR$air_temp[outside_slurry_temp_dig_NIR$month %in% c(1, 12)]), 2),
                                             temp_C = rep(mean(outside_slurry_temp_dig_NIR$air_temp[outside_slurry_temp_dig_NIR$month %in% c(1, 12)]) * 0.75 + 6.23, 2),
-                                            time = c(0, 365))) %>% arrange(time) %>% select(time, temp_C)
+                                            time = c(0, 365))) %>% arrange(time) %>% select(time, temp_C))
 
 save(outside_slurry_temp_dig_NIR, file = '../data/outside_slurry_temp_dig_NIR.rda')
 

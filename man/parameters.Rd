@@ -22,10 +22,10 @@
 }
 
 \format{
-  The format is: \rda
+
   
 }
-}
+
 \source{
   
 }

@@ -20,10 +20,10 @@ data(outside_slurry_temp_dig_vechi), Measured slurry temperatures in slurry tank
 }
 
 \format{
-The format is: \rda
+
 
 }
-}
+
 \source{
 
 }

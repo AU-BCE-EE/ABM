@@ -114,7 +114,7 @@ slurry_mass_dat <- data.frame(time = out0e$time, slurry_mass = out0e$slurry_mass
 slurry_mass_dat
 VSd_fresh <- mean(out0e$VSd_eff_conc)
 VSd_fresh
-temp_dat <- outside_slurry_temp_NIR
+temp_dat <- as.data.frame(outside_slurry_temp_NIR)
 temp_dat
 ```
 

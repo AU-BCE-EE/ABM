@@ -1,3 +1,4 @@
+library(dplyr)
 # Creates parameter objects
 # best fit grp_pars2.0 based on multiple datasets using CP, RFd, starch and Cfat as inputs
 grp_pars2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
@@ -120,8 +121,8 @@ outside_slurry_temp_vechi <-
 
 save(outside_slurry_temp_vechi, file = '../data/outside_slurry_temp_vechi.rda')
 
-outside_digestate_temp_vechi <- 
+outside_slurry_temp_dig_vechi <- 
   data.frame(time = c(0, 15, 45, 76, 106, 137, 167, 198, 228, 259, 289, 320, 350, 365),
              temp_C = c(18.75, 18, 16.5, 12.75, 9, 11, 18, 23, 27.5, 20, 18.67, 17, 19.5, 18.75))
 
-save(outside_digestate_temp_vechi, file = '../data/outside_digestate_temp_vechi.rda')
+save(outside_slurry_temp_dig_vechi, file = '../data/outside_slurry_temp_dig_vechi.rda')

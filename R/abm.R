@@ -354,7 +354,13 @@ abm <- function(
   dat$ndCOD_conc <- ndCOD_conc <- dat$COD_conc_fresh - dat$dCOD_conc_fresh 
   dat$dCOD_conc <- dCOD_conc <- dat$xa_dead_conc + dat$RFd_conc + dat$Cfat_conc + dat$CP_conc + dat$starch_conc + dat$VFA_conc + dat$VSd_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
   dat$COD_conc <- COD_conc <- ndCOD_conc + dCOD_conc
-  dat$VS_conc <- COD_conc / pars$COD_conv[['VS']] # this needs to be updated. Note this is both deg and undeg VS, whereas if VSd is given it is only deg VS
+  
+  dat$VS_conc <- dat$COD_conc/pars$COD_conv[['VS']]
+  #dat$xa_dead_conc/pars$COD_conv[['VS']] + dat$RFd_conc/pars$COD_conv[['RFd']] + dat$Cfat_conc/pars$COD_conv[['Cfat']] + 
+  #              dat$CP_conc/pars$COD_conv[['CP']] + dat$starch_conc/pars$COD_conv[['starch']] + dat$VFA_conc/pars$COD_conv[['VFA']] + dat$VSd_conc/pars$COD_conv[['VS']] + 
+  #              rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])/pars$COD_conv[['VS']] + dat$iNDF_conc/pars$COD_conv[['iNDF']] + dat$urea_conc/pars$COD_conv[['N_VS_urea']]
+  
+
   dat$C_conc <- dat$VFA_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_conc / pars$COD_conv[['C_xa_dead']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_conc / pars$COD_conv[['C_starch']] + dat$CP_conc / pars$COD_conv[['C_CP']] + dat$Cfat_conc / pars$COD_conv[['C_Cfat']] +
                 dat$VSd_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa_dead']] +

@@ -184,7 +184,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     # Respiration gCOD/d, second-order reaction where kl applies for substrate concentration of 100 g COD / kg slurry
     
-    kl.oxygen <- (0.1699211 * temp_C) # from own lab experiments (Dalby et al. 2023..unpublished) 
+    kl.oxygen <- exp(-0.594 + 0.0921 * temp_C) # from own lab experiments (Dalby et al. 2023..unpublished) 
     
     sub_respir <- Cfat + CP + RFd + starch + VSd 
     if (sub_respir <= 0) sub_respir <- 1E-20

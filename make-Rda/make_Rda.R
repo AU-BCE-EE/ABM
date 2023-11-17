@@ -14,7 +14,7 @@ grp_pars2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                  ki_NH3_min = c(all = 0.015),
                  ki_NH3_max = c(all = 0.13),
                  ki_NH4_min = c(all = 2.7),
-                 ki_NH4_max = c(all = 4.8),
+                 ki_NH4_max = c(all = 15),
                  ki_H2S_slope = c(default = -0.10623, sr1 = -0.1495),
                  ki_H2S_int = c(default = 0.93066, sr1 = 1.2938),
                  ki_H2S_min = c(default = 0.08))

@@ -183,13 +183,15 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     H2S_emis_rate <- kl[['H2S']] * area * ((H2S_frac * sulfide)/(slurry_mass)) * 1000 # multiply by 1000 to get from g/kg to g/m3
 
     # Respiration gCOD/d, second-order reaction where kl applies for substrate concentration of 100 g COD / kg slurry
-    
-    kl.oxygen <- exp(-0.594 + 0.0921 * temp_C) # from own lab experiments (Dalby et al. 2023..unpublished) 
-    
+    respiration <- 0
     sub_respir <- Cfat + CP + RFd + starch + VSd 
-    if (sub_respir <= 0) sub_respir <- 1E-20
-    respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_respir / slurry_mass) / 100
-  
+    
+    if(resp){
+     kl.oxygen <- exp(-0.594 + 0.0921 * temp_C) # from own lab experiments (Dalby et al. 2023..unpublished) 
+     if (sub_respir <= 0) sub_respir <- 1E-20
+     respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_respir / slurry_mass) / 100
+    }
+    
     # VFA uptake rates
     rut <- NA * qhat
     

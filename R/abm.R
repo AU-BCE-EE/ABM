@@ -29,6 +29,7 @@ abm <- function(
   arrh_pars = arrh_pars2.0,
   
   # kl = mass transfer coefficient (liquid phase units) in m/d
+  resp = TRUE,
   add_pars = NULL,
   pars = NULL,
   startup = 0, # Now number of times complete simulation should be run before returning results
@@ -109,7 +110,7 @@ abm <- function(
   
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) {
-    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days))
+    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp)
   }
 
   # Create error if batch time is not determined and slurry rate should increase over a batch

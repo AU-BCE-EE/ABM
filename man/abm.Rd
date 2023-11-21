@@ -32,6 +32,7 @@ abm(days = 365,
     mic_pars = mic_pars2.0,
     chem_pars = chem_pars2.0,
     arrh_pars = arrh_pars2.0,
+    resp = TRUE,
     add_pars = NULL,
     startup = -Inf,
     starting = NULL,
@@ -84,9 +85,6 @@ abm(days = 365,
   \item{init_pars}{
     List of parameters that define the intial concentrations of organic matter components in the slurry.
     The elements are similar to the \code{conc_fresh} elements in 'man_pars'. By default the element values are the same as values in \code{conc_fresh}
-    \code{graze_start}, month in which grazing (for cattle) starts, e.g. in "may"" (month);
-    \code{graze_days}, days per year that the animals are outside grazing (days/year);
-    \code{graze_hours}, hours per day the animals are outside grazing (hours/day).
 }
 
   \item{grp_pars}{
@@ -158,7 +156,9 @@ abm(days = 365,
     \code{E}, Activation energy for calculating the temperature sensitive hydrolysis rate constant of organic amtter compoenents (J/mol).
 
 }
-
+ \item{resp}{
+    Set to TRUE when surface respiration should be activated (aerobic slurry surface).Can be FALSE for e.g. anaerobic digestion     simulation
+    
   \item{add_pars}{
     List of other additional parameters not set in other arguments, or to be modified from defaults.
     See vignette.

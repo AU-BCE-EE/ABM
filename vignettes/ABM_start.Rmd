@@ -45,7 +45,7 @@ And to view this vignette, use:
 vignette('ABM_start')
 ```
 
-# 3. A demonstration of pig farm emissions
+# 3. A demonstration of pig farm emission simulation
 A demonstration is presented in this section to show what the abm() function can do.
 For a more incremental introduction to the function, see the following sections.
 
@@ -96,8 +96,7 @@ around 31% of carbon emission is methane, suggesting that a lot of carbon dioxid
 
 We can continue our calculations by doing another simulation of emissions coming from the outside slurry tank, by using the effluents from the in-house simulation as input for our storage simulation. 
 To do this we extract the effluent slurry masses and pass to the new simulation as a data frame using the `add_pars` argument. 
-First, while we could extract the rows of effluent data from `out0` by finding those that have `slurry_mass_eff > 0` it is easier to just run the simulation again and specify that we want effluent results with `value = "eff"`.
-we can get the effluent data 
+First, while we could extract the rows of effluent data from `out0` by finding those that have `slurry_mass_eff > 0` it is easier to just run the simulation again and specify that we want effluent results with `value = "eff"`:
 
 
 ```{r}
@@ -126,7 +125,8 @@ plot(slurry_mass_dat$time, slurry_mass_dat$slurry_mass, ylab = 'Slurry_mass (kg)
 plot(temp_dat$time, temp_dat$temp_C, ylab = 'Temperature (deg C)', 
      xlab = 'Time (days from 1. Jan)')
 ```
-We need to adjust dimensions of outside slurry storage, height = 4 m, surface area = 1000
+
+We need to adjust dimensions of outside slurry storage (height = 4 m, surface area = 1000), which we can do with `add_pars`.
 
 ```{r}
 out1 <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0, 
@@ -149,7 +149,7 @@ plot(CH4_emis_rate ~ time, data = out1, type = 'l', xlab = 'Time (d)',
 plot(CH4_emis_cum ~ time, data = out1, type = 'l', xlab = 'Time (d)', 
      ylab = 'CH4 cumulative emission (g)')
 ```
-We can even look at the VFA dynamics during the year
+We can even look at the VFA dynamics during the year.
 
 ```{r}
 plot(VFA_conc ~ time, data = out1, type = 'l', xlab = 'Time (d)', 
@@ -169,7 +169,7 @@ out1a <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
 out1a
 ```
 
-Results show total annual emission from the outside storage of about 5.5 kg CH~4 per pig (`CH4_emis_cum` / 1000 pigs / 1000 g pr kg)
+Results show total annual emission from the outside storage of about 5.5 kg CH~4 per pig (`CH4_emis_cum` / 1000 pigs / 1000 g pr kg).
 
 How much might acidification reduce emission?
 We can easily make a comparison to a scenario with pH reduced to 6, with everything else the same.

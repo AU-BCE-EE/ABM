@@ -58,24 +58,26 @@ abm(days = 365,
     height of slurry in the system after being emptied (m) (\code{resid_depth}),
     surface area of the barn floor that is accesible by the animals (m^2) (\code{floor_area}),
     surface area of the slurry storage (m^2) (\code{area}),
-    removal frequency of the slurry in the slurry storage (days), where a value of 0 = "never remove slurry"" (\code{empty_int}),
+    removal frequency of the slurry in the slurry storage (days), where a value of 0 = "never remove slurry" (\code{empty_int}),
     slurry temperature (deg. C) (\code{temp_C}). The model provides some datasets for outside slurry temperatures in Denmark \code{\link{temperatures}},
     wash water used per washing event (kg) (\code{wash_water}),
     time between washing events (days), where NA = "washing not applied" (\code{wash_int}),
     time that the animal section is empty after a batch of animals has been finished (days) (\code{rest_d}),
-    factor that determines the degree of enrichment of microbes and organic matter components in the residual slurry after emptying   (\code{resid_enrich}),
-    slopes is an expert user argument for changing the increasing the excretion rate of urea or slurry production during a growth period of an animal     . By default this argument is not used (\code{slopes}),
-    (\code{graze}) is a list with parameters to adjust the grazing activity outdoor, which affects the amount of slurry excreted in the barn. 'Duration' is the number of days per year that the animals are allowed to graze and 'hours_day' are the number of hours animals graze per day during the grazing period, the 'start' argument is the month, where grazing starts, e.g. "May". When the (\code{graze}) arguments are not 0, then the model simulation is with time reference to 1. January 00:00:00. Effectively, if start = 'May', the model simulates grazing from time = 120. Therefore, when combined with variable temperature, temperature should also be with time = 0 referencing to 1. January 00:00:00. 
-    multiplyer arguments for adjusting some grp_pars arguments for all microbes at the same time (\code{scale}),
-    
+    factor that determines the degree of enrichment of microbes and organic matter components in the residual slurry after emptying (\code{resid_enrich}),
+    and \code{slopes} is an expert user argument for changing the excretion rate of urea or slurry production during a growth period of an animal. 
+    By default this argument is not used (\code{slopes}),
+    (\code{graze}) is a list with parameters to adjust the grazing activity outdoor, which affects the amount of slurry excreted in the barn. 
+    \code{duration} is the number of days per year that the animals are allowed to graze and \code{hours_day} are the number of hours animals graze per day during the grazing period, the \code{start} argument is the month, where grazing starts, e.g. "May". When the (\code{graze}) arguments are not 0, then the model simulation is with time reference to 1. January 00:00:00. Effectively, if start = \code{May}, the model simulates grazing from time = 120. 
+    Therefore, when combined with variable temperature, temperature should also be with time = 0 referencing to 1 January 00:00:00. 
+    \code{scale} is a multiplier for adjusting some \code{grp_pars} parmeters for all microbes at the same time (\code{scale}).
     Each element may be a length-one vector or, in some cases, a list.
-    See usage, examples, and vignettes.
+    See usage, examples, and vignette.
 }
   \item{man_pars}{
     List of manure parameters. The default and alternative parameter values are detailed in \code{\link{parameters}}.
     Elements are:
-    \code{conc_fresh}, the concentration of slurry components in fresh slurry;
-    \code{pH}, pH of the slurry entering the system and in the slurry in the system.
+    \code{conc_fresh}, the concentration of slurry components in fresh slurry
+    \code{pH}, pH of the slurry entering the system and in the slurry in the system
     The \code{conc_fresh} element is a list itself, with the following elements:
     \code{sulfide} (sulfide), \code{urea} (urea), \code{sulfate} (sulfate), \code{TAN} (ammonia nitrogen), \code{starch} (starch and sugars),
     \code{VFA} (volatile fatty acids), \code{xa_dead} (dead microbial populations), \code{Cfat} (crude fat),
@@ -84,7 +86,8 @@ abm(days = 365,
 }
   \item{init_pars}{
     List of parameters that define the intial concentrations of organic matter components in the slurry.
-    The elements are similar to the \code{conc_fresh} elements in 'man_pars'. By default the element values are the same as values in \code{conc_fresh}
+    The elements are similar to the \code{conc_fresh} elements in 'man_pars'. 
+    By default the element values are the same as values in \code{conc_fresh}
 }
 
   \item{grp_pars}{
@@ -121,7 +124,8 @@ abm(days = 365,
     \code{alpha_T_max}, maximum temperature where hydrolysis occurs (K).
 }
   \item{chem_pars}{
-    List of other chemical parameters. The default parameter values are detailed in \code{\link{parameters}}.
+    List of other chemical parameters. 
+    The default parameter values are detailed in \code{\link{parameters}}.
     Elements are:
     \code{kl}, Mass transfer coefficient of oxygen and hydrogen sulfide through the slurry/air interface, liquid-phase units (m/day);
     \code{COD_conv}, conversion factors for using a COD mass basis with the following named elements:
@@ -146,7 +150,8 @@ abm(days = 365,
 }
 
   \item{arrh_pars}{
-    List of hydrolysis parameters that are related to arrhenius kinetics. The default parameter values are detailed in \code{\link{parameters}}.
+    List of hydrolysis parameters that are related to arrhenius kinetics. 
+    The default parameter values are detailed in \code{\link{parameters}}.
     Elements are:
     \code{lnA}, frequency factor used in danish methane emission inventory calculations, only used for comparing to ABM model (g CH4/ (kgVS * hour));
     \code{E_CH4}, Activation energy used in danish methane emission inventory calculations, only used for comparing to ABM model (J/mol);
@@ -195,9 +200,9 @@ abm(days = 365,
 }
   \item{value}{
     Sets the type of output.
-    Default (\code{ts}) returns a data frame with the complete time series.
-    To exclude those rows before the end of \code{startup}, use \code{tsel}.
-    For a summary (after \code{startup} only), use (\code{summ}, \code{sum}, or \code{summary}).
+    Default (\code{'ts'}) returns a data frame with the complete time series.
+    For a summary, use \code{'summ'} (or \code{'sum'} or \code{'summary'}).
+    code{'eff'} will return only those rows where slurry was removed--this option is convenient for working with effluent slurry.
 }
   \item{warn}{
     Set to \code{FALSE} to suppress warnings.

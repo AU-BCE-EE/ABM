@@ -6,11 +6,11 @@ abm <- function(
   wthr_pars = wthr_pars2.0,
   evap_pars = list(evap = 0.5 * et(temp_C = wthr_pars$temp_air_C, pres_kpa = wthr_pars$pres_kpa, rs = wthr_pars$rs)),                # mm/d
   mng_pars = list(slurry_prod_rate = 5700,   # kg/d
-                  slurry_mass = 39000,           # Initial slurry mass (kg) NTS: convert to depth??
-                  storage_depth = 0.6,         # Storge structure depth, assued to be maximum slurry depth (m)
-                  resid_depth = 0.05,         # Residual slurry depth after emptying (m)
-                  floor_area = 650,           # Currently for NH3 loss from barn floor (nothing to do with pit/tank floor)
-                  area = 715,                 # Area (assume vertical sides, but slurry also underneath the walking path) (m2)
+                  slurry_mass = 39000,       # Initial slurry mass (kg) NTS: convert to depth??
+                  storage_depth = 0.6,       # Storge structure depth, assued to be maximum slurry depth (m)
+                  resid_depth = 0.05,        # Residual slurry depth after emptying (m)
+                  floor_area = 650,          # Currently for NH3 loss from barn floor (nothing to do with pit/tank floor)
+                  area = 715,                # Area (assume vertical sides, but slurry also underneath the walking path) (m2)
                   empty_int = 42,            # (days, every 6th week)
                   temp_C = 20,
                   wash_water = 75000,            

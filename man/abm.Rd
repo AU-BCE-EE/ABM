@@ -8,24 +8,27 @@
   An implementation of the ABM model for simulation of anaerobic biodegradation of organic substrates.
 }
 \usage{
-abm(days = 365,
+abm(days = 365, 
     delta_t = 1,
-    mng_pars = list(slurry_prod_rate = 5700,   
-                  slurry_mass = 39000,          
-                  storage_depth = 0.6,        
-                  resid_depth = 0.05,         
-                  floor_area = 650,           
-                  area = 715,                 
-                  empty_int = 42,          
-                  temp_C = 20,
-                  wash_water = 75000,            
-                  wash_int = NA,
-                  rest_d = 5,
-                  cover = NA,
-                  resid_enrich = 0.9,
-                  slopes = c(urea = NA, slurry_prod_rate = NA),
-                  graze = c(start = 'May', duration = 0, hours_day = 0),
-                  scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
+    times = NA,
+    wthr_pars = wthr_pars2.0,
+    evap_pars = list(evap = 0.5 * et(temp_C = wthr_pars$temp_air_C, pres_kpa = wthr_pars$pres_kpa, rs = wthr_pars$rs)),              
+    mng_pars = list(slurry_prod_rate = 5700, 
+                    slurry_mass = 39000,     
+                    storage_depth = 0.6,     
+                    resid_depth = 0.05,      
+                    floor_area = 650,        
+                    area = 715,              
+                    empty_int = 42,          
+                    temp_C = 20,
+                    wash_water = 75000,            
+                    wash_int = NA,
+                    rest_d = 5,
+                    cover = NA,
+                    resid_enrich = 0.9,
+                    slopes = c(urea = NA, slurry_prod_rate = NA),
+                    graze = c(start = 'May', duration = 0, hours_day = 0),
+                    scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
     man_pars = man_pars2.0,
     init_pars = list(conc_init = man_pars$conc_fresh),
     grp_pars = grp_pars2.0,
@@ -34,13 +37,14 @@ abm(days = 365,
     arrh_pars = arrh_pars2.0,
     resp = TRUE,
     add_pars = NULL,
-    startup = -Inf,
+    pars = NULL,
+    startup = 0,
     starting = NULL,
-    approx_method_temp = 'linear',
+    approx_method_temp = 'linear', 
     approx_method_pH = 'linear',
-    approx_method_SO4 = 'linear',
+    approx_method_vent_air = 'linear',
     par_key = '\\.',
-    value = 'ts',
+    value = 'ts',                 
     warn = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -50,6 +54,18 @@ abm(days = 365,
 }
   \item{delta_t}{
     Time step in output (d).
+}
+  \item{times}{
+    Alternative to \code{delta_t}, use to return specific times only.
+    Only available with variable slurry mass.
+}
+  \item{wthr_pars}{
+    Weather inputs.
+    List with elements `temp_air_C`, `RH`, `rain`, `pres_kpa`, `rs`).
+    See \code{\link{parameters}}.
+}
+  \item{evap_pars}{
+    Evaporation inputs.
 }
   \item{mng_pars}{
     List of management parameters including slurry production rate (kg/day) (\code{slurry_prod_rate}),
@@ -162,36 +178,45 @@ abm(days = 365,
 
 }
  \item{resp}{
-    Set to TRUE when surface respiration should be activated (aerobic slurry surface).Can be FALSE for e.g. anaerobic digestion     simulation
+    Set to \code{TRUE} (default) to include surface respiration. 
+    Can be \code{FALSE} for e.g. anaerobic digestion simulation.
+}
     
   \item{add_pars}{
     List of other additional parameters not set in other arguments, or to be modified from defaults.
     See vignette.
 }
+  \item{pars}{
+    Combined parameters, as an alternative to the `*_pars` arguments.
+}
+
   \item{startup}{
-    A ``startup'' period that should be excluded from the results.
-    Length-one numeric vector (d).
+    Number of startup times the simulation should be run before running a final time.
+    Results from one simulation become starting conditions for next.
+    Used to spin up or stabilize microbial population and substrates so that initial conditions do not affect results.
+    Length-one integer vector.
     Optional.
 }
   \item{starting}{
     Starting conditions.
     Output (\code{value = 'ts'}) from a previous \code{abm()} call.
     Values here for microbial biomass and slurry mass override those set in other arguments.
+    Used to start one simulation where another ended.
     Optional.
 }
   \item{approx_method_temp}{
     Sets type of interpolation when temperature is variable (\code{temp_c} is a data frame).
-    Passed directly to \code{\link{approxfun}}.
+    Passed to \code{\link{approxfun}} through hidden (not exported) \code{makeTimeFunc()}.
     See vignette.
 }
   \item{approx_method_pH}{
     Sets type of interpolation when pH is variable (\code{pH} is a data frame).
-    Passed directly to \code{\link{approxfun}}.
+    Passed to \code{\link{approxfun}} through hidden (not exported) \code{makeTimeFunc()}.
     See vignette.
 }
-  \item{approx_method_SO4}{
-    Sets type of interpolation when sulfate is variable (\code{SO4} is a data frame).
-    Passed directly to \code{\link{approxfun}}.
+  \item{approx_method_vent_air}{
+    Sets type of interpolation when ventilation flow rate is variable.
+    Passed to \code{\link{approxfun}} through hidden (not exported) \code{makeTimeFunc()}.
     See vignette.
 }
   \item{par_key}{

@@ -12,7 +12,7 @@ vignette: >
 ---
 
 ```{r,echo=FALSE}
-#knitr::opts_chunk$set(fig.width=6, fig.height=4)
+#knitr::opts_chunk$set(fig.width=8, fig.height=6)
 #options(width = 85)
 ```
 
@@ -59,16 +59,16 @@ out0 <- abm(days = 365, man_pars = man_pars1.0, grp_pars = grp_pars1.0)
 ```
 
 Lets take a look at the output of microbial groups methanogens m0, m1, m2 and sulfate reducer group sr1.
-```{r}
+```{r, fig.height=4, fig.width=6}
 line_colors <- c('red', 'blue', 'green','orange')
 matplot(out0$time, out0[, nn <- c('m0','m1','m2','sr1')]/1000, 
-        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (days from 1. Jan)', 
         ylab = 'Microbial biomass (kg)')
 legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
        title = "Microbial biomass", cex = 0.8)
 
 matplot(out0$time, out0[, nn <- c('CH4_emis_rate', 'CO2_emis_rate', 'NH3_emis_rate')]/1000, 
-        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (d)', 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (days from 1. Jan)', 
         ylab = 'Emission rate (kg/day)')
 legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
        title = "Emission rates", cex = 0.8)
@@ -119,7 +119,7 @@ temp_dat
 
 Lets look at temperature and slurry data before we continue.
 
-```{r}
+```{r, fig.height=4, fig.width=6}
 plot(slurry_mass_dat$time, slurry_mass_dat$slurry_mass, ylab = 'Slurry_mass (kg)', 
      xlab = 'Time (days from 1. Jan)')
 plot(temp_dat$time, temp_dat$temp_C, ylab = 'Temperature (deg C)', 
@@ -143,7 +143,7 @@ When a variable slurry mass is used as input, the `wash_water` needs to be passe
 
 Clearly emissions peak during the summer period, due to higher methanogenesis activity. 
 
-```{r}
+```{r, fig.height=4, fig.width=6}
 plot(CH4_emis_rate ~ time, data = out1, type = 'l', xlab = 'Time (d)', 
      ylab = 'CH4 emission rate (g/d)')
 plot(CH4_emis_cum ~ time, data = out1, type = 'l', xlab = 'Time (d)', 
@@ -151,7 +151,7 @@ plot(CH4_emis_cum ~ time, data = out1, type = 'l', xlab = 'Time (d)',
 ```
 We can even look at the VFA dynamics during the year.
 
-```{r}
+```{r, fig.height=4, fig.width=6}
 plot(VFA_conc ~ time, data = out1, type = 'l', xlab = 'Time (d)', 
      ylab = 'VFA conc. (g/kg)')
 ```
@@ -172,7 +172,7 @@ out1a
 Results show total annual emission from the outside storage of about 5.5 kg CH~4 per pig (`CH4_emis_cum` / 1000 pigs / 1000 g pr kg).
 
 How much might acidification reduce emission?
-We can easily make a comparison to a scenario with pH reduced to 6, with everything else the same.
+We can easily make a comparison to a scenario with pH reduced to 5.5, with everything else the same.
 Slurry pH indirectly affects methane by increasing the concentration of toxic H~2~S and protonated (uncharged) VFAs.
 
 
@@ -186,7 +186,7 @@ out1b <- abm(365, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
 out1b
 ```
 
-The predicted reduction is 95%.
+The predicted reduction is 88%.
 
 ```{r}
 1 - out1b['CH4_emis_cum'] / out1a['CH4_emis_cum']
@@ -239,11 +239,11 @@ args(abm)
 We can use a different value with `add_pars`.
 
 
-```{r}
+```{r, fig.height=4, fig.width=6}
 out2a <- abm(365)
-out2b <- abm(365, add_pars = list(slurry_prod_rate = 8000))
+out2b <- abm(365, add_pars = list(slurry_prod_rate = 10000))
 
-plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,20000))
+plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,30000))
 lines(CH4_emis_rate ~ time, data = out2b, col = "red")
 ```
 
@@ -260,8 +260,8 @@ mng_pars2c <- list(slurry_prod_rate = 5700, slurry_mass = 39000,
                              yield = 1, alpha_opt = 1))
 ```
 
-```{r}
-out2c <- abm(365, mng_pars = mng_pars2c, add_pars = list(slurry_prod_rate = 8000))
+```{r, fig.height=4, fig.width=6}
+out2c <- abm(365, mng_pars = mng_pars2c, add_pars = list(slurry_prod_rate = 10000))
 all.equal(out2c, out2b)
 ```
 
@@ -280,7 +280,7 @@ All the other values from the default parameter set would be used.
 man_pars2.0
 ```
 
-```{r}
+```{r, fig.height=4, fig.width=6}
 out2e <- abm(365, add_pars = list(conc_fresh.VFA = 10))
 
 plot(VFA_conc ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'VFA conc. (g/kg)', ylim = c(0,20))
@@ -290,11 +290,11 @@ lines(VFA_conc ~ time, data = out2e, col = "red")
 We can also change any OM concentrations in the influent manure over time by passing it to `conc_fresh` as a data frame. 
 Below example with changed VFA (which increase methane production), sulfide concentrations (which inhibit methanogens) and total ammonia nitrogen (TAN).
 
-```{r}
+```{r, fig.height=4, fig.width=6}
 
 man_pars <- list(conc_fresh = data.frame(time = c(0, 100, 101, 365), sulfide = c(0.01, 0.01, 0.1, 0.1), urea = 0, 
                                         sulfate = 0.2, TAN = c(0, 3, 5, 6), starch = 1, 
-                                        VFA = c(2.83, 2.83, 10, 10), 
+                                        VFA = c(2.83, 2.83, 6, 6), 
                                         xa_dead = 0, Cfat = 12, CP = 20, RFd = 29, iNDF = 10, VSd = 0, 
                                         VSd_A = 44.4, VSnd_A = 20, ash = 15), pH = 7, dens = 1000)
 
@@ -319,7 +319,7 @@ Due to the TAN added, the cumulative inhibition constant is even lower than just
 
 A similar change in the concentration of microbial populations in the fresh manure can be simulated:
 
-```{r}
+```{r, fig.height=4, fig.width=6}
 xa_fresh <- data.frame(time = c(0, 100, 101, 365), m0 = c(2, 0.0628, 0.0628, 0.0628), 
                        m1 = c(0.0628, 1, 2, 0.01), m2 = c(0.0628, 0.01, 0.01, 0.1), 
                        sr1 = c(0.0628, 1, 2, 0.01))
@@ -327,7 +327,7 @@ xa_fresh <- data.frame(time = c(0, 100, 101, 365), m0 = c(2, 0.0628, 0.0628, 0.0
 out2g <- abm(365, man_pars = man_pars, add_pars = list(xa_fresh = xa_fresh))
 
 plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', 
-     ylab = 'CH4 emis rate (g/day)')
+     ylab = 'CH4 emis rate (g/day)', ylim = c(0, 30000))
 lines(CH4_emis_rate ~ time, data = out2g, col = "red")
 
 matplot(out2g$time, out2g[, nn <- c('m0_conc','m1_conc','m2_conc','sr1_conc')]/1000, 

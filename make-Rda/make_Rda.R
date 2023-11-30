@@ -92,7 +92,7 @@ outside_slurry_temp_NIR <-
   as.data.frame(rbind(outside_slurry_temp_NIR, data.frame(month = c(0,13), 
                                             temp_air_C = rep(mean(outside_slurry_temp_NIR$temp_air_C[outside_slurry_temp_NIR$month %in% c(1, 12)]), 2),
                                             temp_C = rep(mean(outside_slurry_temp_NIR$temp_air_C[outside_slurry_temp_NIR$month %in% c(1, 12)]) * 0.511 + 5.1886, 2),
-                                            time = c(0, 365))) %>% arrange(time))
+                                            time = c(0, 365))) %>% arrange(time)) %>% select(time, temp_C)
 
 save(outside_slurry_temp_NIR, file = '../data/outside_slurry_temp_NIR.rda')
 
@@ -103,7 +103,7 @@ outside_slurry_temp_dig_NIR <-
  as.data.frame(rbind(outside_slurry_temp_dig_NIR, data.frame(month = c(0,13), 
                                             temp_air_C = rep(mean(outside_slurry_temp_dig_NIR$temp_air_C[outside_slurry_temp_dig_NIR$month %in% c(1, 12)]), 2),
                                             temp_C = rep(mean(outside_slurry_temp_dig_NIR$temp_air_C[outside_slurry_temp_dig_NIR$month %in% c(1, 12)]) * 0.75 + 6.23, 2),
-                                            time = c(0, 365))) %>% arrange(time))
+                                            time = c(0, 365))) %>% arrange(time)) %>% select(time, temp_C)
 
 save(outside_slurry_temp_dig_NIR, file = '../data/outside_slurry_temp_dig_NIR.rda')
 

@@ -10,30 +10,33 @@
 }
 
 \usage{
-  data(grp_pars2.0), current default \code{grp_pars} default parameter set (v2.0) 
-  data(grp_pars1.0), alternative \code{grp_pars} parameter set (v1.0) used in Dalby et al. (2023, see source section below)
-  data(man_pars2.0), current default \code{man_pars} default parameter set which is based on an average Danish pig diet and with substrates defined as \code{RFd}, \code{CP}, \code{Cfat} and \code{starch} rather than \code{VSd}
-  data(man_pars1.0), alternative \code{man_pars} parameter set (v1.0) based on \code{VSd} as substrate input
-  data(mic_pars2.0), current default \code{mic_pars} parameter set (v2.0)
-  data(wthr_pars2.0), current default \code{wthr_pars} parameter set (v2.0)
-  data(chem_pars2.0), current default \code{chem_pars} parameter set (v2.0)
-  data(arrh_pars2.0), current default \code{arrh_pars} parameter set (v2.0)
+  data(grp_pars2.0)
+  data(grp_pars1.0)
+  data(man_pars2.0)
+  data(man_pars1.0)
+  data(mic_pars2.0)
+  data(wthr_pars2.0)
+  data(chem_pars2.0)
+  data(arrh_pars2.0)
   
 }
 
 \format{
 
+  These are default parameter sets.
+  Sets with `2.0` are the latest default sets.
+  `1.0` versions are from ...
   
 }
 
 \source{
-  Dalby et al. 2023. DOI: 10.1021/acs.est.2c08891
-  
+Dalby, F.R., Hafner, S.D., Petersen, S.O., Vanderzaag, A., Habtewold, J., Dunfield, K., Chantigny, M.H., Sommer, S.G., 2021. A mechanistic model of methane emission from animal slurry with a focus on microbial groups. PLOS ONE 16, e0252881. \doi{10.1371/journal.pone.0252881}
+
+Dalby, F.R., Hansen, M.J., Guldberg, L.B., Hafner, S.D., Feilberg, A., 2023. Simple Management Changes Drastically Reduce Pig House Methane Emission in Combined Experimental and Modeling Study. Environ. Sci. Technol. \doi{10.1021/acs.est.2c08891}
 }
 
 \examples{
-  viewSpec(man_pars2.0)
-  viewSpec(grp_pars2.0)
+  out1 <- abm(man_pars = man_pars2.0, grp_pars = grp_pars1.0)
 }
 
 \keyword{datasets}

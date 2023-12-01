@@ -2,7 +2,7 @@
 abm <- function(
   days = 365,                                # Number of days to run
   delta_t = 1,                               # Time step for output
-  times = NA,
+  times = NULL,
   wthr_pars = wthr_pars2.0,
   evap_pars = list(evap = 0.5 * et(temp_C = wthr_pars$temp_air_C, pres_kpa = wthr_pars$pres_kpa, rs = wthr_pars$rs)),                # mm/d
   mng_pars = list(slurry_prod_rate = 5700,   # kg/d

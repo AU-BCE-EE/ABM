@@ -37,7 +37,7 @@ abm_variable <-
   }
 
   # Sort out times returned by ODE solver
-  if (length(times) == 1 && is.na(times)) {
+  if (is.null(times)) {
     times <- seq(0, days, by = delta_t)
   }
 

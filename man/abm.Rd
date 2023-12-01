@@ -37,7 +37,6 @@ abm(days = 365,
     arrh_pars = arrh_pars2.0,
     resp = TRUE,
     add_pars = NULL,
-    pars = NULL,
     startup = 0,
     starting = NULL,
     approx_method_temp = 'linear', 
@@ -185,9 +184,6 @@ abm(days = 365,
   \item{add_pars}{
     List of other additional parameters not set in other arguments, or to be modified from defaults.
     See vignette.
-}
-  \item{pars}{
-    Combined parameters, as an alternative to the `*_pars` arguments.
 }
 
   \item{startup}{

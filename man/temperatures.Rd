@@ -11,7 +11,9 @@ Slurry temperatures according to the Danish National Inventory Report and from V
 
 \usage{
 data(weather_dat_DK), Danish weather data from 2000-2020 averaged by month
+
 data(outside_slurry_temp_NIR), slurry temperatures by month in outside storages according to the Danish National Inventory Report 2022. The slurry temperature is estimated as 0.511 * air_temp + 5.1886.
+
 data(outside_slurry_temp_dig_NIR), slurry temperatures by month in outside storages receiving digestate according to the Danish National Inventory Report 2022. The slurry temperature is estimated as 0.75 * air_temp + 6.23.
 
 data(outside_slurry_temp_vechi), Measured slurry temperatures in pig slurry tanks and averaged by month. Data was averaged from Vechi et al. 2023. DOI: 10.1016/j.scitotenv.2023.166610.
@@ -21,10 +23,19 @@ data(outside_slurry_temp_dig_vechi), Measured slurry temperatures in slurry tank
 
 \format{
 
+These are temperature datasets for outside slurry storage in Denmark. 
+The raw data is from ...
 
 }
 
 \source{
+
+Nielsen, O.K., et al. 2023. Denmark's National Inventory Report 2023. DCE, Aarhus University. URL: https://dce2.au.dk/pub/SR541.pdf.
+
+Vechi, N.T., Falk, J.M., Fredenslund, A.M., Edjabou, M.E., Scheutz, C., 2023. Methane emission rates averaged over a year from ten farm-scale manure storage tanks. Sci Total Environ. \doi{10.1016/j.scitotenv.2023.166610
+
+}
+
 
 }
 

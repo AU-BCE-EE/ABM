@@ -166,15 +166,15 @@ abm(days = 365,
 }
 
   \item{arrh_pars}{
-    List of hydrolysis parameters that are related to arrhenius kinetics. 
+    List of hydrolysis parameters that are related to Arrhenius kinetics. 
     The default parameter values are detailed in \code{\link{parameters}}.
     Elements are:
     \code{lnA}, frequency factor used in danish methane emission inventory calculations, only used for comparing to ABM model (g CH4/ (kgVS * hour));
     \code{E_CH4}, Activation energy used in danish methane emission inventory calculations, only used for comparing to ABM model (J/mol);
     \code{R}, universal gas constant (J/(K * mol));
     \code{VS_CH4}, volatile solids consumed per methane produced (g VS/g CH4); 
-    \code{A}, Arrhenius factor for calculating the temperature sensitive hydrolysis rate constant of organic amtter compoenents (1/day);
-    \code{E}, Activation energy for calculating the temperature sensitive hydrolysis rate constant of organic amtter compoenents (J/mol).
+    \code{A}, Arrhenius factor for calculating the temperature sensitive hydrolysis rate constants of organic matter components (1/day);
+    \code{E}, Activation energy for calculating the temperature sensitive hydrolysis rate constant of organic matter components (J/mol).
 
 }
  \item{resp}{
@@ -207,7 +207,7 @@ abm(days = 365,
   \item{approx_method_temp}{
     Sets type of interpolation when temperature is variable (\code{temp_c} is a data frame).
     Passed to \code{\link{approxfun}} through hidden (not exported) \code{makeTimeFunc()}.
-    See vignette.
+    See vignette. Suggested temperature sets for outside slurry storage are provided in \code{\link{temperatures}}.
 }
   \item{approx_method_pH}{
     Sets type of interpolation when pH is variable (\code{pH} is a data frame).
@@ -248,7 +248,10 @@ abm(days = 365,
 Dalby, F.R., Hafner, S.D., Petersen, S.O., Vanderzaag, A., Habtewold, J., Dunfield, K., Chantigny, M.H., Sommer, S.G., 2021. A mechanistic model of methane emission from animal slurry with a focus on microbial groups. PLOS ONE 16, e0252881. \doi{10.1371/journal.pone.0252881}
 
 Dalby, F.R., Hansen, M.J., Guldberg, L.B., Hafner, S.D., Feilberg, A., 2023. Simple Management Changes Drastically Reduce Pig House Methane Emission in Combined Experimental and Modeling Study. Environ. Sci. Technol. \doi{10.1021/acs.est.2c08891}
+
+Dalby, F.R., Ambrose, H.W.,  Poulsen, J.S., Nielsen, J.L., Adamsen, A.P.S., 2023. Pig slurry organic matter transformation and methanogenesis at ambient storage temperatures. JEQ. \doi{10.1002/jeq2.20512}
 }
+
 \author{
   Sasha D. Hafner and Frederik R. Dalby
 }

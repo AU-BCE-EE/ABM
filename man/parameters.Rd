@@ -1,12 +1,23 @@
 \name{parameters}
+
 \alias{parameters}
+\alias{arrh_pars2.0}
+\alias{chem_pars2.0}
+\alias{grp_pars2.0}
+\alias{man_pars2.0}
+\alias{mic_pars2.0}
+\alias{arrh_pars1.0}
+\alias{chem_pars1.0}
+\alias{grp_pars1.0}
+\alias{man_pars1.0}
+
 \docType{data}
 \title{
-  Default and alternative parameter sets for ABM
+  Default parameter sets for ABM
 }
 
 \description{
-  Default parameter sets for \code{\link{abm}} function
+  Default parameter sets for the \code{\link{abm}} function.
 }
 
 \usage{

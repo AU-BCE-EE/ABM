@@ -164,7 +164,7 @@ abm(days = 365,
     \code{CO2_ureo}, carbon dioxide productivity coefficient for urea hydrolysis (g CO2/g urea-N);
     \code{N_CP}, nitrogen per COD of crude protein (g N/g CP-COD).
     \code{C_N_urea}, carbon to nitrogen (g C/g urea-N)
-    \code{kl}, mass transfer coefficient of ammonia from the slurry pit [NH3] (m/day) and from the barn floor [NH3_floor] (m/day) and mass transfer coefficient of H2S from the slurry (m/day).
+    \code{kl}, mass transfer coefficient of ammonia from the slurry pit (m/day) and from the barn floor (m/day) and mass transfer coefficient of H2S from the slurry (m/day).
     Other conversion factors designated \code{C_} are carbon to COD of the named substrate (gC/gCOD) 
 }
 
@@ -236,9 +236,11 @@ abm(days = 365,
     Set to \code{FALSE} to suppress warnings.
 }
 }
+
 \details{
   The function simulates anaerobic biodegradation.
 }
+
 \value{
   By default, a data frame with most input and all output variables in a time series.
   Each row is separated by the value set with \code{delta_t}.
@@ -247,6 +249,7 @@ abm(days = 365,
   Microbial biomass (g) is given in columns with names that match those used for the names of the groups.
   For more details, see the Output section in the vignette.
 }
+
 \references{
 Dalby, F.R., Hafner, S.D., Petersen, S.O., Vanderzaag, A., Habtewold, J., Dunfield, K., Chantigny, M.H., Sommer, S.G., 2021. A mechanistic model of methane emission from animal slurry with a focus on microbial groups. PLOS ONE 16, e0252881. \doi{10.1371/journal.pone.0252881}
 
@@ -258,6 +261,7 @@ Dalby, F.R., Ambrose, H.W.,  Poulsen, J.S., Nielsen, J.L., Adamsen, A.P.S., 2023
 \author{
   Sasha D. Hafner and Frederik R. Dalby
 }
+
 \note{
 %%  ~~further notes~~
 }
@@ -267,6 +271,7 @@ Dalby, F.R., Ambrose, H.W.,  Poulsen, J.S., Nielsen, J.L., Adamsen, A.P.S., 2023
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
+
 \examples{
 # Simulation 1~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Run model with default parameter values and input variables

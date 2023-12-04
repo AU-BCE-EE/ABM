@@ -13,6 +13,7 @@
 \alias{man_pars1.0}
 
 \docType{data}
+
 \title{
   Default parameter sets for ABM
 }
@@ -22,6 +23,7 @@
 }
 
 \usage{
+
   data(grp_pars2.0)
   data(grp_pars1.0)
   data(man_pars2.0)

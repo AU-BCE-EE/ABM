@@ -127,7 +127,7 @@ abm_regular <- function(days, delta_t, y, pars, starting = NULL, temp_C_fun = te
     out$time <- out$time + t_run
   
     # Add results to earlier ones
-    dat <- dplyr::bind_rows(dat, out)
+    dat <- data.table::rbind(dat, out)
     
     # Update time remaining and time run so far
     t_rem <- t_rem - t_call - wash[i] * rest_d

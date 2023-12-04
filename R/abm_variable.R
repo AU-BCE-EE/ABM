@@ -234,7 +234,7 @@ abm_variable <-
     out[nrow(out), names(y.eff)] <- y.eff
  
     # Add results to earlier ones
-    dat <- dplyr::bind_rows(dat, out)
+    dat <- data.table::rbind(dat, out)
     
     # Update time remaining and total time run so far
     t_rem <- t_rem - t_call

@@ -1,5 +1,6 @@
 import(deSolve)
 importFrom("stats", "approx", "approxfun")
+importFrom("data.table", "rbind")
 export(abm)
 useDynLib(ABM)
 importFrom(Rcpp, sourceCpp)

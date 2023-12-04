@@ -37,6 +37,7 @@ abm(days = 365,
     arrh_pars = arrh_pars2.0,
     resp = TRUE,
     add_pars = NULL,
+    pars = NULL,
     startup = 0,
     starting = NULL,
     approx_method_temp = 'linear', 
@@ -185,7 +186,10 @@ abm(days = 365,
     List of other additional parameters not set in other arguments, or to be modified from defaults.
     See vignette.
 }
-
+  \item{pars}{
+    Combined parameters, as an alternative to all the `*_pars` arguments.
+    Used internally when \code{startup} > 0 and may be convenient to use in an \code{abm} call in some cases.
+}
   \item{startup}{
     Number of startup times the simulation should be run before running a final time.
     Results from one simulation become starting conditions for next.

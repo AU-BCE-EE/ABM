@@ -33,6 +33,7 @@ The original data are from ...
 \code{outside_slurry_temp_dig_NIT}: Slurry temperatures by month in outside storages receiving digestate according to the Danish National Inventory Report 2022. The slurry temperature is estimated as 0.75 * air_temp + 6.23.
 \code{oustide_slurry_temp_vechi}: Measured slurry temperatures in pig slurry tanks in XXXXX and averaged by month. Data was averaged from Vechi et al. 2023. DOI: 10.1016/j.scitotenv.2023.166610.
 \code{outside_slurry_temp_dig_vechi}: Measured slurry temperatures in slurry tanks recieving digestate in XXXX and averaged by month. Data was averaged from Vechi et al. 2023. DOI: 10.1016/j.scitotenv.2023.166610.
+}
 
 \source{
 

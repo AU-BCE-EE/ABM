@@ -1,7 +1,7 @@
 Package: ABM
 Type: Package
 Title: Simulate Anaerobic Biodegradation
-Version: 1.20.25
+Version: 1.20.26
 Date: 2023-12-04
 Author: Sasha D. Hafner and Frederik Dalby
 Maintainer: Sasha D. Hafner <sasha.hafner@bce.au.dk>
@@ -12,7 +12,7 @@ Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 LinkingTo: Rcpp
 LazyData: true
-Imports: Rcpp (>= 1.0.8)
+Imports: Rcpp (>= 1.0.8), dplyr
 
 
 

@@ -47,7 +47,6 @@ Vechi, N.T., Falk, J.M., Fredenslund, A.M., Edjabou, M.E., Scheutz, C., 2023. Me
 }
 
 \examples{
-data(outside_slurry_temp_NIR)
 }
 
 \keyword{datasets}

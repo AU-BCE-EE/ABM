@@ -56,7 +56,6 @@ We start using parameter sets (v1.0) from Dalby et al. 2023, where substrate inp
 
 ```{r}
 out0 <- abm(days = 365, man_pars = man_pars1.0, grp_pars = grp_pars1.0)
-out0 <- abm(days = 365, times = c(1, 100), man_pars = man_pars1.0, grp_pars = grp_pars1.0)
 ```
 
 Lets take a look at the output of microbial groups methanogens m0, m1, m2 and sulfate reducer group sr1.

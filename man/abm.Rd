@@ -10,10 +10,11 @@
 \usage{
 abm(days = 365, 
     delta_t = 1,
-    times = NA,
-    wthr_pars = abm::wthr_pars2.0,
-    evap_pars = list(evap = 0.5 * et(temp_C = wthr_pars$temp_air_C, 
-                                     pres_kpa = wthr_pars$pres_kpa, rs = wthr_pars$rs)), 
+    times = NULL,
+    wthr_pars = ABM::wthr_pars2.0,
+    evap_pars = list(evap = 0.5 * et(temp_C = ABM::wthr_pars2.0$temp_air_C, 
+                                     pres_kpa = ABM::wthr_pars2.0$pres_kpa, 
+                                     rs = ABM::wthr_pars2.0$rs)), 
     mng_pars = list(slurry_prod_rate = 5700, 
                     slurry_mass = 39000,     
                     storage_depth = 0.6,     
@@ -31,12 +32,12 @@ abm(days = 365,
                     graze = c(start = 'May', duration = 0, hours_day = 0),
                     scale = c(ks_coefficient = 1, qhat_opt = 1, 
                               xa_fresh = 1, yield = 1, alpha_opt = 1)),
-    man_pars = abm::man_pars2.0,
+    man_pars = ABM::man_pars2.0,
     init_pars = list(conc_init = man_pars$conc_fresh),
-    grp_pars = abm::grp_pars2.0,
-    mic_pars = abm::mic_pars2.0,
-    chem_pars = abm::chem_pars2.0,
-    arrh_pars = abm::arrh_pars2.0,
+    grp_pars = ABM::grp_pars2.0,
+    mic_pars = ABM::mic_pars2.0,
+    chem_pars = ABM::chem_pars2.0,
+    arrh_pars = ABM::arrh_pars2.0,
     resp = TRUE,
     add_pars = NULL,
     pars = NULL,
@@ -45,7 +46,7 @@ abm(days = 365,
     approx_method_temp = 'linear', 
     approx_method_pH = 'linear',
     approx_method_vent_air = 'linear',
-    par_key = '\\.',
+    par_key = '\\\\.',
     value = 'ts',                 
     warn = TRUE)
 }
@@ -279,29 +280,6 @@ plot(CH4_emis_rate ~ time, data = out1, type = 'l')
 matplot(out1$time, out1[, nn <- c('m0', 'm1', 'm2', 'sr1')],
         type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Microbial biomass (g)')
 legend('topleft', nn, col = 1:4, lty = 1)
-
-# Simulation 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Run model with variable temperature and constant slurry mass
-temp_dat <- data.frame(time = 300 + c(0,  1,  6, 100),
-                       temp_C =    c(10, 25, 10, 25))
-
-out2 <- abm(600, 1, add_pars = list(temp_C = temp_dat, slurry_mass = 8000, slurry_prod_rate = 0,
-            approx_method_temp = 'linear')
-
-# Plot results
-plot(temp_C ~ time, type = 'l', col = 'red', data = out2)
-abline(v = temp_dat$time, lty = 2, col = 'gray45')
-
-matplot(out2$time, out2[, nn <- c('m0_conc', 'm1_conc', 'm2_conc')],
-        type = 'l', lty = 1, xlab = 'Time (d)', ylab = 'Biomass conc. (g/kg)')
-legend('topleft', nn, col = 1:3, lty = 1)
-abline(v = temp_dat$time, lty = 2, col = 'gray45')
-
-plot(CH4_emis_rate_VS ~ time, data = out2, type = 'l')
-abline(v = temp_dat$time, lty = 2, col = 'gray45')
-
-plot(VFA_conc ~ time, type = 'l', col = 'purple', data = out2)
-abline(v = temp_dat$time, lty = 2, col = 'gray45')
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

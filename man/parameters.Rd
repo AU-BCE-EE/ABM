@@ -6,6 +6,7 @@
 \alias{grp_pars2.0}
 \alias{man_pars2.0}
 \alias{mic_pars2.0}
+\alias{wthr_pars2.0}
 \alias{arrh_pars1.0}
 \alias{chem_pars1.0}
 \alias{grp_pars1.0}

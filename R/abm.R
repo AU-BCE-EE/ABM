@@ -3,8 +3,8 @@ abm <- function(
   days = 365,                                # Number of days to run
   delta_t = 1,                               # Time step for output
   times = NULL,
-  wthr_pars = wthr_pars2.0,
-  evap_pars = list(evap = 0.5 * et(temp_C = wthr_pars$temp_air_C, pres_kpa = wthr_pars$pres_kpa, rs = wthr_pars$rs)),                # mm/d
+  wthr_pars = ABM::wthr_pars2.0,
+  evap_pars = list(evap = 0.5 * et(temp_C = ABM::wthr_pars2.0$temp_air_C, pres_kpa = ABM::wthr_pars2.0$pres_kpa, rs = ABM::wthr_pars2.0$rs)),         # mm/d
   mng_pars = list(slurry_prod_rate = 5700,   # kg/d
                   slurry_mass = 39000,       # Initial slurry mass (kg) NTS: convert to depth??
                   storage_depth = 0.6,       # Storge structure depth, assued to be maximum slurry depth (m)
@@ -21,14 +21,12 @@ abm <- function(
                   slopes = c(urea = NA, slurry_prod_rate = NA),
                   graze = c(start = 'May', duration = 0, hours_day = 0),
                   scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
-  man_pars = man_pars2.0,
+  man_pars = ABM::man_pars2.0,
   init_pars = list(conc_init = man_pars$conc_fresh),
-  grp_pars = grp_pars2.0,
-  mic_pars = mic_pars2.0,
-  chem_pars = chem_pars2.0,
-  arrh_pars = arrh_pars2.0,
-  
-  # kl = mass transfer coefficient (liquid phase units) in m/d
+  grp_pars = ABM::grp_pars2.0,
+  mic_pars = ABM::mic_pars2.0,
+  chem_pars = ABM::chem_pars2.0,
+  arrh_pars = ABM::arrh_pars2.0,
   resp = TRUE,
   add_pars = NULL,
   pars = NULL,

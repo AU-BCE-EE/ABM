@@ -64,7 +64,7 @@ abm(days = 365,
 }
   \item{wthr_pars}{
     Weather inputs.
-    List with elements `temp_air_C`, `RH`, `rain`, `pres_kpa`, `rs`).
+    List with elements `temp_air_C`, `RH`, `rain`, `pres_kpa`, `rs`.
     See \code{\link{parameters}}.
 }
   \item{evap_pars}{

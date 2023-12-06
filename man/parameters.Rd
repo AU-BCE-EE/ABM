@@ -42,6 +42,8 @@
   The \code{1.0} versions are from Dalby et al. (2023b) (see Source section). 
   The \code{arrh_pars2.0} set contains hydrolysis rates of CP, RFd and starch and sugars, and those constants come from Dalby et al. (2023b).
   The values in \code{man_pars2.0} are also derived from the measurements Dalby et al. (2023b) but are not presented in that paper. 
+  The \code{grp_pars2.0} set contains methanogen substrate uptake rates (qhat_opt), 
+  which come from fitting to multiple full scale datasets from pig farms. This data is not yet published.
 }
 
 \source{

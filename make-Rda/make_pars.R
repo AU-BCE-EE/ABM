@@ -17,7 +17,8 @@ grp_pars2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                  ki_NH4_max = c(all = 19.14),
                  ki_H2S_slope = c(default = -0.10623, sr1 = -0.1495),
                  ki_H2S_int = c(default = 0.93066, sr1 = 1.2938),
-                 ki_H2S_min = c(default = 0.08))
+                 ki_H2S_min = c(default = 0.08),
+                 IC50_low = c(default = 0.20854, sr1 = 0.2772))
 
 mic_pars2.0 <- list(ks_SO4 = 0.00694,
                                km_urea = 0.913,

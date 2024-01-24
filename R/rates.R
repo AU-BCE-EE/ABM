@@ -153,7 +153,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
         if(pH >= 6.8){
           IC50 <- ki_H2S_slope * pH + ki_H2S_int
         } else {
-          IC50 <- ki_H2S_slope * 6.8 + ki_H2S_int
+          IC50 <- IC50_low
         } 
       
         a <- -0.5/(IC50 - (H2S_frac * ki_H2S_min))

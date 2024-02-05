@@ -137,16 +137,25 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     NH3_frac_surf <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH_surf))))
     NH3_frac_floor <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH_surf_floor))))
     H2S_frac <- 1 - (1/(1 + 10^(- log_ka[['H2S']] - pH))) # H2S fraction of total sulfide
+    
     # NTS: or just add H2CO3* here?
     # NTS: need TIC production too
+    
+    pH_inhib <- 1
+    NH3_inhib <- 1
+    NH4_inhib <- 1
+    
+    # if pH_inhibiion should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
+    if(pH_inhib_overrule){
+            pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
+    } else{
+            NH3_inhib <- ifelse(NH3_frac * TAN/slurry_mass <= ki_NH3_min, 1, exp(-2.77259 * ((NH3_frac * (TAN/(slurry_mass)) - ki_NH3_min)/(ki_NH3_max - ki_NH3_min))^2))
+            NH4_inhib <- ifelse((1 - NH3_frac) * (TAN/slurry_mass) <= ki_NH4_min, 1, exp(-2.77259*(((1 - NH3_frac) * (TAN/(slurry_mass)) - ki_NH4_min)/(ki_NH4_max - ki_NH4_min))^2))
+    }
     
     # HAC inhibition
     HAC_inhib <- ifelse(HAC_frac * VFA/slurry_mass >= 0.05, 1.16*0.31/(0.31 + (HAC_frac * VFA/slurry_mass)), 1) 
 
-    # NH3, NH4 inhibition
-    NH3_inhib <- ifelse(NH3_frac * TAN/slurry_mass <= ki_NH3_min, 1, exp(-2.77259 * ((NH3_frac * (TAN/(slurry_mass)) - ki_NH3_min)/(ki_NH3_max - ki_NH3_min))^2))
-    NH4_inhib <- ifelse((1 - NH3_frac) * (TAN/slurry_mass) <= ki_NH4_min, 1, exp(-2.77259*(((1 - NH3_frac) * (TAN/(slurry_mass)) - ki_NH4_min)/(ki_NH4_max - ki_NH4_min))^2))
-  
     # H2S inhibition
     H2S_inhib <- NA * qhat
     
@@ -164,7 +173,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
         H2S_inhib[H2S_inhib < 0] <- 0
         H2S_inhib[H2S_inhib > 1 ] <- 1
       
-      cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib
+    cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib * pH_inhib
       
     # Henrys constant temp dependency
     H.NH3 <- 1431 * 1.053^(293 - temp_K)

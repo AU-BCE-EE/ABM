@@ -28,6 +28,7 @@ abm <- function(
   chem_pars = ABM::chem_pars2.0,
   arrh_pars = ABM::arrh_pars2.0,
   resp = TRUE,
+  pH_inhib_overrule = FALSE, 
   add_pars = NULL,
   pars = NULL,
   startup = 0, # Now number of times complete simulation should be run before returning results
@@ -108,7 +109,7 @@ abm <- function(
   
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) {  
-    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp)
+    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
   }
 
   # Create error if batch time is not determined and slurry rate should increase over a batch

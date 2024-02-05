@@ -75,7 +75,7 @@ grp_pars1.0 <- list(grps = c('m0','m1','m2', 'sr1'),
                                ki_H2S_int = c(default = 0.93066, sr1 = 1.2938),
                                ki_H2S_min = c(default = 0.08),
                                IC50_low = c(default = 0.20854, sr1 = 0.2772),
-                               pH_UL = c(default = 8.5),
+                               pH_UL = c(default = 8.0),
                                pH_LL = c(default = 6.5, sr1 = 5.5))
 
 

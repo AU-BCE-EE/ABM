@@ -144,7 +144,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     pH_inhib <- 1
     NH3_inhib <- 1
     NH4_inhib <- 1
-    
+
     # if pH_inhibiion should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
     if(pH_inhib_overrule){
             pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))

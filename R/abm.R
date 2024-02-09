@@ -387,17 +387,20 @@ abm <- function(
   dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
   dat$VS_load_rate <- dat$COD_load_rate / pars$COD_conv[['VS']]
   dat$C_load_rate <- dat$C_conc_fresh * dat$slurry_prod_rate
+  dat$slurry_load_rate <- dat$slurry_prod_rate/1000 # m3
   
   dat$Ninorg_load_rate <- dat$Ninorg_conc_fresh * dat$slurry_prod_rate
   dat$Norg_load_rate <- dat$Norg_conc_fresh * dat$slurry_prod_rate
   dat$N_load_rate <- dat$N_conc_fresh * dat$slurry_prod_rate
-  
+
   # Cumulative flow in g
   dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
   dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc[1]* dat$slurry_mass[1]
   dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * c(0, diff(dat$time))) + dat$ndCOD_conc[1]* dat$slurry_mass[1]
   dat$VS_load_cum <- cumsum(dat$VS_load_rate * c(0, diff(dat$time))) + dat$VS_conc[1]* dat$slurry_mass[1]
   dat$C_load_cum <- cumsum(dat$C_load_rate * c(0, diff(dat$time))) + dat$C_conc[1] * dat$slurry_mass[1]
+  dat$slurry_load_cum <- (cumsum(dat$slurry_load_rate * c(0, diff(dat$time))) + dat$slurry_mass[1]/1000)
+  
   
   dat$Ninorg_load_cum <- cumsum(dat$Ninorg_load_rate * c(0, diff(dat$time))) + dat$Ninorg_conc[1] * dat$slurry_mass[1]
   dat$Norg_load_cum <- cumsum(dat$Norg_load_rate * c(0, diff(dat$time))) + dat$Norg_conc[1] * dat$slurry_mass[1]
@@ -414,6 +417,7 @@ abm <- function(
   dat$CH4_emis_cum_dCOD <- dat$CH4_emis_cum / dat$dCOD_load_cum
   dat$CH4_emis_cum_VS <- dat$CH4_emis_cum / dat$VS_load_cum
   dat$CH4_emis_cum_C <- dat$CH4_emis_cum / dat$C_load_cum
+  dat$CH4_emis_cum_slurry <- dat$CH4_emis_cum / dat$slurry_load_cum # g/ m3
   
   # g NH3 N/g N
   dat$NH3_emis_rate_Ninorg <- dat$NH3_emis_rate / dat$Ninorg_load_rate
@@ -440,6 +444,7 @@ abm <- function(
   dat$CO2_emis_cum_dCOD <- dat$CO2_emis_cum / dat$dCOD_load_cum
   dat$CO2_emis_cum_VS <- dat$CO2_emis_cum / dat$VS_load_cum
   dat$CO2_emis_cum_C <- dat$CO2_emis_cum / dat$C_load_cum
+  dat$CO2_emis_cum_slurry <- dat$CO2_emis_cum / dat$slurry_load_cum
   
   # Apparent COD conversion fraction
   dat$f_COD_CH4_rate <-  dat$CH4_emis_rate * pars$COD_conv[['CH4']] / dat$COD_load_rate
@@ -459,6 +464,7 @@ abm <- function(
   ndCOD_load <- dat$ndCOD_load_cum[nrow(dat)]
   VS_load <- dat$VS_load_cum[nrow(dat)]
   C_load <- dat$C_load_cum[nrow(dat)]
+  slurry_load <- dat$slurry_load_cum[nrow(dat)]
   
   NH3_emis_cum <- dat$NH3_emis_cum[nrow(dat)]
   NH3_emis_rate <- NH3_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
@@ -480,6 +486,7 @@ abm <- function(
   CH4_emis_dCOD <- CH4_emis_cum / dCOD_load
   CH4_emis_VS <- CH4_emis_cum / VS_load
   CH4_emis_C <- CH4_emis_cum / C_load
+  CH4_emis_slurry <- CH4_emis_cum / slurry_load
   
   CO2_emis_cum <- dat$CO2_emis_cum[nrow(dat)] - dat$CO2_emis_cum[1]
   CO2_emis_rate <- CO2_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
@@ -487,6 +494,7 @@ abm <- function(
   CO2_emis_dCOD <- CO2_emis_cum / dCOD_load
   CO2_emis_VS <- CO2_emis_cum / VS_load
   CO2_emis_C <- CO2_emis_cum / C_load
+  CO2_emis_slurry <- CO2_emis_cum / slurry_load
   
   COD_conv_meth <- dat$COD_conv_cum_meth[nrow(dat)] - dat$COD_conv_cum_meth[1]
   COD_conv_respir <- dat$COD_conv_cum_respir[nrow(dat)] - dat$COD_conv_cum_respir[1]
@@ -499,8 +507,8 @@ abm <- function(
             N_load = N_load, NH3_emis_cum = NH3_emis_cum, NH3_emis_rate = NH3_emis_rate, NH3_emis_Ninorg = NH3_emis_Ninorg, NH3_emis_Norg = NH3_emis_Norg,
             NH3_emis_N = NH3_emis_N, N2O_emis_cum = N2O_emis_cum, N2O_emis_rate = N2O_emis_rate, N2O_emis_Ninorg = N2O_emis_Ninorg, N2O_emis_Norg = N2O_emis_Norg,
             N2O_emis_N = N2O_emis_N, CH4_emis_cum = CH4_emis_cum, CH4_emis_rate = CH4_emis_rate, CH4_A_emis_rate = CH4_A_emis_rate, CH4_A_emis_cum = CH4_A_emis_cum, 
-            CH4_emis_COD = CH4_emis_COD, CH4_emis_dCOD = CH4_emis_dCOD, CH4_emis_VS = CH4_emis_VS, CH4_emis_C = CH4_emis_C,
-            CO2_emis_cum = CO2_emis_cum, CO2_emis_rate = CO2_emis_rate, CO2_emis_COD = CO2_emis_COD, CO2_emis_dCOD = CO2_emis_dCOD, CO2_emis_VS = CO2_emis_VS, CO2_emis_C = CO2_emis_C,
+            CH4_emis_COD = CH4_emis_COD, CH4_emis_dCOD = CH4_emis_dCOD, CH4_emis_VS = CH4_emis_VS, CH4_emis_C = CH4_emis_C, CH4_emis_slurry = CH4_emis_slurry,
+            CO2_emis_cum = CO2_emis_cum, CO2_emis_rate = CO2_emis_rate, CO2_emis_COD = CO2_emis_COD, CO2_emis_dCOD = CO2_emis_dCOD, CO2_emis_VS = CO2_emis_VS, CO2_emis_C = CO2_emis_C, CO2_emis_slurry = CO2_emis_slurry,
             COD_conv_meth = COD_conv_meth, COD_conv_respir = COD_conv_respir, COD_conv_sr = COD_conv_sr,
             f_COD_CH4 = f_COD_CH4, f_COD_respir = f_COD_respir, f_COD_sr = f_COD_sr) 
 

@@ -149,6 +149,13 @@ arrh_pars_pig3.0 <- list(lnA = c(VSd_A = 31.3),
                      R = 8.314,  
                      VS_CH4 = 6.67)
 
+arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.3),
+                         E_CH4 = c(VSd_A = 81000), 
+                         A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
+                         E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
+                         R = 8.314,  
+                         VS_CH4 = 6.67)
+
 save(grp_pars_pig3.0, file = '../data/grp_pars_pig3.0.rda')
 save(grp_pars_VS_pig3.0, file = '../data/grp_pars_VS_pig3.0.rda')
 save(mic_pars3.0, file = '../data/mic_pars3.0.rda')

@@ -49,6 +49,14 @@ arrh_pars2.0 <- list(lnA = c(VSd_A = 31.3),
                  R = 8.314,  
                  VS_CH4 = 6.67)
 
+arrh_pars2.0 <- list(lnA = c(VSd_A = 31.3),
+                     E_CH4 = c(VSd_A = 81000), 
+                     A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 7920395457), 
+                     E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 66813.45),  
+                     R = 8.314,  
+                     VS_CH4 = 6.67)
+
+
 save(grp_pars2.0, file = '../data/grp_pars2.0.rda')
 save(mic_pars2.0, file = '../data/mic_pars2.0.rda')
 save(man_pars2.0, file = '../data/man_pars2.0.rda')
@@ -87,7 +95,7 @@ save(grp_pars1.0, file = '../data/grp_pars1.0.rda')
 save(man_pars1.0, file = '../data/man_pars1.0.rda')
 
 ## set in progress 3.0
-grp_pars_VS3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
+grp_pars_VS_pig3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                     yield = c(default = 0.05, sr1 = 0.065),
                     xa_fresh = c(default = 0.0628),
                     xa_init = c(all = 0.0628),
@@ -108,7 +116,7 @@ grp_pars_VS3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                     pH_UL = c(default = 8.0),
                     pH_LL = c(default = 6.5, sr1 = 5.5))
 
-grp_pars3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
+grp_pars_pig3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                        yield = c(default = 0.05, sr1 = 0.065),
                        xa_fresh = c(default = 0.0628),
                        xa_init = c(all = 0.0628),
@@ -152,13 +160,13 @@ kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02))
 
 arrh_pars3.0 <- list(lnA = c(VSd_A = 31.3),
                      E_CH4 = c(VSd_A = 81000), 
-                     A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12), 
-                     E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052),  
+                     A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12), 
+                     E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557),  
                      R = 8.314,  
                      VS_CH4 = 6.67)
 
-save(grp_pars3.0, file = '../data/grp_pars3.0.rda')
-save(grp_pars_VS3.0, file = '../data/grp_pars_VS3.0.rda')
+save(grp_pars_pig3.0, file = '../data/grp_pars_pig3.0.rda')
+save(grp_pars_VS_pig3.0, file = '../data/grp_pars_VS_pig3.0.rda')
 save(mic_pars3.0, file = '../data/mic_pars3.0.rda')
 save(man_pars3.0, file = '../data/man_pars3.0.rda')
 save(wthr_pars3.0, file = '../data/wthr_pars3.0.rda')

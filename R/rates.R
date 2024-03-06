@@ -8,7 +8,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
      parms$slurry_mass <- NULL
      
      with(as.list(parms), {
-     
+  browser()
     # correct slurry production rate in periods with grazing
     suppressWarnings({
     if(!is.null(graze_int) & any(graze_int) != 0) {
@@ -115,10 +115,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     g_NH4 <- 0.7
 
     # Hydrolysis rate with Arrhenius function or CTM. 
-    alpha <- CTM_cpp(temp_K, alpha_T_opt, alpha_T_min, alpha_T_max, alpha_opt)
-    names(alpha) <- names(alpha_opt)
-    alpha_arrh <-  Arrh_func(A, E, R, temp_K)
-    alpha <- c(alpha, alpha_arrh)
+    alpha<-  Arrh_func(A, E, R, temp_K)
     alpha[names(alpha) != 'urea'] <- scale['alpha_opt'] * alpha[names(alpha) != 'urea']
     
     # Microbial substrate utilization rate (vectorized calculation)

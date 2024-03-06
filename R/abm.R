@@ -279,8 +279,8 @@ abm <- function(
     start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CP', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')
     y[start.vars]  <- starting[nrow(starting), start.vars]
   }  
-  
-  if (any(pars$conc_fresh[['VSd']] > 1e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$A)] > 0)) {
+
+  if (any(pars$conc_fresh[['VSd']] > 1e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$A)[!names(pars$A) %in% c('VSd','urea')]] > 0)) {
     stop('Cannot have both VSd and other organic matter components being above 0')
   }
   

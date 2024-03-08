@@ -115,9 +115,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     g_NH4 <- 0.7
 
     # Hydrolysis rate with Arrhenius function or CTM. 
-    alpha<-  Arrh_func(A, E, R, temp_K)
+    alpha <-  Arrh_func(A, E, R, temp_K)
     
-    #browser()
     if(VSd <= 10E-9){
       scale <- scale.alpha_opt['notVSd']
     } else if(VSd > 10E-9){

@@ -125,6 +125,49 @@ grp_pars_pig3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                        pH_UL = c(default = 8.0),
                        pH_LL = c(default = 6.5, sr1 = 5.5))
 
+grp_pars_VS_cattle3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
+                           yield = c(default = 0.05, sr1 = 0.065),
+                           xa_fresh = c(default = 0.0628),
+                           xa_init = c(all = 0.0628),
+                           decay_rate = c(all = 0.02),
+                           ks_coefficient = c(default = 1.153337, sr1 = 0.461335),
+                           qhat_opt = c(m0 = 0.6067, m1 = 0.6804, m2 = 2.056, m3 = 7.2, m4 = 8, m5 = 8, sr1 = 8),
+                           T_opt = c(m0 = 18, m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55, sr1 = 43.75),
+                           T_min = c(m0 = 0, m1 = 12.672, m2 = 6.41, m3 = 15, m4 = 26.25, m5 = 30, sr1 = 0),
+                           T_max = c(m0 = 25, m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60, sr1 = 51.25),
+                           ki_NH3_min = c(all = 0.015),
+                           ki_NH3_max = c(all = 0.3),
+                           ki_NH4_min = c(all = 2.7),
+                           ki_NH4_max = c(all = 19.14),
+                           ki_H2S_slope = c(default = -0.10623, sr1 = -0.1495),
+                           ki_H2S_int = c(default = 0.93066, sr1 = 1.2938),
+                           ki_H2S_min = c(default = 0.08),
+                           IC50_low = c(default = 0.20854, sr1 = 0.2772),
+                           pH_UL = c(default = 8.0),
+                           pH_LL = c(default = 6.5, sr1 = 5.5))
+
+grp_pars_cattle3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
+                        yield = c(default = 0.05, sr1 = 0.065),
+                        xa_fresh = c(default = 0.0628),
+                        xa_init = c(all = 0.0628),
+                        decay_rate = c(all = 0.02),
+                        ks_coefficient = c(default = 1.153337, sr1 = 0.461335),
+                        qhat_opt = c(m0 = 0.5169, m1 = 0.2356, m2 = 1.8246, m3 = 8.43, m4 = 8, m5 = 8, sr1 = 8),
+                        T_opt = c(m0 = 18, m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55, sr1 = 43.75),
+                        T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41, m3 = 15, m4 = 26.25, m5 = 30, sr1 = 0),
+                        T_max = c(m0 = 25, m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60, sr1 = 51.25),
+                        ki_NH3_min = c(all = 0.015),
+                        ki_NH3_max = c(all = 0.3),
+                        ki_NH4_min = c(all = 2.7),
+                        ki_NH4_max = c(all = 19.14),
+                        ki_H2S_slope = c(default = -0.10623, sr1 = -0.1495),
+                        ki_H2S_int = c(default = 0.93066, sr1 = 1.2938),
+                        ki_H2S_min = c(default = 0.08),
+                        IC50_low = c(default = 0.20854, sr1 = 0.2772),
+                        pH_UL = c(default = 8.0),
+                        pH_LL = c(default = 6.5, sr1 = 5.5))
+
+
 
 mic_pars3.0 <- list(ks_SO4 = 0.00694,
                     km_urea = 0.913)
@@ -160,11 +203,15 @@ arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.3),
                          scale.alpha_opt = c(VSd = 1, notVSd = 1))
 
 save(grp_pars_pig3.0, file = '../data/grp_pars_pig3.0.rda')
+save(grp_pars_cattle3.0, file = '../data/grp_pars_cattle3.0.rda')
 save(grp_pars_VS_pig3.0, file = '../data/grp_pars_VS_pig3.0.rda')
+save(grp_pars_VS_cattle3.0, file = '../data/grp_pars_VS_cattle3.0.rda')
+save(arrh_pars_pig3.0, file = '../data/arrh_pars_pig3.0.rda')
+save(arrh_pars_cattle3.0, file = '../data/arrh_pars_cattle3.0.rda')
+
 save(mic_pars3.0, file = '../data/mic_pars3.0.rda')
 save(man_pars3.0, file = '../data/man_pars3.0.rda')
 save(wthr_pars3.0, file = '../data/wthr_pars3.0.rda')
 save(chem_pars3.0, file = '../data/chem_pars3.0.rda')
-save(arrh_pars_pig3.0, file = '../data/arrh_pars_pig3.0.rda')
 
 

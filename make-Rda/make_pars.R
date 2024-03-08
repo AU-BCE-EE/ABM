@@ -43,7 +43,7 @@ arrh_pars2.0 <- list(lnA = c(VSd_A = 31.3),
                      E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                      R = 8.314,  
                      VS_CH4 = 6.67,
-                     scale.alpha_opt = list(VSd = 1, notVSd = 1))
+                     scale.alpha_opt = c(VSd = 1, notVSd = 1))
 
 save(grp_pars2.0, file = '../data/grp_pars2.0.rda')
 save(mic_pars2.0, file = '../data/mic_pars2.0.rda')
@@ -149,7 +149,7 @@ arrh_pars_pig3.0 <- list(lnA = c(VSd_A = 31.3),
                      E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                      R = 8.314,  
                      VS_CH4 = 6.67,
-                     scale.alpha_opt = list(VSd = 0.8, notVSd = 1.02))
+                     scale.alpha_opt = c(VSd = 0.8, notVSd = 1.02))
 
 arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.3),
                          E_CH4 = c(VSd_A = 81000), 
@@ -157,7 +157,7 @@ arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.3),
                          E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                          R = 8.314,  
                          VS_CH4 = 6.67,
-                         scale.alpha_opt = list(VSd = 1, notVSd = 1))
+                         scale.alpha_opt = c(VSd = 1, notVSd = 1))
 
 save(grp_pars_pig3.0, file = '../data/grp_pars_pig3.0.rda')
 save(grp_pars_VS_pig3.0, file = '../data/grp_pars_VS_pig3.0.rda')

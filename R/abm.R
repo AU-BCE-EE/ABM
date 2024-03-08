@@ -20,7 +20,7 @@ abm <- function(
                   resid_enrich = 0.9,
                   slopes = c(urea = NA, slurry_prod_rate = NA),
                   graze = c(start = 'May', duration = 0, hours_day = 0),
-                  scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
+                  scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1),
   man_pars = ABM::man_pars2.0,
   init_pars = list(conc_init = man_pars$conc_fresh),
   grp_pars = ABM::grp_pars2.0,

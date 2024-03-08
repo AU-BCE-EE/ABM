@@ -116,7 +116,15 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     # Hydrolysis rate with Arrhenius function or CTM. 
     alpha<-  Arrh_func(A, E, R, temp_K)
-    alpha[names(alpha) != 'urea'] <- scale['alpha_opt'] * alpha[names(alpha) != 'urea']
+    
+    browser()
+    if(VSd <= 10E-9){
+      scale = scale.alpha_opt['notVSd']
+    } else if(VSd > 10E-9){
+      scale = scale.alpha_opt['VSd']
+    }
+    
+    alpha[names(alpha) != 'urea'] <- scale * alpha[names(alpha) != 'urea']
     
     # Microbial substrate utilization rate (vectorized calculation)
     qhat <- scale['qhat_opt'] * CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt)

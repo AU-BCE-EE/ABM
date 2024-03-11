@@ -118,15 +118,15 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     alpha <-  Arrh_func(A, E, R, temp_K)
     
     if(VSd <= 10E-9){
-      scale['alpha_opt'] <- scale.alpha_opt['notVSd']
+      scale['alpha_opt'] <- scale_alpha_opt['notVSd']
     } else if(VSd > 10E-9){
-      scale['alpha_opt']  <- scale.alpha_opt['VSd']
+      scale['alpha_opt']  <- scale_alpha_opt['VSd']
     }
     
-    alpha[names(alpha) != 'urea'] <- scale['alpha_opt'] * alpha[names(alpha) != 'urea']
+    alpha[names(alpha) != 'urea'] <- scale[['alpha_opt']] * alpha[names(alpha) != 'urea']
     
     # Microbial substrate utilization rate (vectorized calculation)
-    qhat <- scale['qhat_opt'] * CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt)
+    qhat <- scale[['qhat_opt']] * CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt)
     names(qhat) <- names(qhat_opt)
     
     # Ks temperature dependence
@@ -210,11 +210,11 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     rut <- NA * qhat
     
     # VFA consumption rate by sulfate reducers (g/d) affected by inhibition terms
-    rut[i_sr] <- ((qhat[i_sr] * VFA / (slurry_mass) * xa[i_sr] / (slurry_mass) / (scale['ks_coefficient'] * ks[i_sr] + VFA / (slurry_mass))) * (slurry_mass) *
+    rut[i_sr] <- ((qhat[i_sr] * VFA / (slurry_mass) * xa[i_sr] / (slurry_mass) / (scale[['ks_coefficient']] * ks[i_sr] + VFA / (slurry_mass))) * (slurry_mass) *
                     (sulfate / (slurry_mass)) / (ks_SO4 + sulfate / (slurry_mass))) * cum_inhib[i_sr]
 
     # VFA consumption rate by methanogen groups (g/d) affected by inhibition terms
-    rut[i_meth] <- ((qhat[i_meth] * VFA / (slurry_mass) * xa[i_meth] / (slurry_mass)) / (scale['ks_coefficient'] * ks[i_meth] + VFA / (slurry_mass)) *
+    rut[i_meth] <- ((qhat[i_meth] * VFA / (slurry_mass) * xa[i_meth] / (slurry_mass)) / (scale[['ks_coefficient']] * ks[i_meth] + VFA / (slurry_mass)) *
                       (slurry_mass)) * cum_inhib[i_meth]
     
     # urea hydrolysis by Michaelis Menten
@@ -242,7 +242,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     
     derivatives <- c(
-       xa = scale['yield'] * yield * rut + scale['xa_fresh'] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
+       xa = scale[['yield']] * yield * rut + scale[['xa_fresh']] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
        slurry_mass = slurry_prod_rate + (rain - evap) * area,
        xa_dead = slurry_prod_rate * conc_fresh[['xa_dead']] - alpha[['xa_dead']] * xa_dead + sum(decay_rate * xa) + xa_aer,
        RFd = slurry_prod_rate * conc_fresh[['RFd']] - alpha[['RFd']] * RFd - respiration * RFd/sub_respir,
@@ -275,7 +275,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                                qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = respiration * COD_conv[['CO2_aer']],
                                H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib, HAC_inhib = HAC_inhib, cum_inhib = cum_inhib, 
                                rut = rut, rut_urea = rut_urea, t_run = t_run, t_batch = t_batch, conc_fresh = conc_fresh, xa_init = xa_init, 
-                               xa_fresh = xa_fresh * scale['xa_fresh'], area = area, t_batch = t_batch, slurry_prod_rate = slurry_prod_rate,
+                               xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, t_batch = t_batch, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))
      })
 }

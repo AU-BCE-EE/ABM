@@ -127,11 +127,11 @@ grp_pars_pig3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
 
 grp_pars_VS_cattle3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                               yield = c(default = 0.05, sr1 = 0.065),
-                              xa_fresh = c(default = 0.6569362),
-                              xa_init = c(all = 0.6569362),
+                              xa_fresh = c(default = 0.6204454),
+                              xa_init = c(all = 0.6204454),
                               decay_rate = c(all = 0.02),
                               ks_coefficient = c(default = 1.153337, sr1 = 0.461335),
-                              qhat_opt = c(m0 = 2.3625, m1 = 0.02345, m2 = 1.34, m3 = 8.43, m4 = 8, m5 = 8, sr1 = 8),
+                              qhat_opt = c(m0 = 2.445967, m1 = 0.023164, m2 = 1.2144, m3 = 8.43, m4 = 8, m5 = 8, sr1 = 8),
                               T_opt = c(m0 = 18, m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55, sr1 = 43.75),
                               T_min = c(m0 = 0, m1 = 5, m2 = 5, m3 = 15, m4 = 26.25, m5 = 30, sr1 = 0),
                               T_max = c(m0 = 25, m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60, sr1 = 51.25),
@@ -148,11 +148,11 @@ grp_pars_VS_cattle3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
 
 grp_pars_cattle3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                         yield = c(default = 0.05, sr1 = 0.065),
-                        xa_fresh = c(default = 0.3641128),
-                        xa_init = c(all = 0.3641128),
+                        xa_fresh = c(default = 0.2351841),
+                        xa_init = c(all = 0.2351841),
                         decay_rate = c(all = 0.02),
                         ks_coefficient = c(default = 1.153337, sr1 = 0.461335),
-                        qhat_opt = c(m0 = 1.0584, m1 = 0.0134, m2 = 1.3030, m3 = 8.43, m4 = 8, m5 = 8, sr1 = 8),
+                        qhat_opt = c(m0 = 3.012, m1 = 0.01, m2 = 1, m3 = 8.43, m4 = 8, m5 = 8, sr1 = 8),
                         T_opt = c(m0 = 18, m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55, sr1 = 43.75),
                         T_min = c(m0 = 0, m1 = 5, m2 = 5, m3 = 15, m4 = 26.25, m5 = 30, sr1 = 0),
                         T_max = c(m0 = 25, m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60, sr1 = 51.25),
@@ -200,7 +200,7 @@ arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.3),
                          E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                          R = 8.314,  
                          VS_CH4 = 6.67,
-                         scale_alpha_opt = list(VSd = 0.18865, notVSd = 0.14014))
+                         scale_alpha_opt = list(VSd = 0.2187190, notVSd = 0.205925))
 
 save(grp_pars_pig3.0, file = '../data/grp_pars_pig3.0.rda')
 save(grp_pars_cattle3.0, file = '../data/grp_pars_cattle3.0.rda')

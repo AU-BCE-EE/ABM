@@ -22,7 +22,8 @@ grp_pars2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                  pH_UL = c(default = 8.0),
                  pH_LL = c(default = 6.5, sr1 = 5.5))
 
-mic_pars2.0 <- list(ks_SO4 = 0.00694, km_urea = 0.913)
+mic_pars2.0 <- list(ks_SO4 = 0.00694, km_urea = 0.913,
+                    decay_rate_xa_bac = 0.02)
 
 man_pars2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 5.25, 
                                   VFA = 1.7, xa_bac = 1, xa_dead = 0, Cfat = 27.6, CP = 21.1, RFd = 25.4, iNDF = 11.3, VSd = 0, 
@@ -32,8 +33,9 @@ wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 
 
 chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa_dead = 1/0.73, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                               Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
-                              N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358, N_xa = 1/0.08754375,
-                              C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429
+                              N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358, 
+                              C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429,
+                              frac_CP_xa = 0.7257262
                               ), 
                  kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02))
 
@@ -170,7 +172,8 @@ grp_pars_cattle3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
 
 
 mic_pars3.0 <- list(ks_SO4 = 0.00694,
-                    km_urea = 0.913)
+                    km_urea = 0.913,
+                    decay_rate_xa_bac = 0.02)
                     
 
 man_pars3.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 5.25, 
@@ -181,9 +184,9 @@ wthr_pars3.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 
 
 chem_pars3.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa_dead = 1/0.73, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                                   Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
-                                  N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358, N_xa = 1/0.08754375,
-                                  C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429
-), 
+                                  N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358,
+                                  C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429,
+                                  frac_CP_xa = 0.7257262), 
 kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02))
 
 arrh_pars_pig3.0 <- list(lnA = c(VSd_A = 31.3),

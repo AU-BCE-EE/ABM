@@ -245,8 +245,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     derivatives <- c(
        xa = scale[['yield']] * yield * rut + scale[['xa_fresh']] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
        slurry_mass = slurry_prod_rate + (rain - evap) * area,
-       xa_bac = slurry_prod_rate * conc_fresh[['xa_bac']] + ferm[["xa_bac_rate"]] - decay_rate['sr1'] * xa_bac, # xa_bac_rate is the growth pr day (calculated in stoich function, therefore not necessary to multiply with a yield coeff)
-       xa_dead = slurry_prod_rate * conc_fresh[['xa_dead']] - alpha[['xa_dead']] * xa_dead + sum(decay_rate * xa) + xa_aer + decay_rate['sr1'] * xa_bac,
+       xa_bac = slurry_prod_rate * conc_fresh[['xa_bac']] + ferm[["xa_bac_rate"]] - decay_rate_xa_bac * xa_bac, # xa_bac_rate is the growth pr day (calculated in stoich function, therefore not necessary to multiply with a yield coeff)
+       xa_dead = slurry_prod_rate * conc_fresh[['xa_dead']] - alpha[['xa_dead']] * xa_dead + sum(decay_rate * xa) + xa_aer + decay_rate_xa_bac * xa_bac * (1 - COD_conv[['frac_CP_xa']]),
        RFd = slurry_prod_rate * conc_fresh[['RFd']] - alpha[['RFd']] * RFd - respiration * RFd/sub_respir,
        iNDF = slurry_prod_rate * conc_fresh[['iNDF']],
        ash = slurry_prod_rate * conc_fresh[['ash']],
@@ -254,7 +254,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        starch = slurry_prod_rate * conc_fresh[['starch']] - alpha[['starch']] * starch - respiration * starch/sub_respir,
        CP = slurry_prod_rate * conc_fresh[['CP']] - alpha[['CP']] * CP - respiration * CP/sub_respir,
        Cfat = slurry_prod_rate * conc_fresh[['Cfat']] - alpha[['Cfat']] * Cfat - respiration * Cfat/sub_respir,
-       VFA = alpha[['xa_dead']] * xa_dead + alpha[['starch']] * starch + alpha[['CP']] * CP + alpha[['Cfat']] * Cfat + alpha[['RFd']] * RFd + alpha[['VSd']] * VSd   - sum(rut) + slurry_prod_rate * conc_fresh[['VFA']],
+       VFA = alpha[['xa_dead']] * xa_dead + alpha[['starch']] * starch + alpha[['CP']] * CP + alpha[['Cfat']] * Cfat + alpha[['RFd']] * RFd + alpha[['VSd']] * VSd - sum(rut) + slurry_prod_rate * conc_fresh[['VFA']] + decay_rate_xa_bac * xa_bac * COD_conv[['frac_CP_xa']],
        urea = slurry_prod_rate * conc_fresh[['urea']] - rut_urea,
        TAN = slurry_prod_rate * conc_fresh[['TAN']] + rut_urea + ferm$TAN_min + respiration * CP/sub_respir / COD_conv[['N_CP']] - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate,
        sulfate = slurry_prod_rate * conc_fresh[['sulfate']] - sum(rutsr) / COD_conv[['S']],

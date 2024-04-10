@@ -345,42 +345,38 @@ abm <- function(
   dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_bac + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))])
   dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_bac + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) + dat$conc_fresh_iNDF
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
-  dat$C_conc_fresh <- dat$conc_fresh_VFA / pars$COD_conv[['C_VFA']] + dat$conc_fresh_xa_bac / pars$COD_conv[['C_xa_dead']] + dat$conc_fresh_xa_dead / pars$COD_conv[['C_xa_dead']] + dat$conc_fresh_RFd / pars$COD_conv[["C_RFd"]] +
+  dat$C_conc_fresh <- dat$conc_fresh_VFA / pars$COD_conv[['C_VFA']] + dat$conc_fresh_xa_bac / pars$COD_conv[['C_xa']] + dat$conc_fresh_xa_dead / pars$COD_conv[['C_xa']] + dat$conc_fresh_RFd / pars$COD_conv[["C_RFd"]] +
                       dat$conc_fresh_starch / pars$COD_conv[['C_starch']] + dat$conc_fresh_CP / pars$COD_conv[['C_CP']] + dat$conc_fresh_Cfat / pars$COD_conv[['C_Cfat']] +
-                      dat$conc_fresh_VSd / pars$COD_conv[['C_VSd']] + dat$conc_fresh_iNDF / pars$COD_conv[['C_iNDF']] + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) / pars$COD_conv[['C_xa_dead']] +
+                      dat$conc_fresh_VSd / pars$COD_conv[['C_VSd']] + dat$conc_fresh_iNDF / pars$COD_conv[['C_iNDF']] + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) / pars$COD_conv[['C_xa']] +
                       dat$conc_fresh_urea / pars$COD_conv[['C_N_urea']]
   
-  # ndCOD is almost conserved, same everywhere always
+  # ndCOD is almost conserved, same everywhere always - some problem here with water evap and water precipitation?
   dat$ndCOD_conc <- ndCOD_conc <- dat$COD_conc_fresh - dat$dCOD_conc_fresh 
   dat$dCOD_conc <- dCOD_conc <- dat$xa_bac_conc + dat$xa_dead_conc + dat$RFd_conc + dat$Cfat_conc + dat$CP_conc + dat$starch_conc + dat$VFA_conc + dat$VSd_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
   dat$COD_conc <- COD_conc <- ndCOD_conc + dCOD_conc
   
   dat$VS_conc <- dat$COD_conc/pars$COD_conv[['VS']]
-  #dat$xa_dead_conc/pars$COD_conv[['VS']] + dat$RFd_conc/pars$COD_conv[['RFd']] + dat$Cfat_conc/pars$COD_conv[['Cfat']] + 
-  #              dat$CP_conc/pars$COD_conv[['CP']] + dat$starch_conc/pars$COD_conv[['starch']] + dat$VFA_conc/pars$COD_conv[['VFA']] + dat$VSd_conc/pars$COD_conv[['VS']] + 
-  #              rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])/pars$COD_conv[['VS']] + dat$iNDF_conc/pars$COD_conv[['iNDF']] + dat$urea_conc/pars$COD_conv[['N_VS_urea']]
-  
 
-  dat$C_conc <- dat$VFA_conc / pars$COD_conv[['C_VFA']] + dat$xa_bac_conc / pars$COD_conv[['C_xa_dead']] + dat$xa_dead_conc / pars$COD_conv[['C_xa_dead']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
+  dat$C_conc <- dat$VFA_conc / pars$COD_conv[['C_VFA']] + dat$xa_bac_conc / pars$COD_conv[['C_xa']] + dat$xa_dead_conc / pars$COD_conv[['C_xa']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_conc / pars$COD_conv[['C_starch']] + dat$CP_conc / pars$COD_conv[['C_CP']] + dat$Cfat_conc / pars$COD_conv[['C_Cfat']] +
-                dat$VSd_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa_dead']] +
+                dat$VSd_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
                 dat$urea_conc / pars$COD_conv[['C_N_urea']]
-  dat$C_eff_conc <- dat$VFA_eff_conc / pars$COD_conv[['C_VFA']] + dat$xa_bac_eff_conc / pars$COD_conv[['C_xa_dead']] + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa_dead']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
+  dat$C_eff_conc <- dat$VFA_eff_conc / pars$COD_conv[['C_VFA']] + dat$xa_bac_eff_conc / pars$COD_conv[['C_xa']] + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_eff_conc / pars$COD_conv[['C_starch']] + dat$CP_eff_conc / pars$COD_conv[['C_CP']] + dat$Cfat_eff_conc / pars$COD_conv[['C_Cfat']] +
-                dat$VSd_eff_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa_dead']] +
+                dat$VSd_eff_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
                 dat$urea_eff_conc / pars$COD_conv[['C_N_urea']]
   
   # still miss to incorp N from biomass here, 
   # speciafically the N stored in xa_bac needs to be transfered to the CP pool when it degrades.  
-  browser()
+  
   dat$Ninorg_conc_fresh <- dat$conc_fresh_urea + dat$conc_fresh_TAN
   dat$Norg_conc_fresh <- dat$conc_fresh_CP / pars$COD_conv[['N_CP']] # biomass N not included here, because it is already part of CP.
   dat$N_conc_fresh <- dat$Ninorg_conc_fresh + dat$Norg_conc_fresh
   dat$Ninorg_conc <- Ninorg_conc <- dat$urea_conc + dat$TAN_conc
-  dat$Norg_conc <- Norg_conc <- dat$CP_conc / pars$COD_conv[['N_CP']]
+  dat$Norg_conc <- Norg_conc <- dat$CP_conc / pars$COD_conv[['N_CP']] + dat$xa_bac_conc / pars$COD_conv[['N_xa']]
   dat$N_conc <- N_conc <- dat$Ninorg_conc + dat$Norg_conc
   dat$Ninorg_eff_conc <- Ninorg_eff_conc <- dat$urea_eff_conc + dat$TAN_eff_conc
-  dat$N_eff_conc <- Ninorg_eff_conc + dat$CP_eff_conc / pars$COD_conv[['N_CP']]
+  dat$N_eff_conc <- Ninorg_eff_conc + dat$CP_eff_conc / pars$COD_conv[['N_CP']] + dat$xa_bac_eff_conc / pars$COD_conv[['N_xa']]
 
   
   # And flows in g/d

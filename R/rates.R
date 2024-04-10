@@ -233,15 +233,16 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     CO2_ferm_meth_sr <- ferm$ferm['CO2'] * 44.01 + sum(rut[i_meth])/ferm$COD_conv_meth_CO2 + sum(rutsr)/ferm$COD_conv_sr_CO2
     CO2_ferm <- ferm$ferm['CO2'] * 44.01 
     
-    # surface respiration conv_COD_aer assumes 10% cell yield, but aerobic biomass is not tracked. 
     # Therefore aer cell mass should be accounted for somewhere. Suggest to add to the xa_dead pool for COD balance 
-    fs0 <- 0.65 # energy fraction going to growth, Rittman
-    xa_aer <- respiration * (1 - fs0)
-    
-    # Derivatives, all in g/d except slurry_mass = kg/d
+    # energy fraction going to growth, fs0, Rittman
+    fs0 <- 0.65 # 
+    # energy going to growth of aerobic bacteria, xa_aer, which decays as fast as it is formed (steady state assumed)
+    # therefore this xa_aer goes to xa_dead immediately
+    xa_aer <- respiration * fs0 
+    # Derivatives, all in gCOD/d except slurry_mass = kg/d, N and S are gN or gS, VSd_A and VSnd_A are g/d
     # NTS: Some of these repeated calculations could be moved up
     # need to implement xa_bac to keep mass balance here: 
-    
+
     derivatives <- c(
        xa = scale[['yield']] * yield * rut + scale[['xa_fresh']] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
        slurry_mass = slurry_prod_rate + (rain - evap) * area,
@@ -256,7 +257,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        Cfat = slurry_prod_rate * conc_fresh[['Cfat']] - alpha[['Cfat']] * Cfat - respiration * Cfat/sub_respir,
        VFA = alpha[['xa_dead']] * xa_dead + alpha[['starch']] * starch + alpha[['CP']] * CP + alpha[['Cfat']] * Cfat + alpha[['RFd']] * RFd + alpha[['VSd']] * VSd - sum(rut) + slurry_prod_rate * conc_fresh[['VFA']] + decay_rate_xa_bac * xa_bac * COD_conv[['frac_CP_xa']],
        urea = slurry_prod_rate * conc_fresh[['urea']] - rut_urea,
-       TAN = slurry_prod_rate * conc_fresh[['TAN']] + rut_urea + ferm$TAN_min + respiration * CP/sub_respir / COD_conv[['N_CP']] - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate,
+       TAN = slurry_prod_rate * conc_fresh[['TAN']] + rut_urea + ferm$TAN_min + respiration * (1-fs0) * CP/sub_respir / COD_conv[['N_CP']] - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate,
        sulfate = slurry_prod_rate * conc_fresh[['sulfate']] - sum(rutsr) / COD_conv[['S']],
        sulfide = slurry_prod_rate * conc_fresh[['sulfide']] + sum(rutsr) / COD_conv[['S']] - H2S_emis_rate,
        VSd_A = - VSd_A * ((exp(lnA[['VSd_A']] - E_CH4[['VSd_A']] / (R * temp_K))) * 24 / 1000 * VS_CH4) + slurry_prod_rate * conc_fresh[['VSd_A']],

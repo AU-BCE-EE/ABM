@@ -31,9 +31,9 @@ man_pars2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2
 
 wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
 
-chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa_dead = 1/0.73, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
+chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                               Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
-                              N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358, 
+                              N_CP = 1/0.1014, C_xa = 1/0.3753125, C_RFd = 1/0.376, C_iNDF = 1/0.358, N_xa = 1/0.08754375,
                               C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429,
                               frac_CP_xa = 0.7257262
                               ), 
@@ -41,8 +41,8 @@ chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa_dead = 1/0.73, RFd = 1/0.84
 
 arrh_pars2.0 <- list(lnA = c(VSd_A = 31.3),
                      E_CH4 = c(VSd_A = 81000), 
-                     A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
-                     E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
+                     A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
+                     E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                      R = 8.314,  
                      VS_CH4 = 6.67,
                      scale_alpha_opt = list(VSd = 1, notVSd = 1))
@@ -182,25 +182,25 @@ man_pars3.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2
 
 wthr_pars3.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
 
-chem_pars3.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa_dead = 1/0.73, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
+chem_pars3.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                                   Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
-                                  N_CP = 1/0.1014, C_xa_dead = 1/0.358, C_RFd = 1/0.376, C_iNDF = 1/0.358,
+                                  N_CP = 1/0.1014, C_xa = 1/0.3753125, C_RFd = 1/0.376, C_iNDF = 1/0.358, N_xa = 1/0.08754375,
                                   C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429,
                                   frac_CP_xa = 0.7257262), 
 kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02))
 
 arrh_pars_pig3.0 <- list(lnA = c(VSd_A = 31.3),
                      E_CH4 = c(VSd_A = 81000), 
-                     A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
-                     E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
+                     A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
+                     E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                      R = 8.314,  
                      VS_CH4 = 6.67,
                      scale_alpha_opt = list(VSd = 0.6057, notVSd = 1.024))
 
 arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.3),
                          E_CH4 = c(VSd_A = 81000), 
-                         A = c(xa_dead= 8.56*10^7, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
-                         E = c(xa_dead= 60600, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
+                         A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
+                         E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                          R = 8.314,  
                          VS_CH4 = 6.67,
                          scale_alpha_opt = list(VSd = 0.2187190, notVSd = 0.205925))

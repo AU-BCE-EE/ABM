@@ -207,7 +207,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
      respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_respir / slurry_mass) / 100
      frac_CP_aer_xa <- CP/sub_respir
     }
-    browser()
+    
     # VFA uptake rates
     rut <- NA * qhat
     

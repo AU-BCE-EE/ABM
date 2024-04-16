@@ -33,7 +33,7 @@ ace <- c(H2 = 0, C2H4O2 = -1, CO2 = 1, CH4 = 1, H2O = 0) * ferm['C2H4O2']
 hyd <- c(H2 = -1, C2H4O2 = 0, CO2 = -1/4, CH4 = 1/4, H2O = 2/4) * ferm['H2']      
 
 ace_sr <- c(H2 = 0, C2H4O2 = -1, H2SO4 = -1, CO2 = 2, H2O = 2, H2S = 1) * ferm['C2H4O2'] 
-hyd_sr <- c(H2 = -1, C2H4O2 = 0, H2SO4 = -1/4, CO2 = 0, H2O = 4/4, H2S = 1) * ferm['H2'] 
+hyd_sr <- c(H2 = -1, C2H4O2 = 0, H2SO4 = -1/4, CO2 = 0, H2O = 1, H2S = 1/4) * ferm['H2'] 
 
 # combine methanogenesis stoichiometry for calculating CO2 conv factor below. 
 meth <- c(C2H4O2 = ace[['C2H4O2']], H2 = hyd[['H2']], 
@@ -47,6 +47,7 @@ sr <-  c(C2H4O2 = ace_sr[['C2H4O2']], H2 = hyd_sr[['H2']],
          CO2 = ace_sr[['CO2']])
 
 xa_bac_rate <- ferm[['C5H7O2N']] * 113.113 * 1.414515  # fermentative and hydrolytic bacteria growth in gCOD/day, 113.113 is g pr mol biomass, and 1.41.. is gCOD / g biomass 
+VFA_H2 <- ferm[['C2H4O2']] * 60.052 * 1.065743 + ferm[['H2']] * 2.016 * 7.936508 # acetate and H2 COD from hydrolysis + fermentation reactions.
 TAN_min <- ferm[['NH3']] * 14.007 # g N-NH3
 # COD_conversion from moles to gCOD (acetate and H2) or moles to g (for CO2), 
 # coefficients in gCOD/mol on reaction side and g/mol for CO2. 
@@ -56,7 +57,7 @@ TAN_min <- ferm[['NH3']] * 14.007 # g N-NH3
 COD_conv_meth_CO2 <- -(meth['C2H4O2'] * 64 + meth['H2'] * 16)/(meth['CO2'] * 44.01)
 COD_conv_sr_CO2 <- -(sr['C2H4O2'] * 64 + sr['H2'] * 16)/(sr['CO2'] * 44.01)
 
-return(list(ferm = ferm, COD_conv_meth_CO2 = COD_conv_meth_CO2, COD_conv_sr_CO2 = COD_conv_sr_CO2, xa_bac_rate = xa_bac_rate, TAN_min = TAN_min))
+return(list(ferm = ferm, COD_conv_meth_CO2 = COD_conv_meth_CO2, COD_conv_sr_CO2 = COD_conv_sr_CO2, xa_bac_rate = xa_bac_rate, TAN_min = TAN_min, VFA_H2 = VFA_H2))
 
 }
 

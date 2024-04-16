@@ -80,7 +80,7 @@ abm_regular <- function(days, delta_t, y, pars, starting = NULL, temp_C_fun = te
     n_mic <- length(pars$qhat_opt)
 
     # Extract new state variable vector from last row
-    y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 26) + 1]
+    y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 27) + 1]
 
     # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
     y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
@@ -105,7 +105,7 @@ abm_regular <- function(days, delta_t, y, pars, starting = NULL, temp_C_fun = te
         outr <- deSolve::lsoda(y = y, times = times, rates, parms = parsr, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
                                SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
         # Extract new state variable vector from last row
-        y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 26) + 1]
+        y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 27) + 1]
         # Correct time in outr and combine with main output
         outr[, 'time'] <- outr[, 'time'] + out[nrow(out), 'time']
         out <- rbind(out, outr)

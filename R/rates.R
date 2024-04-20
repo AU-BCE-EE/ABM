@@ -63,6 +63,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       conc_fresh$TAN <- conc_fresh_fun$conc_fresh_fun_TAN(t + t_run)
       conc_fresh$starch <- conc_fresh_fun$conc_fresh_fun_starch(t + t_run)
       conc_fresh$VFA <- conc_fresh_fun$conc_fresh_fun_VFA(t + t_run)
+      conc_fresh$xa_aer <- conc_fresh_fun$conc_fresh_fun_xa_aer(t + t_run)
       conc_fresh$xa_bac <- conc_fresh_fun$conc_fresh_fun_xa_bac(t + t_run)
       conc_fresh$xa_dead <- conc_fresh_fun$conc_fresh_fun_xa_dead(t + t_run)
       conc_fresh$Cfat <- conc_fresh_fun$conc_fresh_fun_Cfat(t + t_run)

@@ -14,9 +14,9 @@ if(conc_fresh[['VSd']] > 1e-10){
   mol.carb <- alpha['VSd'] * y$VSd * 0.002753327
   mol.pro <- alpha['VSd'] * y$VSd * 0.00176104
   mol.lip <- alpha['VSd'] * y$VSd * 9.902938e-05
-  mol.carb_resp <- respiration * y$VSd * 0.002753327
-  mol.pro_resp <- respiration * y$VSd * 0.00176104
-  mol.carb_resp <- respiration * y$VSd * 9.902938e-05
+  mol.carb_resp <- respiration * y$VSd/sub_resp  * 0.002753327
+  mol.pro_resp <- respiration * y$VSd/sub_resp  * 0.00176104
+  mol.lip_resp <- respiration * y$VSd/sub_resp  * 9.902938e-05
 }
 
 # stoichiometry. Now assuming cell synthesis, mole/day

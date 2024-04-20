@@ -202,7 +202,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     sub_resp <- Cfat + CP + RFd + starch + VSd 
     
     if(resp){
-     kl.oxygen <- exp(-0.594 + 0.0921 * temp_C) # from own lab experiments (Dalby et al. 2023..unpublished) 
+     kl.oxygen <- exp(-0.6158816 + 0.09205127 * temp_C) # from own lab experiments (Dalby et al. 2023..unpublished) 
      if (sub_resp <= 0) sub_resp <- 1E-20
      respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_resp / slurry_mass) / 100
     }

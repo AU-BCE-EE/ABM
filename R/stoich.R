@@ -67,24 +67,24 @@ COD_conv_sr_CO2 <- -(sr['C2H4O2'] * 64 + sr['H2'] * 16)/(sr['CO2'] * 44.01)
 
 # stoichiometry  for respiration. Now assuming cell synthesis, mole/day
 # energy fraction going to growth, fs0, is 0.65 for aerobic bacteria, Rittman, it is build into the equations below 
-carb_resp <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
-          NH3 = -0.78, O2 =  -2.1, H2O = 1.44, C5H7O2N = 0.78,
-          CO2 = 2.1) * mol.carb_resp
+carb_resp <- c(C6H12O6 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
+          NH4 = -0.78, HCO3 = -0.78, O2 =  -2.1, H2O = 5.22, C5H7O2N = 0.78,
+          CO2 = 2.88) * mol.carb_resp
 
 # stoichiometry for respiration. Now assuming cell synthesis, mole/day
-pro_resp <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
-         NH3 = 0.5157491, O2 = -1.30375, H2O = 0.834251, C5H7O2N = 0.48425,
-         CO2 = 1.578727) * mol.pro_resp
+pro_resp <- c(C6H12O6 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
+         NH4 = 0.45725, HCO3 = 0.45725, O2 = -1.46125, H2O = 0.007249637, C5H7O2N = 0.54275,
+         CO2 = 0.829) * mol.pro_resp
 
 # stoichiometry  for respiration. Now assuming cell synthesis, mole/day
-lip_resp <- c(C6H10O5 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
-         NH3 = -9.425, O2 = -25.375, H2O = 39.575, C5H7O2N = 9.425,
-         CO2 = 3.875) * mol.lip_resp
+lip_resp <- c(C6H12O6 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
+         NH4 = -9.425, HCO3 = -9.425, O2 = -25.375, H2O = 39.575, C5H7O2N = 9.425,
+         CO2 = 13.3) * mol.lip_resp
 
 resp <- carb_resp + pro_resp + lip_resp
 xa_aer_rate <- resp[['C5H7O2N']] * 113.113 * 1.414515  # aerobic bacteria growth in gCOD/day, 113.113 is g pr mol biomass, and 1.41.. is gCOD / g biomass 
-TAN_min_resp <- resp[['NH3']] * 14.007 # g N / day
-CO2_resp <- resp[['CO2']] * 44.01 # g CO2 / day
+TAN_min_resp <- resp[['NH4']] * 14.007 # g N / day
+CO2_resp <- (resp[['CO2']] + resp[['HCO3']]) * 44.01 # g CO2 / day
 
 return(list(ferm = ferm, COD_conv_meth_CO2 = COD_conv_meth_CO2, COD_conv_sr_CO2 = COD_conv_sr_CO2, 
             xa_bac_rate = xa_bac_rate, xa_aer_rate = xa_aer_rate, 

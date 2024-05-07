@@ -43,7 +43,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # if slurry production increases during a batch
     slurry_prod_rate_default <- slurry_prod_rate
     
-    if (!is.na(slopes[['slurry_prod_rate']]) && slurry_prod_rate_default != 0) {
+    if (!is.na(slopes[['slurry_prod_rate']]) && slurry_prod_rate_default != 0 && !is.na(wash_int)) {
       start_slurry_prod_rate <- slurry_prod_rate_default - slopes[['slurry_prod_rate']] * wash_int/2
       slurry_prod_rate <- slopes[['slurry_prod_rate']] * t_batch + start_slurry_prod_rate
       if (t_batch > wash_int) slurry_prod_rate <- 0

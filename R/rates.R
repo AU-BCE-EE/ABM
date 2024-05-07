@@ -202,11 +202,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     respiration <- 0
     sub_resp <- Cfat + CP + RFd + starch + VSd 
     
-    if(resp){
-     kl.oxygen <- exp(0.6158816 + 0.09205127 * temp_C) # from own lab experiments (Dalby et al. 2023..unpublished) 
-     # Solver is slowed significantly when the slurry_mass is low relative to surface area is low, therefore cut off at 1 mm slurry height
-     condition <- slurry_mass/area <= 1
-     respiration <- ifelse(condition, 0, respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_resp / slurry_mass) / 100)
+    # Solver is slowed significantly when the slurry_mass is low relative to surface area is low, therefore cut off at 1 mm slurry height
+    if(resp & slurry_mass/area <= 1){
+     kl.oxygen <- exp(0.6158816 + 0.09205127 * temp_C) # from own lab experiments (Dalby et al. 2024..unpublished) 
+     respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_resp / slurry_mass) / 100
     }
     
     # VFA uptake rates

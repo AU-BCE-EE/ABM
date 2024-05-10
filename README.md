@@ -7,7 +7,7 @@ The name comes from **a**naerobic **b**iodegradation **m**odel.
 With multiple microbial groups and group-specific parameters describing kinetics and yield, the model can predict realistic short- and long-term responses to temperature change.
 
 # Maintainers
-Frederik Dalby (<https://au.dk/fd@bce.au.dk)>) and Sasha D. Hafner (<https://au.dk/sasha.hafner@bce.au.dk>).
+Frederik Dalby (<https://au.dk/fd@bce.au.dk>) and Sasha D. Hafner (<https://au.dk/sasha.hafner@bce.au.dk>).
 
 # Installation and getting started
 This R package can be installed using `devtools::install_github("AU-BCE-EE/ABM", build_vignettes = TRUE)`.

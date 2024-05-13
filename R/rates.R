@@ -161,7 +161,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     }
     
     # HAC inhibition
-    HAC_inhib <- ifelse(HAC_frac * VFA/slurry_mass >= 0.05, 1.16*0.31/(0.31 + (HAC_frac * VFA/slurry_mass)), 1) 
+    HAC_inhib <- ifelse(HAC_frac * VFA/slurry_mass >= 0.05, (2-ki_HAC/(ki_HAC+0.05)) * ki_HAC/(ki_HAC + (HAC_frac * VFA/slurry_mass)), 1) 
 
     # H2S inhibition
     H2S_inhib <- NA * qhat

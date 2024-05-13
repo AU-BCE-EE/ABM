@@ -22,8 +22,10 @@ grp_pars2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                  pH_UL = c(default = 8.0),
                  pH_LL = c(default = 6.5, sr1 = 5.5))
 
-mic_pars2.0 <- list(ks_SO4 = 0.00694, km_urea = 0.913,
-                    decay_rate_xa = 0.02)
+mic_pars2.0 <- list(ks_SO4 = 0.00694, 
+                    km_urea = 0.913,
+                    decay_rate_xa = 0.02,
+                    ki_HAC = 0.31)
 
 man_pars2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 5.25, 
                                   VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CP = 21.1, RFd = 25.4, iNDF = 11.3, VSd = 0, 
@@ -173,7 +175,8 @@ grp_pars_cattle3.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
 
 mic_pars3.0 <- list(ks_SO4 = 0.00694,
                     km_urea = 0.913,
-                    decay_rate_xa = 0.02)
+                    decay_rate_xa = 0.02,
+                    ki_HAC = 0.31)
                     
 
 man_pars3.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 5.25, 

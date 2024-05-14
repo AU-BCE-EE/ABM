@@ -26,7 +26,7 @@ abm_variable <-
   
   # Check that slurry mass does not decrease in the end
   if(pars$slurry_mass$slurry_mass[nrow(pars$slurry_mass)] < pars$slurry_mass$slurry_mass[nrow(pars$slurry_mass)-1]) {
-    stop('Last slurry mass value cannot be smaller than the preceeding slurry mass value')
+    warning('Last slurry mass value is smaller than the preceeding slurry mass value and is therefore ignored')
   }
   
   # Check that slurry mass does not decrease as the first thing

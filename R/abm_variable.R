@@ -6,7 +6,7 @@ abm_variable <-
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) # slow speed, but much faster than before
   
   pars$abm_regular <- FALSE
-
+  
   # Some warnings about unused inputs
   if (!is.na(pars$wash_water) & pars$wash_water != 0) {
     warning('Fixed wash_water value of ', pars$wash_water, '\nwill be ignored because variable slurry input is used.')
@@ -23,7 +23,17 @@ abm_variable <-
     stop('Column `time` must be sorted when `slurry_mass` is time-dependent, but it not: ',
          pars$slurry_mass$time)
   }
-
+  
+  # Check that slurry mass does not decrease in the end
+  if(pars$slurry_mass$slurry_mass[nrow(pars$slurry_mass)] < pars$slurry_mass$slurry_mass[nrow(pars$slurry_mass)-1]) {
+    stop('Last slurry mass value cannot be smaller than the preceeding slurry mass value')
+  }
+  
+  # Check that slurry mass does not decrease as the first thing
+  if(pars$slurry_mass$slurry_mass[1] > pars$slurry_mass$slurry_mass[2]) {
+    stop('The first slurry mass value cannot be larger then the suceeding slurry mass value')
+  }
+  
   # If simulation continues past slurry_mass data frame time, set following slurry production (addition) to zero
   # Extend last slurry mass all the way 
   if (pars$slurry_mass[nrow(pars$slurry_mass), 'time'] < days) {

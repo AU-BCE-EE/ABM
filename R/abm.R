@@ -214,14 +214,6 @@ abm <- function(
                    SO4_inhib = c(1, 1, 0.85, 0.3172, 0.29, 0.1192, 0.05, 0.001))
   SO4_inhibition_fun <- approxfun(td$SO4_conc, td$SO4_inhib, rule = 2)
   
-  
-  # when variable xa_fresh is used xa_init should be the same as starting xa_fresh
-  #if (is.data.frame(pars$xa_fresh)) {
-  #  pars$xa_init <- as.numeric(pars$xa_fresh[1, grepl("m[0-9]|sr[0-9]", names(pars$xa_fresh))])
-  #  names(pars$xa_init) <- names(pars$xa_fresh)[!grepl("time", names(pars$xa_fresh))]
-  #  pars$xa_fresh["time"] <- xa_fresh_time
-  #}
-
   # Convert some supplied parameters
   # Maximum slurry mass in kg
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens

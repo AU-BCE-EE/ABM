@@ -184,12 +184,34 @@ mic_pars3.0 <- list(ks_SO4 = 0.00694,
                     )
                     
 
-man_pars3.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 5.25, 
+man_pars_pig3.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.01, TAN = 0.0, starch = 5.25, 
                                       VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CP = 21.1, RFd = 25.4, iNDF = 11.3, VSd = 0, 
                                       VSd_A = 55, VSnd_A = 23.5, ash = 15), pH = 7, dens = 1000)
 
-wthr_pars3.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
+man_pars_cattle3.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 2.116, sulfate = 0.01, TAN = 0.0, starch = 1.4864, 
+                                          VFA = 2.54, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 16.04, CP = 30, RFd = 44.4, iNDF = 21.465, VSd = 0, 
+                                          VSd_A = 32.86, VSnd_A = 45.4, ash = 15), pH = 7, dens = 1000)
 
+man_pars_VS_pig3.0 <- man_pars_pig3.0
+man_pars_VS_cattle3.0 <- man_pars_cattle3.0
+
+man_pars_VS_pig3.0$conc_fresh['VSd'] <- (man_pars_VS_pig3.0$conc_fresh[['starch']] + man_pars_VS_pig3.0$conc_fresh[['xa_dead']] +
+man_pars_VS_pig3.0$conc_fresh[['Cfat']] + man_pars_VS_pig3.0$conc_fresh[['RFd']] + man_pars_VS_pig3.0$conc_fresh[['CP']] + 
+man_pars_VS_pig3.0$conc_fresh[['iNDF']]) * 0.7
+
+for (i in c('starch', 'xa_dead','Cfat','RFd','CP','iNDF')){
+  man_pars_VS_pig3.0$conc_fresh[i] <- 0
+}
+
+man_pars_VS_cattle3.0$conc_fresh['VSd'] <- (man_pars_VS_cattle3.0$conc_fresh[['starch']] + man_pars_VS_cattle3.0$conc_fresh[['xa_dead']] +
+man_pars_VS_cattle3.0$conc_fresh[['Cfat']] + man_pars_VS_cattle3.0$conc_fresh[['RFd']] + man_pars_VS_cattle3.0$conc_fresh[['CP']] + 
+man_pars_VS_pig3.0$conc_fresh[['iNDF']]) * 0.42
+
+for (i in c('starch', 'xa_dead','Cfat','RFd','CP','iNDF')){
+  man_pars_VS_cattle3.0$conc_fresh[i] <- 0
+}
+
+wthr_pars3.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
 chem_pars3.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                                   Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
                                   N_CP = 1/0.1014, C_xa = 1/0.3753125, C_RFd = 1/0.376, C_iNDF = 1/0.358, N_xa = 1/0.08754375,
@@ -230,10 +252,10 @@ arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.3),
                             scale_alpha_opt = list(VSd = 0.185876, notVSd = 0.217138))
 
 
-pig_pars3.0 <- c(grp_pars_pig3.0, arrh_pars_pig3.0)
-cattle_pars3.0 <- c(grp_pars_cattle3.0, arrh_pars_cattle3.0)
-pig_parsVS3.0 <- c(grp_pars_VS_pig3.0, arrh_pars_pig3.0)
-cattle_parsVS3.0 <- c(grp_pars_VS_cattle3.0, arrh_pars_cattle3.0)
+pig_pars3.0 <- c(grp_pars_pig3.0, arrh_pars_pig3.0, man_pars_pig3.0)
+cattle_pars3.0 <- c(grp_pars_cattle3.0, arrh_pars_cattle3.0, man_pars_cattle3.0)
+pig_parsVS3.0 <- c(grp_pars_VS_pig3.0, arrh_pars_pig3.0, man_pars_VS_pig3.0)
+cattle_parsVS3.0 <- c(grp_pars_VS_cattle3.0, arrh_pars_cattle3.0, man_pars_VS_cattle3.0)
 
 save(grp_pars_pig3.0, file = '../data/grp_pars_pig3.0.rda')
 save(grp_pars_cattle3.0, file = '../data/grp_pars_cattle3.0.rda')
@@ -243,7 +265,8 @@ save(arrh_pars_pig3.0, file = '../data/arrh_pars_pig3.0.rda')
 save(arrh_pars_cattle3.0, file = '../data/arrh_pars_cattle3.0.rda')
 
 save(mic_pars3.0, file = '../data/mic_pars3.0.rda')
-save(man_pars3.0, file = '../data/man_pars3.0.rda')
+save(man_pars_pig3.0, file = '../data/man_pars_pig3.0.rda')
+save(man_pars_cattle3.0, file = '../data/man_pars_cattle3.0.rda')
 save(wthr_pars3.0, file = '../data/wthr_pars3.0.rda')
 save(chem_pars3.0, file = '../data/chem_pars3.0.rda')
 save(pig_pars3.0, file = '../data/pig_pars3.0.rda')

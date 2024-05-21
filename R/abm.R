@@ -108,7 +108,7 @@ abm <- function(
   }
   
   if (!is.null(anim_pars)) {
-    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, chem_pars, mic_pars, anim_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
+    pars <- c(wthr_pars, evap_pars, mng_pars, init_pars, chem_pars, mic_pars, anim_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
   } 
 
   # if variable conc fresh, we need to modify the conc_init a little

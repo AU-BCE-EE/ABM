@@ -27,6 +27,7 @@ abm <- function(
   mic_pars = ABM::mic_pars2.0,
   chem_pars = ABM::chem_pars2.0,
   arrh_pars = ABM::arrh_pars2.0,
+  anim_pars = NULL,
   resp = TRUE,
   pH_inhib_overrule = FALSE, 
   add_pars = NULL,
@@ -101,16 +102,22 @@ abm <- function(
     mng_pars['slurry_mass'] <- starting[nrow(starting), 'slurry_mass']
   }
   
+  # Combine pars to make extraction and pass to rates() easier
+  if (is.null(pars)) { 
+    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
+  }
+  
+  if (!is.null(anim_pars)) {
+    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, chem_pars, mic_pars, anim_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
+  } 
+
   # if variable conc fresh, we need to modify the conc_init a little
-  if (is.data.frame(man_pars$conc_fresh) & (length(init_pars$conc_init) == length(man_pars$conc_fresh))) {
-    init_pars <- list(conc_init = man_pars$conc_fresh[1, -which(names(man_pars$conc_fresh) == "time")])
+  if (is.data.frame(pars$conc_fresh) & (length(pars$conc_init) == length(pars$conc_fresh))) {
+    pars$conc_init <- pars$conc_fresh[1, -which(names(pars$conc_fresh) == "time")]
   } 
   
   
   # Combine pars to make extraction and pass to rates() easier
-  if (is.null(pars)) {  
-    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
-  }
 
   # Create error if batch time is not determined and slurry rate should increase over a batch
   if (is.na(pars$wash_int) && !is.na(pars$slopes['slurry_prod_rate'])){

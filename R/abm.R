@@ -109,6 +109,7 @@ abm <- function(
   
   if (!is.null(anim_pars)) {
     pars <- c(wthr_pars, evap_pars, mng_pars, init_pars, chem_pars, mic_pars, anim_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
+    warning('Using anim_pars instead of grp_pars, arrh_pars and man_pars')
   } 
 
   # if variable conc fresh, we need to modify the conc_init a little

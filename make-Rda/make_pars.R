@@ -222,7 +222,7 @@ chem_pars3.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.84
                                   frac_CP_xa = 0.835), 
 kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02))
 
-arrh_pars_pig3.0 <- list(lnA = c(VSd_A = 31.3),
+arrh_pars_pig3.0 <- list(lnA = c(VSd_A = 29.7979),
                          E_CH4 = c(VSd_A = 81000), 
                          A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
                          E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
@@ -230,7 +230,7 @@ arrh_pars_pig3.0 <- list(lnA = c(VSd_A = 31.3),
                          VS_CH4 = 6.67,
                          scale_alpha_opt = list(VSd = 1.158826, notVSd = 1.316925))
 
-arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.2),
+arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.23),
                          E_CH4 = c(VSd_A = 81000), 
                          A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
                          E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  

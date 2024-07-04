@@ -249,6 +249,7 @@ man_pars_VS_pig3.0 <- man_pars_pig3.0
 man_pars_VS_cattle3.0 <- man_pars_cattle3.0
 man_pars_VS_digestate3.0 <- man_pars_digestate3.0
 
+# pig
 man_pars_VS_pig3.0$conc_fresh['VSd'] <- (man_pars_VS_pig3.0$conc_fresh[['starch']] + man_pars_VS_pig3.0$conc_fresh[['xa_dead']] +
 man_pars_VS_pig3.0$conc_fresh[['Cfat']] + man_pars_VS_pig3.0$conc_fresh[['RFd']] + man_pars_VS_pig3.0$conc_fresh[['CP']] + 
 man_pars_VS_pig3.0$conc_fresh[['iNDF']]) * 0.7
@@ -257,18 +258,19 @@ for (i in c('starch', 'xa_dead','Cfat','RFd','CP','iNDF')){
   man_pars_VS_pig3.0$conc_fresh[i] <- 0
 }
 
+# cattle
 man_pars_VS_cattle3.0$conc_fresh['VSd'] <- (man_pars_VS_cattle3.0$conc_fresh[['starch']] + man_pars_VS_cattle3.0$conc_fresh[['xa_dead']] +
 man_pars_VS_cattle3.0$conc_fresh[['Cfat']] + man_pars_VS_cattle3.0$conc_fresh[['RFd']] + man_pars_VS_cattle3.0$conc_fresh[['CP']] + 
-man_pars_VS_pig3.0$conc_fresh[['iNDF']]) * 0.42
+man_pars_VS_cattle3.0$conc_fresh[['iNDF']]) * 0.42
 
 for (i in c('starch', 'xa_dead','Cfat','RFd','CP','iNDF')){
   man_pars_VS_cattle3.0$conc_fresh[i] <- 0
 }
 
+# digestate
 man_pars_VS_digestate3.0$conc_fresh['VSd'] <- (man_pars_VS_digestate3.0$conc_fresh[['starch']] + man_pars_VS_digestate3.0$conc_fresh[['xa_dead']] +
                                               man_pars_VS_digestate3.0$conc_fresh[['Cfat']] + man_pars_VS_digestate3.0$conc_fresh[['RFd']] + man_pars_VS_digestate3.0$conc_fresh[['CP']])
                                               
-
 for (i in c('starch', 'xa_dead','Cfat','RFd','CP','iNDF')){
   man_pars_VS_digestate3.0$conc_fresh[i] <- 0
 }
@@ -328,8 +330,12 @@ save(arrh_pars_digestate3.0, file = '../data/arrh_pars_digestate3.0.rda')
 
 save(mic_pars3.0, file = '../data/mic_pars3.0.rda')
 save(man_pars_pig3.0, file = '../data/man_pars_pig3.0.rda')
+save(man_pars_VS_pig3.0, file = '../data/man_pars_VS_pig3.0.rda')
 save(man_pars_cattle3.0, file = '../data/man_pars_cattle3.0.rda')
+save(man_pars_VS_cattle3.0, file = '../data/man_pars_VS_cattle3.0.rda')
 save(man_pars_digestate3.0, file = '../data/man_pars_digestate3.0.rda')
+save(man_pars_VS_digestate3.0, file = '../data/man_pars_VS_digestate3.0.rda')
+
 save(wthr_pars3.0, file = '../data/wthr_pars3.0.rda')
 save(chem_pars3.0, file = '../data/chem_pars3.0.rda')
 save(pig_pars3.0, file = '../data/pig_pars3.0.rda')

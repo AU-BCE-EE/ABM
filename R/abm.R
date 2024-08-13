@@ -14,9 +14,9 @@ abm <- function(
                   empty_int = 42,            # (days, every 6th week)
                   temp_C = 20,
                   wash_water = 75000,            
-                  wash_int = 'none',
+                  wash_int = NA,
                   rest_d = 5,
-                  cover = NA,
+                  cover = 'none',
                   resid_enrich = 0.9,
                   slopes = c(urea = NA, slurry_prod_rate = NA),
                   graze = c(start = 'May', duration = 0, hours_day = 0),
@@ -230,7 +230,7 @@ abm <- function(
   # Cover effect on NH3 emission rate and N2O
   # reduction from cover 
   pars$EF_NH3 <- coverfun(pars$cover)
-  pars$EF_N2O <- ifelse(is.na(pars$cover) | pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
+  pars$EF_N2O <- ifelse(pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
   
   # calculate grazing interval of year if needed
   if(pars$graze[['duration']] > 0){

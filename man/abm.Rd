@@ -185,6 +185,11 @@ abm(days = 365,
     Can be \code{FALSE} for e.g. anaerobic digestion simulation.
 }
     
+ \item{pH_inhib_overrule}{
+    Default is \code{FALSE}. 
+    Can be \code{TRUE} if the inhibition should be governed by a pH inhibition function, rather than the default where inhibition is governed by concentrations of NH3, NH4, H2S and protonated VFA.
+}
+        
   \item{add_pars}{
     List of other additional parameters not set in other arguments, or to be modified from defaults.
     See vignette.

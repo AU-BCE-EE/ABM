@@ -1,5 +1,5 @@
 coverfun <- function(cover){
-  if(is.na(cover)) cover <- "none"
+  if(is.na(cover)) cover <- "none" 
   rd <- data.frame(none = 0, tent = 0.8, straw = 0.33, natural_crust = 0.45,
                    clay_pebbles = 0.41, floating_PVC = 0.16, biocover_porous_sheet = 0.66,
                    corrugated_sheets = 0.46, lid = 0.06, oil = 0.14, 
@@ -8,3 +8,5 @@ coverfun <- function(cover){
   
   return(EF_NH3_cover)
 }
+
+# EFs from Sommer et al. 2022, "model for calcualting ammonia emission from stored animal liquid manure"

@@ -14,7 +14,7 @@ abm <- function(
                   empty_int = 42,            # (days, every 6th week)
                   temp_C = 20,
                   wash_water = 75000,            
-                  wash_int = NA,
+                  wash_int = 'none',
                   rest_d = 5,
                   cover = NA,
                   resid_enrich = 0.9,

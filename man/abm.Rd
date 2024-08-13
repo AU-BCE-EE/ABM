@@ -64,7 +64,7 @@ abm(days = 365,
 }
   \item{wthr_pars}{
     Weather inputs.
-    List with elements `temp_air_C`, `RH`, `rain`, `pres_kpa`, `rs`.
+    List with elements `temp_air_C` in degree C, `RH` relative humidity in percent, `rain` is precipitation in kg/m2/day, `pres_kpa` is ambient pressure in kPa, `rs` is solar radiation in MJ/m2/d.
     See \code{\link{parameters}}.
 }
   \item{evap_pars}{
@@ -81,8 +81,8 @@ abm(days = 365,
     slurry temperature (deg. C) (\code{temp_C}). The model provides some datasets for outside slurry temperatures in Denmark \code{\link{temperatures}},
     wash water used per washing event (kg) (\code{wash_water}),
     time between washing events (days), where NA = "washing not applied" (\code{wash_int}),
-    time that the animal section is empty after a batch of animals has been finished (days) (\code{rest_d}),
-    factor that determines the degree of enrichment of microbes and organic matter components in the residual slurry after emptying (\code{resid_enrich}),
+    time that the animal section is empty after a batch of animals has been finished (days) (\code{rest_d}), argument for setting the type of cover on an outside   storage tank (\code{cover}). The type of cover only affects the ammonia emission factor, with emission factors and types of covers taken from Sommer et al. 2022, e.g. cover = \code{none} means no cover, cover = \code{tent} reduces ammonia emission by 80 percent, cover = \code{straw} reduces ammonia emission by 33 percent.
+    Factor that determines the degree of enrichment of microbes and organic matter components in the residual slurry after emptying (\code{resid_enrich}),
     and \code{slopes} is an expert user argument for changing the excretion rate of urea or slurry production during a growth period of an animal. 
     By default this argument is not used (\code{slopes}),
     (\code{graze}) is a list with parameters to adjust the grazing activity outdoor, which affects the amount of slurry excreted in the barn. 
@@ -256,6 +256,10 @@ Dalby, F.R., Hafner, S.D., Petersen, S.O., Vanderzaag, A., Habtewold, J., Dunfie
 Dalby, F.R., Hansen, M.J., Guldberg, L.B., Hafner, S.D., Feilberg, A., 2023. Simple Management Changes Drastically Reduce Pig House Methane Emission in Combined Experimental and Modeling Study. Environ. Sci. Technol. \doi{10.1021/acs.est.2c08891}
 
 Dalby, F.R., Ambrose, H.W.,  Poulsen, J.S., Nielsen, J.L., Adamsen, A.P.S., 2023. Pig slurry organic matter transformation and methanogenesis at ambient storage temperatures. JEQ. \doi{10.1002/jeq2.20512}
+
+Sommer, S.G, Hafner S.D., Laubach, J., van der Weerden, T.J., Pacholski, A., 2022. Model for calculating ammonia emission from stored animal liquid manure. 
+Biosyst Eng \doi{10.1016/j.biosystemseng.2022.08.007}
+} 
 }
 
 \author{

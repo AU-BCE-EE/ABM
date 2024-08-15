@@ -183,7 +183,7 @@ abm_variable <-
     if (!removals[i]) {
 
       # This should not be possible with above code
-      if (t_call <= 0) stop('t_call < 0. slkj4098sh')
+      if (t_call <= 0) stop('t_call < 0. slkj4098sh, check if "time" is duplicated in slurry mass data frame')
 
       # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
       times <- timelist[[i]]

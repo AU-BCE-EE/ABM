@@ -136,17 +136,12 @@ abm(days = 365,
     List of other microbial parameters. The default and alternative parameter values are detailed in \code{\link{parameters}}.
     Elements are:
     \code{ks_SO4}, Half sulfate saturation constant for sulfate reducers (g sulfate-sulfur/kg);
-    \code{km_urea}, half urea-N saturation constant for Michaelis-Menten urea hydrolysis (g urea-N/kg);
-    \code{alpha_opt}, hydrolysis rate constant at the optimum hydrolysis temperature (1/day);
-    \code{alpha_T_opt}, optimum temperature for hydrolysis (K);
-    \code{alpha_T_min}, minimum temperature where hydrolysis occurs (K);
-    \code{alpha_T_max}, maximum temperature where hydrolysis occurs (K).
+    \code{km_urea}, half urea-N saturation constant for Michaelis-Menten urea hydrolysis (g urea-N/kg).
 }
   \item{chem_pars}{
     List of other chemical parameters. 
     The default parameter values are detailed in \code{\link{parameters}}.
     Elements are:
-    \code{kl}, Mass transfer coefficient of oxygen and hydrogen sulfide through the slurry/air interface, liquid-phase units (m/day);
     \code{COD_conv}, conversion factors for using a COD mass basis with the following named elements:
     \code{CH4}, Methane productivity coefficient (g COD-substrate/g CH4) ;
     \code{xa_dead}, COD to g dry matter mass of dead microbial populations (g COD/g dry xa dead);
@@ -177,7 +172,8 @@ abm(days = 365,
     \code{R}, universal gas constant (J/(K * mol));
     \code{VS_CH4}, volatile solids consumed per methane produced (g VS/g CH4); 
     \code{A}, Arrhenius factor for calculating the temperature sensitive hydrolysis rate constants of organic matter components (1/day);
-    \code{E}, Activation energy for calculating the temperature sensitive hydrolysis rate constant of organic matter components (J/mol).
+    \code{E}, Activation energy for calculating the temperature sensitive hydrolysis rate constant of organic matter components (J/mol);
+    \code{kl}, mass transfer coefficient of ammonia from the slurry pit (m/day) and from the barn floor (m/day) and mass transfer coefficient of H2S from the slurry (m/day).
 
 }
  \item{resp}{

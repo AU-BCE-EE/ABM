@@ -253,16 +253,16 @@ Of course this approach also works if we have explicitly defined our own `mng_pa
 mng_pars2c <- list(slurry_prod_rate = 5700, slurry_mass = 39000,
                    storage_depth = 0.6, resid_depth = 0.05, floor_area = 650,
                    area = 715, empty_int = 42, temp_C = 20, wash_water = 75000,
-                   wash_int = NA, rest_d = 5, cover = NA, resid_enrich = 0.9,
+                   wash_int = NA, rest_d = 5, cover = 'none', resid_enrich = 0.9,
                    slopes = c(urea = NA, slurry_prod_rate = NA), 
                    graze = c(start = "May", duration = 0, hours_day = 0), 
                    scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, 
                              yield = 1, alpha_opt = 1))
 ```
 
-```{r}
+```{r, fig.height=4, fig.width=6}
 out2c <- abm(365, mng_pars = mng_pars2c, add_pars = list(slurry_prod_rate = 10000))
-#all.equal(out2c, out2b)
+all.equal(out2c, out2b)
 ```
 
 Or to change a value in one of the default parameter sets.

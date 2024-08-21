@@ -295,8 +295,8 @@ arrh_pars_pig3.0 <- list(lnA = c(VSd_A = 31.3),
 
 arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.2),
                          E_CH4 = c(VSd_A = 81000), 
-                         A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 0.5309251, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
-                         E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 10318.27, RFd = 81052, VSd = 81557, urea = 81559),  # CP is for GRA treatment in MILK project
+                         A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 1.878889, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
+                         E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 9682.088, RFd = 81052, VSd = 81557, urea = 81559),  # CP is for GRA treatment in MILK project
                          R = 8.314,  
                          VS_CH4 = 6.67,
                          scale_alpha_opt = list(VSd = 0.815577, notVSd = 0.3737),
@@ -305,8 +305,8 @@ arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.2),
 
 arrh_pars_digestate3.0 <- list(lnA = c(VSd_A = 31.2),
                             E_CH4 = c(VSd_A = 81000), 
-                            A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 0.5309251, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
-                            E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 10318.27, RFd = 81052, VSd = 81557, urea = 81559),  
+                            A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 1.878889, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
+                            E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 9682.088, RFd = 81052, VSd = 81557, urea = 81559),  
                             R = 8.314,  
                             VS_CH4 = 6.67,
                             scale_alpha_opt = list(VSd = 0.554, notVSd = 0.6878),

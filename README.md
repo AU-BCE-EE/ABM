@@ -21,10 +21,10 @@ Report problems or ask questions using the Issues page.
 # Research papers
 See these papers for more information on the model, as well as examples of applications.
 
-Dalby, F.R., Hafner, S.D., Petersen, S.O., Vanderzaag, A., Habtewold, H., Dunfield, K., Chantigny, M.H., Sommer, S.G., 2021. A mechanistic model of methane emission from animal slurry with a focus on microbial groups. PLOS ONE.  <https://doi.org/10.1371/journal.pone.0252881> 
+Dalby, F.R., Hafner, S.D., Petersen, S.O., Vanderzaag, A., Habtewold, H., Dunfield, K., Chantigny, M.H., Sommer, S.G., 2021. A mechanistic model of methane emission from animal slurry with a focus on microbial groups. PLOS ONE.  <https://doi.org/10.1371/journal.pone.0252881> ([download here](https://drive.google.com/file/d/17ECrisyZXCL2x7hV647ql2hG3hMMGmsD/view?usp=sharing))
 
 Dalby, F.R., Hansen, M.J., Guldberg, L.B., Hafner, S.D., Feilberg, A., 2023. Simple Management Changes Drastically Reduce Pig House Methane Emission in Combined Experimental and Modeling Study. Environ. Sci. Technol. <https://doi.org/10.1021/acs.est.2c08891> ([download here](https://drive.google.com/file/d/1FsFzUrbM2O3GlTm3TYHjrlTfr_mFfLRC/view?usp=share_link))
 
-Dalby, F.R., Ambrose, H.W.,  Poulsen, J.S., Nielsen, J.L., Adamsen, A.P.S., 2023. Pig slurry organic matter transformation and methanogenesis at ambient storage temperatures. JEQ. <https://doi.org/10.1002/jeq2.20512>
+Dalby, F.R., Ambrose, H.W.,  Poulsen, J.S., Nielsen, J.L., Adamsen, A.P.S., 2023. Pig slurry organic matter transformation and methanogenesis at ambient storage temperatures. JEQ. <https://doi.org/10.1002/jeq2.20512> ([download here](https://drive.google.com/file/d/1636ODKPMHjlmNP50sARJViEWv0JBPfRP/view?usp=sharing))
 
-Dalby, F.R., Hafner, S.D., Ambrose, H.W., Adamsen, A.P.S., 2024. Pig manure degradation and carbon emission: Measuring and modeling combined aerobic–anaerobic transformations. JEQ. <https://doi.org/10.1002/jeq2.20603>
+Dalby, F.R., Hafner, S.D., Ambrose, H.W., Adamsen, A.P.S., 2024. Pig manure degradation and carbon emission: Measuring and modeling combined aerobic–anaerobic transformations. JEQ. <https://doi.org/10.1002/jeq2.20603> ([download here](https://drive.google.com/file/d/1m56KUeJ5Rj9pN6ZeSjMQdNzgFENmZJ_l/view?usp=sharing))

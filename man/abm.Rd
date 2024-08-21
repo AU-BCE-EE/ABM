@@ -72,7 +72,7 @@ abm(days = 365,
 }
   \item{mng_pars}{
     List of management parameters including slurry production rate (kg/day) (\code{slurry_prod_rate}),
-    initial slurry mass in the system (kg) (\code{slurry_mass}),
+    initial slurry mass in the system (kg) (\code{slurry_mass}). If (\code{slurry_mass}) is a data.frame with column names "time", "slurry_mass", then (\code{slurry_prod_rate}), (\code{resid_depth}), (\code{empty_int}), (\code{wash_water}), (\code{wash_int}) are calculated from the (\code{slurry_mass}) data.frame.
     depth of slurry storage (m) (\code{storage_depth}),
     height of slurry in the system after being emptied (m) (\code{resid_depth}),
     surface area of the barn floor that is accesible by the animals (m^2) (\code{floor_area}),

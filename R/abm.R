@@ -40,7 +40,7 @@ abm <- function(
   par_key = '\\.',
   value = 'ts',                              # Type of output
   warn = TRUE) {
-  
+
   # If startup repetitions are requested, repeat some number of times before returning results
   if (startup > 0) {
 
@@ -522,7 +522,15 @@ abm <- function(
   if (any(dat$slurry_mass > pars$max_slurry_mass)) {
     warning('Maximum slurry mass exceeded.\nCheck output.')
   }
+ 
+  # print message with inputs
+  if(is.data.frame(pars$slurry_mass)){
+    print('arguments overwritten by slurry_mass: slurry_prod_rate, empty_int, resid_depth, wash_water, wash_int, rest_d')
+  }
   
+  print(paste0('rain is set to ', pars$rain,' kg/m2/day'))
+  print(paste0('evaporation is set to ', round(pars$evap,2),' kg/m2/day'))
+
   # Return results
   # Average only
   if (substring(value, 1, 3) == 'sum') return(summ)
@@ -534,7 +542,8 @@ abm <- function(
   # NTS: remove duplicate times from emptying (actually only emptying times should show up in effluent right?)
   # NTS: can include in everything below too
   # Or everything
-  return(list(pars = pars, ts = dat, summ = summ))
   
+  return(list(pars = pars, ts = dat, summ = summ))
+
 }
 

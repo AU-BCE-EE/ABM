@@ -1,6 +1,7 @@
 \name{parameters}
 
 \alias{parameters}
+\alias{ABM_parameters}
 \alias{arrh_pars2.0}
 \alias{chem_pars2.0}
 \alias{grp_pars2.0}

@@ -260,9 +260,9 @@ mng_pars2c <- list(slurry_prod_rate = 5700, slurry_mass = 39000,
                              yield = 1, alpha_opt = 1))
 ```
 
-```{r, fig.height=4, fig.width=6}
+```{r}
 out2c <- abm(365, mng_pars = mng_pars2c, add_pars = list(slurry_prod_rate = 10000))
-all.equal(out2c, out2b)
+#all.equal(out2c, out2b)
 ```
 
 Or to change a value in one of the default parameter sets.

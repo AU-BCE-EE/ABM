@@ -48,12 +48,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       slurry_prod_rate <- slopes[['slurry_prod_rate']] * t_batch + start_slurry_prod_rate
       if (t_batch > wash_int) slurry_prod_rate <- 0
     }
-
-    # when variable fresh concentration is used
-    #if(is.data.frame(conc_fresh) | is.data.frame(xa_fresh)){
-    #  conc_fresh <- variable_conc(conc_fresh, xa_fresh, t, t_run)$conc_fresh
-    #  xa_fresh <- variable_conc(conc_fresh, xa_fresh, t, t_run)$xa_fresh
-    #}
     
     if(is.data.frame(conc_fresh)){
       conc_fresh <- list()

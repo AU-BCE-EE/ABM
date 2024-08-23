@@ -240,9 +240,9 @@ abm <- function(
   }
 
   if(is.data.frame(pars$slurry_mass)){
-    # If missing, set initial slurry mass to 0
+    # If missing slurry mass at time 0, set to earliest slurry mass value
     if (pars$slurry_mass[1, 'time'] > 0) {
-      pars$slurry_mass <- rbind(c(0, 0), pars$slurry_mass)
+      pars$slurry_mass <- rbind(c(0, pars$slurry_mass[1]), pars$slurry_mass)
     }
     slurry_mass_init <- pars$slurry_mass[1, 'slurry_mass']
   } else {

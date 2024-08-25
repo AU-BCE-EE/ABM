@@ -34,9 +34,7 @@ abm <- function(
   pars = NULL,
   startup = 0, # Now number of times complete simulation should be run before returning results
   starting = NULL,
-  approx_method_temp = 'linear', # NTS: combine these in 1 vector?
-  approx_method_pH = 'linear',
-  approx_method_vent_air = 'linear',
+  approx_method = c(temp = 'linear', pH = 'linear'), # NTS: combine these in 1 vector?
   par_key = '\\.',
   value = 'ts',                              # Type of output
   warn = TRUE) {
@@ -68,8 +66,7 @@ abm <- function(
                  add_pars = add_pars, pars = pars, 
                  startup = 0, 
                  starting = starting, 
-                 approx_method_temp = approx_method_temp, approx_method_pH = approx_method_pH, 
-                 approx_method_vent_air = approx_method_vent_air, 
+                 approx_method = approx_method, 
                  par_key = par_key, value = value, warn = warn)
  
       if (i <= startup) {
@@ -209,8 +206,8 @@ abm <- function(
   
   # Create time-variable functions
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
-  temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method_temp)
-  pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method_pH)
+  temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
+  pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method['pH'])
   conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
   
   # add time to xa_fresh and get xa_fresh funs

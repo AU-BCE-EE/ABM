@@ -522,11 +522,11 @@ abm <- function(
  
   # print message with inputs
   if(is.data.frame(pars$slurry_mass)){
-    print('arguments overwritten by slurry_mass: slurry_prod_rate, empty_int, resid_depth, wash_water, wash_int, rest_d')
+    message('arguments overwritten by slurry_mass: slurry_prod_rate, empty_int, resid_depth, wash_water, wash_int, rest_d')
   }
   
-  print(paste0('rain is set to ', pars$rain,' kg/m2/day'))
-  print(paste0('evaporation is set to ', round(pars$evap,2),' kg/m2/day'))
+  message(paste0('rain = ', pars$rain,' kg/m2/day'))
+  message(paste0('evaporation = ', round(pars$evap,2),' kg/m2/day'))
 
   # Return results
   # Average only

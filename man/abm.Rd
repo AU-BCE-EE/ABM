@@ -154,12 +154,9 @@ abm(days = 365,
     \code{RFd}, COD to g RFd (g COD/g RFd);
     \code{S}, COD-substrate to sulfur (g sulfur/g COD-substrate) ;
     \code{VS}, COD to g volatile solids (g COD/g volatile solids);
-    \code{CO2_aer}, Aerobic carbon dioxide productivity coefficient (g CO2/g COD-substrate);
-    \code{CO2_sr}, carbon dioxide productivity coefficient for sulfate reduction (g CO2/g COD-substrate);
     \code{CO2_ureo}, carbon dioxide productivity coefficient for urea hydrolysis (g CO2/g urea-N);
-    \code{N_CP}, nitrogen per COD of crude protein (g N/g CP-COD).
-    \code{C_N_urea}, carbon to nitrogen (g C/g urea-N)
-    \code{kl}, mass transfer coefficient of ammonia from the slurry pit (m/day) and from the barn floor (m/day) and mass transfer coefficient of H2S from the slurry (m/day).
+    \code{N_CP}, nitrogen per COD of crude protein (g N/g CP-COD);
+    \code{C_N_urea}, carbon to nitrogen (g C/g urea-N);
     Other conversion factors designated \code{C_} are carbon to COD of the named substrate (gC/gCOD) 
 }
 

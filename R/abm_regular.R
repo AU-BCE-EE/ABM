@@ -1,4 +1,4 @@
-abm_regular <- function(days, delta_t, y, pars, starting = NULL, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
+abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
                         SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) { 
   
   #initialize dat for storage of results to speed up bind_rows
@@ -133,6 +133,11 @@ abm_regular <- function(days, delta_t, y, pars, starting = NULL, temp_C_fun = te
     t_rem <- t_rem - t_call - wash[i] * rest_d
     t_run <- t_run + t_call + wash[i] * rest_d
 
+  }
+
+  if (!is.null(times_regular)) {
+    times_regular <- sort(unique(c(times_regular, days)))
+    dat <- dat[dat$time %in% times_regular, ]
   }
 
   return(dat)

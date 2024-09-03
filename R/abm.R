@@ -285,7 +285,7 @@ abm <- function(
   
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, delta_t = delta_t, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  
+    dat <- abm_regular(days = days, delta_t = delta_t, times_regular = times, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  
                        SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time

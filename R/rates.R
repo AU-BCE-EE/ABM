@@ -120,7 +120,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       alpha_opt_scale_type  <- scale_alpha_opt[['VSd']]
       alpha_opt_scale_CP <- 1
     }
-    browser()
+    
     alpha[names(alpha) != 'urea'] <- scale[['alpha_opt']] * alpha_opt_scale_type * alpha[names(alpha) != 'urea']
     alpha['CP'] <- alpha_opt_scale_CP * alpha['CP']
     

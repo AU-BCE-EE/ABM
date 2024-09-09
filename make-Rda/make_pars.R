@@ -46,7 +46,7 @@ arrh_pars2.0 <- list(lnA = c(VSd_A = 31.3),
                      E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                      R = 8.314,  
                      VS_CH4 = 6.67,
-                     scale_alpha_opt = list(VSd = 1, notVSd = 1),
+                     scale_alpha_opt = list(VSd = 1, notVSd = 1, CP = 1),
                      kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02))
 
 save(grp_pars2.0, file = '../data/grp_pars2.0.rda')

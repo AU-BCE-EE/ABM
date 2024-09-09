@@ -289,7 +289,7 @@ arrh_pars_pig3.0 <- list(lnA = c(VSd_A = 31.3),
                          E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                          R = 8.314,  
                          VS_CH4 = 6.67,
-                         scale_alpha_opt = list(VSd = 1.19844, notVSd = 2.0069),
+                         scale_alpha_opt = list(VSd = 1.19844, notVSd = 2.0069, CP = 1),
                          kl = c(NH3 = 111.26, NH3_floor = 25.745, H2S = 0.02))
 
 arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.2),
@@ -298,7 +298,7 @@ arrh_pars_cattle3.0 <- list(lnA = c(VSd_A = 31.2),
                          E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 9244.93, RFd = 57867, VSd = 81557, urea = 81559),  # CP is for GRA treatment in MILK project
                          R = 8.314,  
                          VS_CH4 = 6.67,
-                         scale_alpha_opt = list(VSd = 0.815577, notVSd = 0.146874),
+                         scale_alpha_opt = list(VSd = 0.815577, notVSd = 0.146874, CP = 1),
                          kl = c(NH3 = 74.607, NH3_floor = 65.212, H2S = 0.02))
 
 
@@ -308,7 +308,7 @@ arrh_pars_digestate3.0 <- list(lnA = c(VSd_A = 31.2),
                             E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 9682.088, RFd = 81052, VSd = 81557, urea = 81559),  
                             R = 8.314,  
                             VS_CH4 = 6.67,
-                            scale_alpha_opt = list(VSd = 0.554, notVSd = 0.6878),
+                            scale_alpha_opt = list(VSd = 0.554, notVSd = 0.6878, CP = 1),
                             kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02))
 
 pig_pars3.0 <- c(grp_pars_pig3.0, arrh_pars_pig3.0, man_pars_pig3.0)

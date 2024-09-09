@@ -115,11 +115,14 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     if(conc_fresh$VSd <= 10E-9){
       alpha_opt_scale_type <- scale_alpha_opt[['notVSd']]
+      alpha_opt_scale_CP <- scale_alpha_opt[['CP']]
     } else if(conc_fresh$VSd > 10E-9){
       alpha_opt_scale_type  <- scale_alpha_opt[['VSd']]
+      alpha_opt_scale_CP <- 1
     }
     
     alpha[names(alpha) != 'urea'] <- scale[['alpha_opt']] * alpha_opt_scale_type * alpha[names(alpha) != 'urea']
+    alpha['CP'] <- alpha_opt_scale_CP * alpha['CP']
     
     # Microbial substrate utilization rate (vectorized calculation)
     qhat <- scale[['qhat_opt']] * CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt)

@@ -52,7 +52,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     if(is.data.frame(conc_fresh)){
       conc_fresh <- list()
       conc_fresh$sulfide <- conc_fresh_fun$conc_fresh_fun_sulfide(t + t_run)
-      conc_fresh$urea <- conc_fresh_fun$conc_fresh_fun_sulfide(t + t_run)
+      conc_fresh$urea <- conc_fresh_fun$conc_fresh_fun_urea(t + t_run)
       conc_fresh$sulfate <- conc_fresh_fun$conc_fresh_fun_sulfate(t + t_run)
       conc_fresh$TAN <- conc_fresh_fun$conc_fresh_fun_TAN(t + t_run)
       conc_fresh$starch <- conc_fresh_fun$conc_fresh_fun_starch(t + t_run)

@@ -1,4 +1,4 @@
-coverfun <- function(cover, scale){
+coverfun <- function(cover, scale = 1){
   if(is.na(cover)) cover <- "none" 
   rd <- data.frame(none = 0, tent = 0.8, straw = 0.33, natural_crust = 0.45,
                    clay_pebbles = 0.41, floating_PVC = 0.16, biocover_porous_sheet = 0.66,

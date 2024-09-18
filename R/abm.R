@@ -20,7 +20,7 @@ abm <- function(
                   resid_enrich = 0.9,
                   slopes = c(urea = NA, slurry_prod_rate = NA),
                   graze = c(start = 'May', duration = 0, hours_day = 0),
-                  scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
+                  scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1, EF_NH3 = 1)),
   man_pars = ABM::man_pars2.0,
   init_pars = list(conc_init = man_pars$conc_fresh),
   grp_pars = ABM::grp_pars2.0,
@@ -226,7 +226,7 @@ abm <- function(
 
   # Cover effect on NH3 emission rate and N2O
   # reduction from cover 
-  pars$EF_NH3 <- coverfun(pars$cover)
+  pars$EF_NH3 <- coverfun(pars$cover, pars$scale[['EF_NH3']])
   pars$EF_N2O <- ifelse(pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
   
   # calculate grazing interval of year if needed

@@ -57,11 +57,10 @@ abm_variable <-
   times <- sort(unique(c(times, pars$slurry_mass$time)))
   droptimes <- times[!times %in% times.orig]
 
-  # Adjust slurry_mass for rain and evaporation, so that it is actually the mass of *slurry* added or removed 
-  # Since removals are all instant, rain/evap has no effect (but does eventually catch up)
+  # Adjust slurry_mass for rain and evaporation, so that it is actually the mass of *slurry* added or removed (excluding downstream addition or removal of water) 
+  # Since removals are all instant, rain/evap has no effect on them (but does eventually catch up)
   # First get net precip/evap addition as a daily rate in kg/d
   
-  pars$slurry_mass
   pe_netr <- (pars$rain - pars$evap) * pars$area * (pars$dens / 1000) 
   tempty <- 0
   
@@ -101,7 +100,7 @@ abm_variable <-
   removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass']))
   removals[removals < 0] <- 0
 
-  # Where removal appeared to occur over time, change time to previous value so is instant
+  # Where removal appeared to occur over time, change time to previous value so it is instant
   pars$slurry_mass[c(FALSE, which.adj <- diff(pars$slurry_mass$time) > 0 & removals[-1] > 0), 'time'] <- 
     pars$slurry_mass[c(diff(pars$slurry_mass$time) > 0 & removals[-1] > 0, FALSE), 'time'] 
   if (any(which.adj) & warn) {

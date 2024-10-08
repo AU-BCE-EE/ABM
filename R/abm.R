@@ -35,6 +35,7 @@ abm <- function(
   startup = 0, # Now number of times complete simulation should be run before returning results
   starting = NULL,
   approx_method = c(temp = 'linear', pH = 'linear'), # NTS: combine these in 1 vector?
+  removal_method = 'early',
   par_key = '\\.',
   value = 'ts',                              # Type of output
   warn = TRUE) {
@@ -101,7 +102,7 @@ abm <- function(
   
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) { 
-    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
+    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule, removal_method = removal_method)
   }
   
   if (!is.null(anim_pars)) {

@@ -1,3 +1,6 @@
+# Files from devtools::load_all()
+src/*.o
+
 # History files
 .Rhistory
 .Rapp.history

@@ -170,21 +170,21 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       # H2S inhibition
       H2S_inhib <- NA * qhat
             
-            if(pH >= 6.8){
-              IC50 <- ki_H2S_slope * pH + ki_H2S_int
-            } else {
-              IC50 <- IC50_low
-            } 
-            
-            a <- -0.5/(IC50 - (H2S_frac * ki_H2S_min))
-            x <- H2S_frac * sulfide/(slurry_mass)
-            b <- 1 -(-0.5/(IC50 - (H2S_frac * ki_H2S_min)) * H2S_frac * ki_H2S_min/(slurry_mass))
-            
-            H2S_inhib <- a * x + b
-            H2S_inhib[H2S_inhib < 0] <- 0
-            H2S_inhib[H2S_inhib > 1 ] <- 1
+      if(pH >= 6.8){
+        IC50 <- ki_H2S_slope * pH + ki_H2S_int
+      } else {
+        IC50 <- IC50_low
+      } 
+      
+      a <- -0.5/(IC50 - (H2S_frac * ki_H2S_min))
+      x <- H2S_frac * sulfide/(slurry_mass)
+      b <- 1 -(-0.5/(IC50 - (H2S_frac * ki_H2S_min)) * H2S_frac * ki_H2S_min/(slurry_mass))
+      
+      H2S_inhib <- a * x + b
+      H2S_inhib[H2S_inhib < 0] <- 0
+      H2S_inhib[H2S_inhib > 1 ] <- 1
     
-      }
+    }
     
     cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib * pH_inhib
       
@@ -210,8 +210,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     # Solver is slowed significantly when the slurry_mass is low relative to surface area is low, therefore cut off at 1 mm slurry height
     if(resp & slurry_mass/area >= 1){
-     kl.oxygen <- exp(0.6158816 + 0.09205127 * temp_C) # from own lab experiments (Dalby et al. 2024..unpublished) 
-     respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_resp / slurry_mass) / 100
+      kl.oxygen <- exp(0.6158816 + 0.09205127 * temp_C) # from own lab experiments (Dalby et al. 2024..unpublished) 
+      respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_resp / slurry_mass) / 100
     }
     
     # VFA uptake rates

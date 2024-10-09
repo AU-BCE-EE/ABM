@@ -1,6 +1,6 @@
 abm_variable <-
   function(days, delta_t, times, y, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-           SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) {
+           SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx) {
     
   #initialize dat for storage of results to speed up bind_rows
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) # slow speed, but much faster than before
@@ -78,11 +78,11 @@ abm_variable <-
 
   # Determine slurry removal quantity in each time interval
   # Note final 0--alignment is a bit tricky
-  if (pars$removal_method == 'late') {
+  if (slurry_mass_approx == 'late') {
     removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0
-  } else if (pars$removal_method == 'early') {
+  } else if (slurry_mass_approx == 'early') {
     removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0
-  } else if (pars$removal_method == 'mid') {
+  } else if (slurry_mass_approx == 'mid') {
     # Get midpoint time
     ir <- which(- c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0)
     tt <- (pars$slurry_mass[ir, 'time']  + pars$slurry_mass[ir - 1, 'time']) / 2
@@ -93,7 +93,7 @@ abm_variable <-
     # Then apply early removal method
     removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0
     #removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0
-    pars$removal_method <- 'late'
+    slurry_mass_approx <- 'late'
   } 
 
   # Extract slurry_mass for use in emptying calculations
@@ -165,7 +165,7 @@ abm_variable <-
 
     # If there is a removal event, remove slurry before calling up ODE solver
     if (removals[i]) {
-      if (pars$removal_method == 'late') {
+      if (slurry_mass_approx == 'late') {
         j <- i - 1
       } else {
         j <- i

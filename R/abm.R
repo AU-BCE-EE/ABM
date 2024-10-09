@@ -34,8 +34,7 @@ abm <- function(
   pars = NULL,
   startup = 0, # Now number of times complete simulation should be run before returning results
   starting = NULL,
-  approx_method = c(temp = 'linear', pH = 'linear'), # NTS: combine these in 1 vector?
-  removal_method = 'early',
+  approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'early'), 
   par_key = '\\.',
   value = 'ts',                              # Type of output
   warn = TRUE) {
@@ -102,7 +101,7 @@ abm <- function(
   
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) { 
-    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule, removal_method = removal_method)
+    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
   }
   
   if (!is.null(anim_pars)) {
@@ -292,7 +291,7 @@ abm <- function(
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
     dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                        SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+                        SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx = approx_method['slurry_mass'])
   } 
   
   colnames(dat) <- gsub("conc_fresh.","conc_fresh_", colnames(dat))

@@ -366,7 +366,7 @@ abm <- function(
                 dat$urea_eff_conc / pars$COD_conv[['C_N_urea']]
   
   # still miss to incorp N from biomass here, 
-  # speciafically the N stored in xa_bac needs to be transfered to the CP pool when it degrades.  
+  # specifically the N stored in xa_bac needs to be transfered to the CP pool when it degrades.  
   
   dat$Ninorg_conc_fresh <- dat$conc_fresh_urea + dat$conc_fresh_TAN
   dat$Norg_conc_fresh <- dat$conc_fresh_CP / pars$COD_conv[['N_CP']] # biomass N not included here, because it is already part of CP.

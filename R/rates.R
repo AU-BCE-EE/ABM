@@ -2,12 +2,15 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                   SO4_inhibition_fun = SO4_inhibition_fun, 
                   conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) {
 
-     y[y < 1E-10] <- 1E-10
+    y[y < 1E-10] <- 1E-10
      
-     # need to remove slurry mass from parms to not overwrite y['slurry_mass']
-     parms$slurry_mass <- NULL
+    # need to remove slurry mass from parms to not overwrite y['slurry_mass']
+    parms$slurry_mass <- NULL
      
-     with(as.list(parms), {
+    # Put all parameters in parms elements directly in rates environment
+    for (pp in names(parms)) {
+      assign(pp, parms[[pp]])
+    }
   
     # correct slurry production rate in periods with grazing
     suppressWarnings({
@@ -278,5 +281,4 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                                rut = rut, rut_urea = rut_urea, t_run = t_run, t_batch = t_batch, conc_fresh = conc_fresh, xa_init = xa_init, 
                                xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, t_batch = t_batch, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))
-     })
 }

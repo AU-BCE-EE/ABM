@@ -96,6 +96,7 @@ abm_variable <-
     slurry_mass_approx <- 'late'
   } 
 
+
   # Extract slurry_mass for use in emptying calculations
   slurry_mass <- pars$slurry_mass[, 'slurry_mass']
 
@@ -148,6 +149,7 @@ abm_variable <-
   # Note: Removals, slurry_mass, wash_water, slurry_prod_rate_t, and t_ints all have same length,
   # Note: but all except _mass have placeholder in first position
   # Start the time (emptying) loop
+
   for (i in 2:n_int) {
 
     # Sort out call duration

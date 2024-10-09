@@ -101,7 +101,11 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # Extract state variable values from y argument
     xa <- y[1:n_mic]
     y <- as.list(y[-c(1:n_mic)])
-    list2env(y, envir = .GlobalEnv)
+
+    # Move elements of y into rates environment
+    for (pp in names(y)) {
+      assign(pp, y[[pp]])
+    }
     
     # Hard-wired equilibrium constants
     log_ka <- c(NH3 = - 0.09046 - 2729.31/temp_K, 

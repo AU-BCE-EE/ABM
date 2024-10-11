@@ -126,9 +126,11 @@ abm_variable <-
   timelist <- cumtime <- as.list(0 * removals)
   for (i in 2:n_int) {
     tt <- times[times > st[i - 1] & times <= st[i]] # slow speed of this line
-    if (length(tt) == 0) {
-      tt <- 0
-      cumtime[[i]] <- cumtime[[i - 1]]
+    # Simulation intervals should end exactly at emptying time, so it is added here through st[i] for cases where there is not alignment
+    tt <- unique(c(tt, st[i]))
+    if (length(tt) == 0) { 
+      # Not clear when this might happen, but it isn't good
+      stop('No times for interval (row) ', i, ' in time list for some reason. hatty917')
     } else {
       cumtime[[i]] <- max(tt)
       tt <- tt - cumtime[[i - 1]]

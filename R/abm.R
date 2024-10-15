@@ -36,7 +36,8 @@ abm <- function(
   starting = NULL,
   approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'early'), 
   par_key = '\\.',
-  value = 'ts',                              # Type of output
+  value = 'ts',   
+  rates_calc = 'average',# Type of output
   warn = TRUE) {
 
   # If startup repetitions are requested, repeat some number of times before returning results
@@ -320,21 +321,32 @@ abm <- function(
   
   # Calculate rates etc. for output, from state variables
   # NTS: check units, use dens???
+  
+  dat$NH3_emis_rate <- dat$NH3_emis_rate_pit + dat$NH3_emis_rate_floor
+  
+  if(rates_calc != 'instant'){
   dat$rNH3 <- c(0, diff(dat$NH3_emis_cum))/c(1, diff(dat$time))
   dat$NH3_emis_rate <- c(0, diff(dat$NH3_emis_cum))/c(1, diff(dat$time))
-  dat$NH3_emis_rate_slurry <- dat$NH3_emis_rate / (dat$slurry_mass / 1000)
-  dat$NH3_flux <- dat$NH3_emis_rate / pars$area
+
   dat$rN2O <- c(0, diff(dat$N2O_emis_cum))/c(1, diff(dat$time))
   dat$N2O_emis_rate <- c(0, diff(dat$N2O_emis_cum))/c(1, diff(dat$time))
+  
+  dat$rCH4 <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
+  dat$CH4_emis_rate <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
+  
+  dat$rCH4_A <- c(0, diff(dat$CH4_A_emis_cum))/c(1, diff(dat$time))
+  dat$CH4_A_emis_rate <- c(0, diff(dat$CH4_A_emis_cum))/c(1, diff(dat$time))
+ 
+  dat$rCO2 <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
+  dat$CO2_emis_rate <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
+  }
+  
+  dat$NH3_emis_rate_slurry <- dat$NH3_emis_rate / (dat$slurry_mass / 1000)
+  dat$NH3_flux <- dat$NH3_emis_rate / pars$area
   dat$N2O_emis_rate_slurry <- dat$N2O_emis_rate / (dat$slurry_mass / 1000)
   dat$N2O_flux <- dat$N2O_emis_rate / pars$area
-  dat$rCH4 <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
-  dat$rCH4_A <- c(0, diff(dat$CH4_A_emis_cum))/c(1, diff(dat$time))
-  dat$CH4_emis_rate <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
   dat$CH4_emis_rate_slurry <- dat$CH4_emis_rate / (dat$slurry_mass / 1000)
-  dat$CH4_A_emis_rate <- c(0, diff(dat$CH4_A_emis_cum))/c(1, diff(dat$time))
   dat$CH4_flux <- dat$CH4_emis_rate / pars$area
-  dat$CO2_emis_rate <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
   dat$CO2_emis_rate_slurry <- dat$CO2_emis_rate / (dat$slurry_mass / 1000)
   dat$CO2_flux <- dat$CO2_emis_rate / pars$area
   
@@ -391,6 +403,7 @@ abm <- function(
   dat$N_load_rate <- dat$N_conc_fresh * dat$slurry_prod_rate
 
   # Cumulative flow in g
+  # NTS still need to have an instant COD_load_rate here, we just need to add it in output of rates to calculate the "true" COD_load_cum 
   dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
   dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc[1]* dat$slurry_mass[1]
   dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * c(0, diff(dat$time))) + dat$ndCOD_conc[1]* dat$slurry_mass[1]

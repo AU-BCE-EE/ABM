@@ -239,13 +239,16 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # also calcualtes growth rate of xa_bac and xa_aer, mineralization rates and COD production from fermentation
     
     ferm <- stoich(alpha, y, conc_fresh, sub_resp, respiration)
-    CO2_ferm_meth_sr <- ferm$ferm['CO2'] * 44.01 + sum(rut[i_meth])/ferm$COD_conv_meth_CO2 + sum(rutsr)/ferm$COD_conv_sr_CO2
-    CO2_ferm <- ferm$ferm['CO2'] * 44.01 
+    CO2_ferm_meth_sr <- ferm$ferm[['CO2']] * 44.01 + sum(rut[i_meth])/ferm$COD_conv_meth_CO2[[1]] + sum(rutsr)/ferm$COD_conv_sr_CO2[[1]]
+    CO2_ferm <- ferm$ferm[['CO2']] * 44.01 
     
     # Derivatives, all in gCOD/d except slurry_mass = kg/d, N and S are gN or gS, VSd_A and VSnd_A are g/d
     # NTS: Some of these repeated calculations could be moved up
     # need to implement xa_bac to keep mass balance here: 
-
+    
+    # We need to include COD_load_rate here and possibly add COD_load_cum as state variable to enable instant output, rather than average. 
+    # See around line 407 in abm()
+    
     derivatives <- c(
        xa = scale[['yield']] * yield * rut + scale[['xa_fresh']] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
        slurry_mass = slurry_prod_rate + (rain - evap) * area,
@@ -277,8 +280,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        COD_conv_cum_sr = rutsr
      )
 
-    return(list(derivatives, c(H2S_emis_rate = H2S_emis_rate, NH3_emis_rate_pit = NH3_emis_rate_pit,
-                               NH3_emis_rate_floor = NH3_emis_rate_floor,
+    return(list(derivatives, c(CH4_emis_rate = derivatives[['CH4_emis_cum']], CO2_emis_rate = derivatives[['CO2_emis_cum']], 
+                               H2S_emis_rate = H2S_emis_rate, NH3_emis_rate_pit = NH3_emis_rate_pit, NH3_emis_rate_floor = NH3_emis_rate_floor,
+                               N2O_emis_rate = N2O_emis_rate,
                                qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = ferm[['CO2_resp']],
                                H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib,
                                TAN_min_resp = ferm[['TAN_min_resp']], TAN_min_ferm = ferm[['TAN_min_ferm']], HAC_inhib = HAC_inhib, cum_inhib = cum_inhib, 

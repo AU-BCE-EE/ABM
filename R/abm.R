@@ -541,7 +541,11 @@ abm <- function(
   
   message(paste0('rain = ', pars$rain,' kg/m2/day'))
   message(paste0('evaporation = ', round(pars$evap,2),' kg/m2/day'))
-
+  
+  if(rates_calc != 'instant' & !is.null(times)){
+    warning(paste0('rates_calc is ', rates_calc,' but specifc output times are given. 
+                   It is recommended to change rates_calc to instant')  
+  }
   # Return results
   # Average only
   if (substring(value, 1, 3) == 'sum') return(summ)

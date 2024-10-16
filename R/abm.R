@@ -36,8 +36,8 @@ abm <- function(
   starting = NULL,
   approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'early'), 
   par_key = '\\.',
-  value = 'ts',   
-  rates_calc = 'average',# Type of output
+  value = 'ts',   # Type of output
+  rates_calc = 'average',# Type of rate output (instantaneuous or average)
   warn = TRUE) {
 
   # If startup repetitions are requested, repeat some number of times before returning results

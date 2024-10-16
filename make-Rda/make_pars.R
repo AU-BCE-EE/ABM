@@ -28,8 +28,9 @@ mic_pars2.0 <- list(ks_SO4 = 0.00694,
                     decay_rate_xa = 0.02)
 
 man_pars2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 5.25, 
-                                  VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CP = 21.1, RFd = 25.4, iNDF = 11.3, VSd = 0, 
-                                  VSd_A = 55, VSnd_A = 23.5, ash = 15), pH = 7, dens = 1000)
+                                  VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CP = 21.1, 
+                                  RFd = 25.4, iNDF = 11.3, VSd = 0, VSd_A = 55, VSnd_A = 23.5, ash = 15), 
+                    pH = 7, dens = 1000)
 
 wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
 

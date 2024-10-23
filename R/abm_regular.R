@@ -80,7 +80,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     n_mic <- length(pars$qhat_opt)
 
     # Extract new state variable vector from last row
-    y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 27) + 1]
+    y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 29) + 1]
 
     # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
     y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)

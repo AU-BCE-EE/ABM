@@ -52,6 +52,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       if (t_batch > wash_int) slurry_prod_rate <- 0
     }
     
+    # For time-variable fresh concentrations, need to use function to get fresh concentrations at particular time
     if(is.data.frame(conc_fresh)){
       conc_fresh <- list()
       conc_fresh$sulfide <- conc_fresh_fun$conc_fresh_fun_sulfide(t + t_run)
@@ -248,7 +249,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     # We need to include COD_load_rate here and possibly add COD_load_cum as state variable to enable instant output, rather than average. 
     # See around line 407 in abm()
-    
+
     derivatives <- c(
        xa = scale[['yield']] * yield * rut + scale[['xa_fresh']] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
        slurry_mass = slurry_prod_rate + (rain - evap) * area,
@@ -277,10 +278,12 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        COD_conv_cum = sum(rut[i_meth]) + respiration + sum(rutsr),
        COD_conv_cum_meth = sum(rut[i_meth]),
        COD_conv_cum_respir = respiration,
-       COD_conv_cum_sr = rutsr
+       COD_conv_cum_sr = rutsr,
+       COD_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'VSd_A', 'VSnd_A')])),
+       slurry_load_cum = slurry_prod_rate
      )
 
-    return(list(derivatives, c(CH4_emis_rate = derivatives[['CH4_emis_cum']], CO2_emis_rate = derivatives[['CO2_emis_cum']], 
+    return(list(derivatives, c(COD_load_rate = derivatives[['COD_load_cum']], CH4_emis_rate = derivatives[['CH4_emis_cum']], CO2_emis_rate = derivatives[['CO2_emis_cum']], 
                                H2S_emis_rate = H2S_emis_rate, NH3_emis_rate_pit = NH3_emis_rate_pit, NH3_emis_rate_floor = NH3_emis_rate_floor,
                                N2O_emis_rate = N2O_emis_rate, CH4_A_emis_rate = derivatives[['CH4_A_emis_cum']],
                                qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = ferm[['CO2_resp']],

@@ -279,7 +279,9 @@ abm <- function(
          COD_conv_cum = 0, 
          COD_conv_cum_meth = 0, 
          COD_conv_cum_respir = 0, 
-         COD_conv_cum_sr = 0)
+         COD_conv_cum_sr = 0,
+         COD_load_cum = 0,
+         slurry_load_cum = 0)
   
   if (!is.null(starting) & is.data.frame(starting)) {
     start.vars <- c('slurry_mass', 'xa_aer', 'xa_bac', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CP', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')

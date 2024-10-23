@@ -272,9 +272,14 @@ abm <- function(
          VSd_A = pars$conc_init[['VSd_A']] * slurry_mass_init,
          VSnd_A = pars$conc_init[['VSnd_A']] * slurry_mass_init,
          CH4_A_emis_cum = 0,
-         NH3_emis_cum = 0, N2O_emis_cum = 0, CH4_emis_cum = 0, CO2_emis_cum = 0, 
-         COD_conv_cum = 0, COD_conv_cum_meth = 0, 
-         COD_conv_cum_respir = 0, COD_conv_cum_sr = 0)
+         NH3_emis_cum = 0, 
+         N2O_emis_cum = 0, 
+         CH4_emis_cum = 0, 
+         CO2_emis_cum = 0, 
+         COD_conv_cum = 0, 
+         COD_conv_cum_meth = 0, 
+         COD_conv_cum_respir = 0, 
+         COD_conv_cum_sr = 0)
   
   if (!is.null(starting) & is.data.frame(starting)) {
     start.vars <- c('slurry_mass', 'xa_aer', 'xa_bac', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CP', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')
@@ -542,9 +547,9 @@ abm <- function(
   message(paste0('rain = ', pars$rain,' kg/m2/day'))
   message(paste0('evaporation = ', round(pars$evap,2),' kg/m2/day'))
   
-  if(rates_calc != 'instant' & !is.null(times)){
+  if (rates_calc != 'instant' & !is.null(times)) {
     warning(paste0('rates_calc is ', rates_calc,' but specifc output times are given. 
-                   It is recommended to change rates_calc to instant')  
+                   It is recommended to change rates_calc to instant'))
   }
   # Return results
   # Average only

@@ -409,62 +409,63 @@ abm <- function(
   dat$Norg_load_rate <- dat$Norg_conc_fresh * dat$slurry_prod_rate
   dat$N_load_rate <- dat$N_conc_fresh * dat$slurry_prod_rate
 
-  # Cumulative flow in g
-  # NTS still need to have an instant COD_load_rate here, we just need to add it in output of rates to calculate the "true" COD_load_cum 
-  dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
-  dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc[1]* dat$slurry_mass[1]
-  dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * c(0, diff(dat$time))) + dat$ndCOD_conc[1]* dat$slurry_mass[1]
-  dat$VS_load_cum <- cumsum(dat$VS_load_rate * c(0, diff(dat$time))) + dat$VS_conc[1]* dat$slurry_mass[1]
-  dat$C_load_cum <- cumsum(dat$C_load_rate * c(0, diff(dat$time))) + dat$C_conc[1] * dat$slurry_mass[1]
-  dat$slurry_load_cum <- (cumsum(dat$slurry_load_rate * c(0, diff(dat$time))) + dat$slurry_mass[1]/1000)
-  
-  
-  dat$Ninorg_load_cum <- cumsum(dat$Ninorg_load_rate * c(0, diff(dat$time))) + dat$Ninorg_conc[1] * dat$slurry_mass[1]
-  dat$Norg_load_cum <- cumsum(dat$Norg_load_rate * c(0, diff(dat$time))) + dat$Norg_conc[1] * dat$slurry_mass[1]
-  dat$N_load_cum <- cumsum(dat$N_load_rate * c(0, diff(dat$time))) + dat$N_conc[1] * dat$slurry_mass[1]
+  # NTS: These need to be deleted after replacing desired ones with output from lsoda() call
+  ## Cumulative flow in g
+  ## NTS still need to have an instant COD_load_rate here, we just need to add it in output of rates to calculate the "true" COD_load_cum 
+  #dat$COD_load_cum <- cumsum(dat$COD_load_rate * c(0, diff(dat$time))) + dat$COD_conc[1] * dat$slurry_mass[1]
+  #dat$dCOD_load_cum <- cumsum(dat$dCOD_load_rate * c(0, diff(dat$time))) + dat$dCOD_conc[1]* dat$slurry_mass[1]
+  #dat$ndCOD_load_cum <- cumsum(dat$ndCOD_load_rate * c(0, diff(dat$time))) + dat$ndCOD_conc[1]* dat$slurry_mass[1]
+  #dat$VS_load_cum <- cumsum(dat$VS_load_rate * c(0, diff(dat$time))) + dat$VS_conc[1]* dat$slurry_mass[1]
+  #dat$C_load_cum <- cumsum(dat$C_load_rate * c(0, diff(dat$time))) + dat$C_conc[1] * dat$slurry_mass[1]
+  #dat$slurry_load_cum <- (cumsum(dat$slurry_load_rate * c(0, diff(dat$time))) + dat$slurry_mass[1]/1000)
+  #
+  #
+  #dat$Ninorg_load_cum <- cumsum(dat$Ninorg_load_rate * c(0, diff(dat$time))) + dat$Ninorg_conc[1] * dat$slurry_mass[1]
+  #dat$Norg_load_cum <- cumsum(dat$Norg_load_rate * c(0, diff(dat$time))) + dat$Norg_conc[1] * dat$slurry_mass[1]
+  #dat$N_load_cum <- cumsum(dat$N_load_rate * c(0, diff(dat$time))) + dat$N_conc[1] * dat$slurry_mass[1]
 
   # And relative emission
   # g CH4/g COD in
   
   dat$CH4_emis_rate_COD <- dat$CH4_emis_rate / dat$COD_load_rate
-  dat$CH4_emis_rate_dCOD <- dat$CH4_emis_rate / dat$dCOD_load_rate
-  dat$CH4_emis_rate_VS <- dat$CH4_emis_rate / dat$VS_load_rate
-  dat$CH4_emis_rate_C <- dat$CH4_emis_rate / dat$C_load_rate
+  #dat$CH4_emis_rate_dCOD <- dat$CH4_emis_rate / dat$dCOD_load_rate
+  #dat$CH4_emis_rate_VS <- dat$CH4_emis_rate / dat$VS_load_rate
+  #dat$CH4_emis_rate_C <- dat$CH4_emis_rate / dat$C_load_rate
   dat$CH4_emis_cum_COD <- dat$CH4_emis_cum / dat$COD_load_cum
-  dat$CH4_emis_cum_dCOD <- dat$CH4_emis_cum / dat$dCOD_load_cum
-  dat$CH4_emis_cum_VS <- dat$CH4_emis_cum / dat$VS_load_cum
-  dat$CH4_emis_cum_C <- dat$CH4_emis_cum / dat$C_load_cum
-  dat$CH4_emis_cum_slurry <- dat$CH4_emis_cum / dat$slurry_load_cum # g/ m3
+  #dat$CH4_emis_cum_dCOD <- dat$CH4_emis_cum / dat$dCOD_load_cum
+  #dat$CH4_emis_cum_VS <- dat$CH4_emis_cum / dat$VS_load_cum
+  #dat$CH4_emis_cum_C <- dat$CH4_emis_cum / dat$C_load_cum
+  #dat$CH4_emis_cum_slurry <- dat$CH4_emis_cum / dat$slurry_load_cum # g/ m3
   
   # g NH3 N/g N
   dat$NH3_emis_rate_Ninorg <- dat$NH3_emis_rate / dat$Ninorg_load_rate
   dat$NH3_emis_rate_Norg <- dat$NH3_emis_rate / dat$Norg_load_rate
   dat$NH3_emis_rate_N <- dat$NH3_emis_rate / dat$N_load_rate
-  dat$NH3_emis_cum_Ninorg <- dat$NH3_emis_cum / dat$Ninorg_load_cum
-  dat$NH3_emis_cum_Norg <- dat$NH3_emis_cum / dat$Norg_load_cum
-  dat$NH3_emis_cum_N <- dat$NH3_emis_cum / dat$N_load_cum
+  #dat$NH3_emis_cum_Ninorg <- dat$NH3_emis_cum / dat$Ninorg_load_cum
+  #dat$NH3_emis_cum_Norg <- dat$NH3_emis_cum / dat$Norg_load_cum
+  #dat$NH3_emis_cum_N <- dat$NH3_emis_cum / dat$N_load_cum
   
   # g N2O N/g N
   dat$N2O_emis_rate_Ninorg <- dat$N2O_emis_rate / dat$Ninorg_load_rate
   dat$N2O_emis_rate_Norg <- dat$N2O_emis_rate / dat$Norg_load_rate
   dat$N2O_emis_rate_N <- dat$N2O_emis_rate / dat$N_load_rate
-  dat$N2O_emis_cum_Ninorg <- dat$N2O_emis_cum / dat$Ninorg_load_cum
-  dat$N2O_emis_cum_Norg <- dat$N2O_emis_cum / dat$Norg_load_cum
-  dat$N2O_emis_cum_N <- dat$N2O_emis_cum / dat$N_load_cum
+  #dat$N2O_emis_cum_Ninorg <- dat$N2O_emis_cum / dat$Ninorg_load_cum
+  #dat$N2O_emis_cum_Norg <- dat$N2O_emis_cum / dat$Norg_load_cum
+  #dat$N2O_emis_cum_N <- dat$N2O_emis_cum / dat$N_load_cum
   
   # Same for CO2
   dat$CO2_emis_rate_COD <- dat$CO2_emis_rate / dat$COD_load_rate
   dat$CO2_emis_rate_dCOD <- dat$CO2_emis_rate / dat$dCOD_load_rate
   dat$CO2_emis_rate_VS <- dat$CO2_emis_rate / dat$VS_load_rate
   dat$CO2_emis_rate_C <- dat$CO2_emis_rate / dat$C_load_rate
-  dat$CO2_emis_cum_COD <- dat$CO2_emis_cum / dat$COD_load_cum
-  dat$CO2_emis_cum_dCOD <- dat$CO2_emis_cum / dat$dCOD_load_cum
-  dat$CO2_emis_cum_VS <- dat$CO2_emis_cum / dat$VS_load_cum
-  dat$CO2_emis_cum_C <- dat$CO2_emis_cum / dat$C_load_cum
-  dat$CO2_emis_cum_slurry <- dat$CO2_emis_cum / dat$slurry_load_cum
+  #dat$CO2_emis_cum_COD <- dat$CO2_emis_cum / dat$COD_load_cum
+  #dat$CO2_emis_cum_dCOD <- dat$CO2_emis_cum / dat$dCOD_load_cum
+  #dat$CO2_emis_cum_VS <- dat$CO2_emis_cum / dat$VS_load_cum
+  #dat$CO2_emis_cum_C <- dat$CO2_emis_cum / dat$C_load_cum
+  #dat$CO2_emis_cum_slurry <- dat$CO2_emis_cum / dat$slurry_load_cum
   
   # Apparent COD conversion fraction
-  dat$f_COD_CH4_rate <-  dat$CH4_emis_rate * pars$COD_conv[['CH4']] / dat$COD_load_rate
+  #dat$f_COD_CH4_rate <-  dat$CH4_emis_rate * pars$COD_conv[['CH4']] / dat$COD_load_rate
   dat$f_COD_CH4_cum <-  dat$COD_conv_cum_meth / dat$COD_load_cum
   dat$f_COD_respir_cum <-  dat$COD_conv_cum_respir / dat$COD_load_cum
   dat$f_COD_sr_cum <-  dat$COD_conv_cum_sr / dat$COD_load_cum

@@ -279,7 +279,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        COD_conv_cum_meth = sum(rut[i_meth]),
        COD_conv_cum_respir = respiration,
        COD_conv_cum_sr = rutsr,
-       COD_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'VSd_A', 'VSnd_A')])),
+       COD_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd')])),
        slurry_load_cum = slurry_prod_rate
      )
 

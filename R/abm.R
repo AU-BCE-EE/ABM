@@ -330,7 +330,7 @@ abm <- function(
   
   # Calculate rates etc. for output, from state variables
   # NTS: check units, use dens???
-  browser()
+
   dat$NH3_emis_rate <- dat$NH3_emis_rate_pit + dat$NH3_emis_rate_floor
   
   if(rates_calc != 'instant'){
@@ -400,16 +400,16 @@ abm <- function(
 
   
   # And flows in g/d
-  dat$COD_load_rate <- dat$COD_conc_fresh * dat$slurry_prod_rate
+  #dat$COD_load_rate <- dat$COD_load_rateconc_fresh * dat$slurry_prod_rate
   dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
   dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
   dat$VS_load_rate <- dat$COD_load_rate / pars$COD_conv[['VS']]
-  dat$C_load_rate <- dat$C_conc_fresh * dat$slurry_prod_rate
+  #dat$C_load_rate <- dat$C_conc_fresh * dat$slurry_prod_rate
   dat$slurry_load_rate <- dat$slurry_prod_rate/1000 # m3
   
   dat$Ninorg_load_rate <- dat$Ninorg_conc_fresh * dat$slurry_prod_rate
   dat$Norg_load_rate <- dat$Norg_conc_fresh * dat$slurry_prod_rate
-  dat$N_load_rate <- dat$N_conc_fresh * dat$slurry_prod_rate
+  #dat$N_load_rate <- dat$N_conc_fresh * dat$slurry_prod_rate
 
   # NTS: These need to be deleted after replacing desired ones with output from lsoda() call
   ## Cumulative flow in g
@@ -432,11 +432,11 @@ abm <- function(
   dat$CH4_emis_rate_COD <- dat$CH4_emis_rate / dat$COD_load_rate
   #dat$CH4_emis_rate_dCOD <- dat$CH4_emis_rate / dat$dCOD_load_rate
   #dat$CH4_emis_rate_VS <- dat$CH4_emis_rate / dat$VS_load_rate
-  #dat$CH4_emis_rate_C <- dat$CH4_emis_rate / dat$C_load_rate
+  dat$CH4_emis_rate_C <- dat$CH4_emis_rate / dat$C_load_rate
   dat$CH4_emis_cum_COD <- dat$CH4_emis_cum / dat$COD_load_cum
   #dat$CH4_emis_cum_dCOD <- dat$CH4_emis_cum / dat$dCOD_load_cum
   #dat$CH4_emis_cum_VS <- dat$CH4_emis_cum / dat$VS_load_cum
-  #dat$CH4_emis_cum_C <- dat$CH4_emis_cum / dat$C_load_cum
+  dat$CH4_emis_cum_C <- dat$CH4_emis_cum / dat$C_load_cum
   #dat$CH4_emis_cum_slurry <- dat$CH4_emis_cum / dat$slurry_load_cum # g/ m3
   
   # g NH3 N/g N
@@ -445,7 +445,7 @@ abm <- function(
   dat$NH3_emis_rate_N <- dat$NH3_emis_rate / dat$N_load_rate
   #dat$NH3_emis_cum_Ninorg <- dat$NH3_emis_cum / dat$Ninorg_load_cum
   #dat$NH3_emis_cum_Norg <- dat$NH3_emis_cum / dat$Norg_load_cum
-  #dat$NH3_emis_cum_N <- dat$NH3_emis_cum / dat$N_load_cum
+  dat$NH3_emis_cum_N <- dat$NH3_emis_cum / dat$N_load_cum
   
   # g N2O N/g N
   dat$N2O_emis_rate_Ninorg <- dat$N2O_emis_rate / dat$Ninorg_load_rate
@@ -453,17 +453,17 @@ abm <- function(
   dat$N2O_emis_rate_N <- dat$N2O_emis_rate / dat$N_load_rate
   #dat$N2O_emis_cum_Ninorg <- dat$N2O_emis_cum / dat$Ninorg_load_cum
   #dat$N2O_emis_cum_Norg <- dat$N2O_emis_cum / dat$Norg_load_cum
-  #dat$N2O_emis_cum_N <- dat$N2O_emis_cum / dat$N_load_cum
+  dat$N2O_emis_cum_N <- dat$N2O_emis_cum / dat$N_load_cum
   
   # Same for CO2
   dat$CO2_emis_rate_COD <- dat$CO2_emis_rate / dat$COD_load_rate
   dat$CO2_emis_rate_dCOD <- dat$CO2_emis_rate / dat$dCOD_load_rate
   dat$CO2_emis_rate_VS <- dat$CO2_emis_rate / dat$VS_load_rate
   dat$CO2_emis_rate_C <- dat$CO2_emis_rate / dat$C_load_rate
-  #dat$CO2_emis_cum_COD <- dat$CO2_emis_cum / dat$COD_load_cum
+  dat$CO2_emis_cum_COD <- dat$CO2_emis_cum / dat$COD_load_cum
   #dat$CO2_emis_cum_dCOD <- dat$CO2_emis_cum / dat$dCOD_load_cum
   #dat$CO2_emis_cum_VS <- dat$CO2_emis_cum / dat$VS_load_cum
-  #dat$CO2_emis_cum_C <- dat$CO2_emis_cum / dat$C_load_cum
+  dat$CO2_emis_cum_C <- dat$CO2_emis_cum / dat$C_load_cum
   #dat$CO2_emis_cum_slurry <- dat$CO2_emis_cum / dat$slurry_load_cum
   
   # Apparent COD conversion fraction

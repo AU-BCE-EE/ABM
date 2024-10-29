@@ -330,7 +330,7 @@ abm <- function(
   
   # Calculate rates etc. for output, from state variables
   # NTS: check units, use dens???
-  
+  browser()
   dat$NH3_emis_rate <- dat$NH3_emis_rate_pit + dat$NH3_emis_rate_floor
   
   if(rates_calc != 'instant'){

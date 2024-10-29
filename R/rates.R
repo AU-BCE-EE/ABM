@@ -246,7 +246,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # Derivatives, all in gCOD/d except slurry_mass = kg/d, N and S are gN or gS, VSd_A and VSnd_A are g/d
     # NTS: Some of these repeated calculations could be moved up
     # need to implement xa_bac to keep mass balance here: 
+    C_COD_conv <- c(COD_conv[['C_starch']], COD_conv[['C_VFA']], COD_conv[['C_xa']], COD_conv[['C_xa']], COD_conv[['C_xa']], COD_conv[['C_Cfat']], 
+                    COD_conv[['C_CP']], COD_conv[['C_RFd']], COD_conv[['C_iNDF']], COD_conv[['C_VSd']], COD_conv[['C_N_urea']])
     
+    length(C_COD_conv)
     # We need to include COD_load_rate here and possibly add COD_load_cum as state variable to enable instant output, rather than average. 
     # See around line 407 in abm()
 
@@ -279,7 +282,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        COD_conv_cum_meth = sum(rut[i_meth]),
        COD_conv_cum_respir = respiration,
        COD_conv_cum_sr = rutsr,
-       COD_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd')])),
+       COD_load_cum = slurry_prod_rate * (sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd')])) + scale[['xa_fresh']] * sum(xa_fresh)) ,
+       C_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'urea')]) * COD_conv[paste0('C_', c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'N_urea'))]) + scale[['xa_fresh']] * sum(xa_fresh) * xa_bac),
+       N_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('CP', 'TAN', 'urea')]) * c(COD_conv[['N_CP']], 1, 1)),
        slurry_load_cum = slurry_prod_rate
      )
 

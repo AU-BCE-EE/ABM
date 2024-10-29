@@ -281,6 +281,8 @@ abm <- function(
          COD_conv_cum_respir = 0, 
          COD_conv_cum_sr = 0,
          COD_load_cum = 0,
+         C_load_cum = 0,
+         N_load_cum = 0,
          slurry_load_cum = 0)
   
   if (!is.null(starting) & is.data.frame(starting)) {

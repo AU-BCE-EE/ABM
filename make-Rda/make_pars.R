@@ -39,7 +39,7 @@ chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.84
                               C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429, frac_CP_xa = 0.835, CO2_ureo = 1/1.57, N_CP = 1/0.1014
                               ))
 
-COD_conv <- chem_pars2.0$COD_conv
+#COD_conv <- chem_pars2.0$COD_conv
 
 
 #xa_fresh = c(m0 = 0.0628, m1 = 0.0628, m2 = 0.0628, sr1 = 0.0628)

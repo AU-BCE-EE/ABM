@@ -282,8 +282,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        COD_conv_cum_meth = sum(rut[i_meth]),
        COD_conv_cum_respir = respiration,
        COD_conv_cum_sr = rutsr,
-       COD_load_cum = slurry_prod_rate * (sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd')])) + scale[['xa_fresh']] * sum(xa_fresh)) ,
-       C_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'urea')]) * COD_conv[paste0('C_', c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'N_urea'))]) + scale[['xa_fresh']] * sum(xa_fresh) * xa_bac),
+       COD_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd')])) + slurry_prod_rate * sum(xa_fresh * scale[['xa_fresh']]),
+       C_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'urea')])* COD_conv[paste0('C_', c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'N_urea'))]) + 
+         slurry_prod_rate * sum(xa_fresh * COD_conv[['C_xa_bac']]),
        N_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('CP', 'TAN', 'urea')]) * c(COD_conv[['N_CP']], 1, 1)),
        slurry_load_cum = slurry_prod_rate
      )

@@ -39,6 +39,20 @@ chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.84
                               C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429, frac_CP_xa = 0.835, CO2_ureo = 1/1.57, N_CP = 1/0.1014
                               ))
 
+COD_conv <- chem_pars2.0$COD_conv
+
+
+#xa_fresh = c(m0 = 0.0628, m1 = 0.0628, m2 = 0.0628, sr1 = 0.0628)
+
+#man_pars_pig2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.01, TAN = 0.0, starch = 5.25, 
+#                                          VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CP = 21.1, RFd = 25.4, iNDF = 11.3, VSd = 0, 
+#                                          VSd_A = 55, VSnd_A = 23.5, ash = 15), pH = 7, dens = 1000)
+
+#conc_fresh <- man_pars_pig2.0$conc_fresh
+
+#sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'urea')])* COD_conv[paste0('C_', c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'N_urea'))])
+#sum(as.numeric(conc_fresh[c('CP', 'TAN', 'urea')]) * c(COD_conv[['N_CP']], 1, 1))
+
 arrh_pars2.0 <- list(lnA = c(VSd_A = 31.3),
                      E_CH4 = c(VSd_A = 81000), 
                      A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 

@@ -3,7 +3,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                   conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) {
 
     y[y < 1E-10] <- 1E-10
-     
+
     # need to remove slurry mass from parms to not overwrite y['slurry_mass']
     parms$slurry_mass <- NULL
      
@@ -280,7 +280,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        COD_conv_cum_sr = rutsr,
        COD_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd')])) + slurry_prod_rate * sum(xa_fresh * scale[['xa_fresh']]),
        C_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'urea')])* COD_conv[paste0('C_', c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'N_urea'))]) + 
-         slurry_prod_rate * sum(xa_fresh * COD_conv[['C_xa_bac']]),
+         slurry_prod_rate * sum(xa_fresh * scale[['xa_fresh']] * COD_conv[['C_xa_bac']]),
        N_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('CP', 'TAN', 'urea')]) * c(COD_conv[['N_CP']], 1, 1)),
        slurry_load_cum = slurry_prod_rate
      )

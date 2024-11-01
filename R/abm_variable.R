@@ -1,6 +1,6 @@
 abm_variable <-
   function(days, delta_t, times, y, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-           SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) {
+           SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx) {
     
   #initialize dat for storage of results to speed up bind_rows
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) # slow speed, but much faster than before
@@ -20,18 +20,8 @@ abm_variable <-
 
   # Check for sorted time
   if (is.unsorted(pars$slurry_mass$time)) {
-    stop('Column `time` must be sorted when `slurry_mass` is time-dependent, but it not: ',
+    stop('Column `time` must be sorted when `slurry_mass` is time-dependent, but it is not: ',
          pars$slurry_mass$time)
-  }
-  
-  # Check that slurry mass does not decrease in the end
-  if(pars$slurry_mass$slurry_mass[nrow(pars$slurry_mass)] < pars$slurry_mass$slurry_mass[nrow(pars$slurry_mass)-1]) {
-    warning('Last slurry mass value is smaller than the preceeding slurry mass value and is therefore ignored')
-  }
-  
-  # Check that slurry mass does not decrease as the first thing
-  if(pars$slurry_mass$slurry_mass[1] > pars$slurry_mass$slurry_mass[2]) {
-    stop('The first slurry mass value cannot be larger then the suceeding slurry mass value')
   }
   
   # If simulation continues past slurry_mass data frame time, set following slurry production (addition) to zero
@@ -57,11 +47,10 @@ abm_variable <-
   times <- sort(unique(c(times, pars$slurry_mass$time)))
   droptimes <- times[!times %in% times.orig]
 
-  # Adjust slurry_mass for rain and evaporation, so that it is actually the mass of *slurry* added or removed 
-  # Since removals are all instant, rain/evap has no effect (but does eventually catch up)
+  # Adjust slurry_mass for rain and evaporation, so that it is actually the mass of *slurry* added or removed (excluding downstream addition or removal of water) 
+  # Since removals are all instant, rain/evap has no effect on them (but does eventually catch up)
   # First get net precip/evap addition as a daily rate in kg/d
   
-  pars$slurry_mass
   pe_netr <- (pars$rain - pars$evap) * pars$area * (pars$dens / 1000) 
   tempty <- 0
   
@@ -89,24 +78,24 @@ abm_variable <-
 
   # Determine slurry removal quantity in each time interval
   # Note final 0--alignment is a bit tricky
-  removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass']))
-  removals[removals < 0] <- 0
+  if (slurry_mass_approx == 'late') {
+    removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0
+  } else if (slurry_mass_approx == 'early') {
+    removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0
+  } else if (slurry_mass_approx == 'mid') {
+    # Get midpoint time
+    ir <- which(- c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0)
+    tt <- (pars$slurry_mass[ir, 'time']  + pars$slurry_mass[ir - 1, 'time']) / 2
+    # And copy slurry mass
+    mm <- pars$slurry_mass[ir, 'slurry_mass']
+    pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm))
+    pars$slurry_mass <- pars$slurry_mass[order(pars$slurry_mass$time), ]
+    # Then apply early removal method
+    removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0
+    #removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0
+    slurry_mass_approx <- 'late'
+  } 
 
-  # Remove (combine) consecutive removals because all removals are assumed to be instant
-  pars$slurry_mass <- pars$slurry_mass[c(!(removals[-1] > 0 & removals[-length(removals)] > 0), TRUE), ]
-
-  # And recalculate removals from change in slurry mass
-  # Note that removals in a row means there is a removal at the end of that time
-  # Note that removal for last row is impossible (see 0 below) as it should be (there is no slurry_mass defined after last row)
-  removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass']))
-  removals[removals < 0] <- 0
-
-  # Where removal appeared to occur over time, change time to previous value so is instant
-  pars$slurry_mass[c(FALSE, which.adj <- diff(pars$slurry_mass$time) > 0 & removals[-1] > 0), 'time'] <- 
-    pars$slurry_mass[c(diff(pars$slurry_mass$time) > 0 & removals[-1] > 0, FALSE), 'time'] 
-  if (any(which.adj) & warn) {
-    warning('Non-instant removals given in `slurry_mass` were changed to instant.')
-  }
 
   # Extract slurry_mass for use in emptying calculations
   slurry_mass <- pars$slurry_mass[, 'slurry_mass']
@@ -128,9 +117,6 @@ abm_variable <-
   slurry_prod_rate_t[slurry_prod_rate_t < 0] <- 0
   slurry_prod_rate_t[!is.finite(slurry_prod_rate_t)] <- 0
 
-  # Make removals vector logical for use in loop
-  removals <- removals > 0
-
   # Get number of timing of intervals
   # Note about time: 1) All simulations start at 0, 2) days must be at least as long as mass data
   # Note that this works even with t_end = NULL (is ignored)
@@ -140,9 +126,11 @@ abm_variable <-
   timelist <- cumtime <- as.list(0 * removals)
   for (i in 2:n_int) {
     tt <- times[times > st[i - 1] & times <= st[i]] # slow speed of this line
-    if (length(tt) == 0) {
-      tt <- 0
-      cumtime[[i]] <- cumtime[[i - 1]]
+    # Simulation intervals should end exactly at emptying time, so it is added here through st[i] for cases where there is not alignment
+    tt <- unique(c(tt, st[i]))
+    if (length(tt) == 0) { 
+      # Not clear when this might happen, but it isn't good
+      stop('No times for interval (row) ', i, ' in time list for some reason. hatty917')
     } else {
       cumtime[[i]] <- max(tt)
       tt <- tt - cumtime[[i - 1]]
@@ -160,11 +148,10 @@ abm_variable <-
   # Time that has already run
   t_run <- 0
 
-  #cbind(t_ints, removals)
   # Note: Removals, slurry_mass, wash_water, slurry_prod_rate_t, and t_ints all have same length,
   # Note: but all except _mass have placeholder in first position
-
   # Start the time (emptying) loop
+
   for (i in 2:n_int) {
 
     # Sort out call duration
@@ -176,68 +163,68 @@ abm_variable <-
     # Fill in slurry_prod_rate
     pars$slurry_prod_rate <- slurry_prod_rate_t[i]
 
-    # NTS: problem with slurry removal at the start is around here and L 209, because out does not exist
-    # NTS: Can we create out at initial time from initial state variable vector?
+    # With no removal
     # Call lsoda and advance if time changes (i.e., if there is not a removal)
     # Note that t_call should always by 0 when there is a removal, so skipping this code is correct
-    if (!removals[i]) {
 
-      # This should not be possible with above code
-      if (t_call <= 0) stop('t_call < 0. slkj4098sh, check if "time" is duplicated in slurry mass data frame')
-
-      # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
-      times <- timelist[[i]]
-
-      # Add run time to pars so rates() can use actual time to calculate temp_C and pH
-      pars$t_run <- t_run
-
-      # Call up ODE solver
-      out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, 
-                            pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                            conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
-      
-      # Change format of output and drop first (time 0) row (duplicated in last row of previous)
-      if (i == 2) {
-        out <- data.frame(out)
+    # If there is a removal event, remove slurry before calling up ODE solver
+    if (removals[i]) {
+      if (slurry_mass_approx == 'late') {
+        j <- i - 1
       } else {
-        out <- data.frame(out[-1, , drop = FALSE])
+        j <- i
       }
-
-      # Fix some names (NTS: can we sort this out in rates()? I have tried and failed)
-      names(out)[1:length(pars$qhat_opt) + 1] <- names(pars$qhat_opt)
-
-      # Extract new state variable vector from last row of lsoda output
-      y <- unlist(out[nrow(out), 1:(length(c(pars$qhat_opt)) + 27) + 1])
-
-      # Change time in output to cumulative time for complete simulation
-      out$time <- out$time + t_run
-      
-      # Create empty (0) y.eff vector because washing could occur, and dat needs columns
-      yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
-      y.eff <- 0 * yy[grepl('_eff$', names(yy))]
-
-    } else {
-      out <- out[nrow(out), ]
-      # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
-      # Note: Do not update out here before next iteration
-      y <- emptyStore(y, resid_mass = slurry_mass[i], resid_enrich = pars$resid_enrich)
+      y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
       y.eff <- y[grepl('_eff$', names(y))]
       y <- y[!grepl('_eff$', names(y))]
-      out[, names(y)] <- y
+
+      # Washing, increase slurry mass
+      # Typically occurs after emptying here (wash_int ignored)
+      # But could take place at the *end* of *any* interval
+      if (wash_water[i] > 0) {
+        y['slurry_mass'] <- y['slurry_mass'] + wash_water[i]
+
+        # And empty again, leaving same residual mass as always, and enriching for particles
+        y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
+        y.eff <- y.eff + y[grepl('_eff$', names(y))]
+        y <- y[!grepl('_eff$', names(y))]
+        out[nrow(out), names(y)] <- y
+      }
     }
 
-    # Washing, increase slurry mass
-    # Typically occurs after emptying here (wash_int ignored)
-    # But could take place at the *end* of *any* interval
-    if (wash_water[i] > 0) {
-      y['slurry_mass'] <- y['slurry_mass'] + wash_water[i]
+    # This might not be possible with above code
+    if (t_call <= 0) stop('t_call < 0. slkj4098sh, check if "time" is duplicated in slurry mass data frame')
 
-      # And empty again, leaving same residual mass as always, and enriching for particles
-      y <- emptyStore(y, resid_mass = slurry_mass[i], resid_enrich = pars$resid_enrich)
-      y.eff <- y.eff + y[grepl('_eff$', names(y))]
-      y <- y[!grepl('_eff$', names(y))]
-      out[nrow(out), names(y)] <- y
+    # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
+    times <- timelist[[i]]
+
+    # Add run time to pars so rates() can use actual time to calculate temp_C and pH
+    pars$t_run <- t_run
+
+    # Call up ODE solver
+    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, 
+                          pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
+                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+    
+    # Change format of output and drop first (time 0) row (duplicated in last row of previous)
+    if (i == 2) {
+      out <- data.frame(out)
+    } else {
+      out <- data.frame(out[-1, , drop = FALSE])
     }
+
+    # Fix some names (NTS: can we sort this out in rates()? I have tried and failed)
+    names(out)[1:length(pars$qhat_opt) + 1] <- names(pars$qhat_opt)
+
+    # Extract new state variable vector from last row of lsoda output
+    y <- unlist(out[nrow(out), 1:(length(c(pars$qhat_opt)) + 31) + 1])
+
+    # Change time in output to cumulative time for complete simulation
+    out$time <- out$time + t_run
+    
+    # Create empty (0) y.eff vector because washing could occur, and dat needs columns
+    yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
+    y.eff <- 0 * yy[grepl('_eff$', names(yy))]
 
     # Add effluent results
     out[, names(y.eff)] <- 0
@@ -245,6 +232,7 @@ abm_variable <-
  
     # Add results to earlier ones
     dat <- dplyr::bind_rows(dat, out)
+    #dat <- rbind(dat, out)
     
     # Update time remaining and total time run so far
     t_rem <- t_rem - t_call

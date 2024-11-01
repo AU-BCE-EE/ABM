@@ -2,12 +2,15 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                   SO4_inhibition_fun = SO4_inhibition_fun, 
                   conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) {
 
-     y[y < 1E-10] <- 1E-10
+    y[y < 1E-10] <- 1E-10
+
+    # need to remove slurry mass from parms to not overwrite y['slurry_mass']
+    parms$slurry_mass <- NULL
      
-     # need to remove slurry mass from parms to not overwrite y['slurry_mass']
-     parms$slurry_mass <- NULL
-     
-     with(as.list(parms), {
+    # Put all parameters in parms elements directly in rates environment
+    for (pp in names(parms)) {
+      assign(pp, parms[[pp]])
+    }
   
     # correct slurry production rate in periods with grazing
     suppressWarnings({
@@ -49,10 +52,11 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       if (t_batch > wash_int) slurry_prod_rate <- 0
     }
     
+    # For time-variable fresh concentrations, need to use function to get fresh concentrations at particular time
     if(is.data.frame(conc_fresh)){
       conc_fresh <- list()
       conc_fresh$sulfide <- conc_fresh_fun$conc_fresh_fun_sulfide(t + t_run)
-      conc_fresh$urea <- conc_fresh_fun$conc_fresh_fun_sulfide(t + t_run)
+      conc_fresh$urea <- conc_fresh_fun$conc_fresh_fun_urea(t + t_run)
       conc_fresh$sulfate <- conc_fresh_fun$conc_fresh_fun_sulfate(t + t_run)
       conc_fresh$TAN <- conc_fresh_fun$conc_fresh_fun_TAN(t + t_run)
       conc_fresh$starch <- conc_fresh_fun$conc_fresh_fun_starch(t + t_run)
@@ -98,7 +102,11 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # Extract state variable values from y argument
     xa <- y[1:n_mic]
     y <- as.list(y[-c(1:n_mic)])
-    list2env(y, envir = .GlobalEnv)
+
+    # Move elements of y into rates environment
+    for (pp in names(y)) {
+      assign(pp, y[[pp]])
+    }
     
     # Hard-wired equilibrium constants
     log_ka <- c(NH3 = - 0.09046 - 2729.31/temp_K, 
@@ -115,11 +123,14 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     if(conc_fresh$VSd <= 10E-9){
       alpha_opt_scale_type <- scale_alpha_opt[['notVSd']]
+      alpha_opt_scale_CP <- scale_alpha_opt[['CP']]
     } else if(conc_fresh$VSd > 10E-9){
       alpha_opt_scale_type  <- scale_alpha_opt[['VSd']]
+      alpha_opt_scale_CP <- 1
     }
     
     alpha[names(alpha) != 'urea'] <- scale[['alpha_opt']] * alpha_opt_scale_type * alpha[names(alpha) != 'urea']
+    alpha['CP'] <- alpha_opt_scale_CP * alpha['CP']
     
     # Microbial substrate utilization rate (vectorized calculation)
     qhat <- scale[['qhat_opt']] * CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt)
@@ -160,21 +171,21 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       # H2S inhibition
       H2S_inhib <- NA * qhat
             
-            if(pH >= 6.8){
-              IC50 <- ki_H2S_slope * pH + ki_H2S_int
-            } else {
-              IC50 <- IC50_low
-            } 
-            
-            a <- -0.5/(IC50 - (H2S_frac * ki_H2S_min))
-            x <- H2S_frac * sulfide/(slurry_mass)
-            b <- 1 -(-0.5/(IC50 - (H2S_frac * ki_H2S_min)) * H2S_frac * ki_H2S_min/(slurry_mass))
-            
-            H2S_inhib <- a * x + b
-            H2S_inhib[H2S_inhib < 0] <- 0
-            H2S_inhib[H2S_inhib > 1 ] <- 1
+      if(pH >= 6.8){
+        IC50 <- ki_H2S_slope * pH + ki_H2S_int
+      } else {
+        IC50 <- IC50_low
+      } 
+      
+      a <- -0.5/(IC50 - (H2S_frac * ki_H2S_min))
+      x <- H2S_frac * sulfide/(slurry_mass)
+      b <- 1 -(-0.5/(IC50 - (H2S_frac * ki_H2S_min)) * H2S_frac * ki_H2S_min/(slurry_mass))
+      
+      H2S_inhib <- a * x + b
+      H2S_inhib[H2S_inhib < 0] <- 0
+      H2S_inhib[H2S_inhib > 1 ] <- 1
     
-      }
+    }
     
     cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib * pH_inhib
       
@@ -200,8 +211,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     # Solver is slowed significantly when the slurry_mass is low relative to surface area is low, therefore cut off at 1 mm slurry height
     if(resp & slurry_mass/area >= 1){
-     kl.oxygen <- exp(0.6158816 + 0.09205127 * temp_C) # from own lab experiments (Dalby et al. 2024..unpublished) 
-     respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_resp / slurry_mass) / 100
+      kl.oxygen <- exp(0.6158816 + 0.09205127 * temp_C) # from own lab experiments (Dalby et al. 2024..unpublished) 
+      respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_resp / slurry_mass) / 100
     }
     
     # VFA uptake rates
@@ -229,12 +240,14 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # also calcualtes growth rate of xa_bac and xa_aer, mineralization rates and COD production from fermentation
     
     ferm <- stoich(alpha, y, conc_fresh, sub_resp, respiration)
-    CO2_ferm_meth_sr <- ferm$ferm['CO2'] * 44.01 + sum(rut[i_meth])/ferm$COD_conv_meth_CO2 + sum(rutsr)/ferm$COD_conv_sr_CO2
-    CO2_ferm <- ferm$ferm['CO2'] * 44.01 
+    CO2_ferm_meth_sr <- ferm$ferm[['CO2']] * 44.01 + sum(rut[i_meth])/ferm$COD_conv_meth_CO2[[1]] + sum(rutsr)/ferm$COD_conv_sr_CO2[[1]]
+    CO2_ferm <- ferm$ferm[['CO2']] * 44.01 
     
     # Derivatives, all in gCOD/d except slurry_mass = kg/d, N and S are gN or gS, VSd_A and VSnd_A are g/d
     # NTS: Some of these repeated calculations could be moved up
     # need to implement xa_bac to keep mass balance here: 
+    # We need to include COD_load_rate here and possibly add COD_load_cum as state variable to enable instant output, rather than average. 
+    # See around line 407 in abm()
 
     derivatives <- c(
        xa = scale[['yield']] * yield * rut + scale[['xa_fresh']] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
@@ -264,16 +277,22 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        COD_conv_cum = sum(rut[i_meth]) + respiration + sum(rutsr),
        COD_conv_cum_meth = sum(rut[i_meth]),
        COD_conv_cum_respir = respiration,
-       COD_conv_cum_sr = rutsr
+       COD_conv_cum_sr = rutsr,
+       COD_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd')])) + slurry_prod_rate * sum(xa_fresh * scale[['xa_fresh']]),
+       C_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'urea')])* COD_conv[paste0('C_', c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'RFd', 'iNDF', 'VSd', 'N_urea'))]) + 
+         slurry_prod_rate * sum(xa_fresh * scale[['xa_fresh']] * COD_conv[['C_xa_bac']]),
+       N_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('CP', 'TAN', 'urea')]) * c(COD_conv[['N_CP']], 1, 1)),
+       slurry_load_cum = slurry_prod_rate
      )
 
-    return(list(derivatives, c(H2S_emis_rate = H2S_emis_rate, NH3_emis_rate_pit = NH3_emis_rate_pit,
-                               NH3_emis_rate_floor = NH3_emis_rate_floor,
+    return(list(derivatives, c(COD_load_rate = derivatives[['COD_load_cum']], C_load_rate = derivatives[['C_load_cum']], N_load_rate = derivatives[['N_load_cum']],
+                               CH4_emis_rate = derivatives[['CH4_emis_cum']], CO2_emis_rate = derivatives[['CO2_emis_cum']], 
+                               H2S_emis_rate = H2S_emis_rate, NH3_emis_rate_pit = NH3_emis_rate_pit, NH3_emis_rate_floor = NH3_emis_rate_floor,
+                               N2O_emis_rate = N2O_emis_rate, CH4_A_emis_rate = derivatives[['CH4_A_emis_cum']],
                                qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = ferm[['CO2_resp']],
                                H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib,
                                TAN_min_resp = ferm[['TAN_min_resp']], TAN_min_ferm = ferm[['TAN_min_ferm']], HAC_inhib = HAC_inhib, cum_inhib = cum_inhib, 
                                rut = rut, rut_urea = rut_urea, t_run = t_run, t_batch = t_batch, conc_fresh = conc_fresh, xa_init = xa_init, 
                                xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, t_batch = t_batch, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))
-     })
 }

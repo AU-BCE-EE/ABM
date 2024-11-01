@@ -260,7 +260,6 @@ Dalby, F.R., Hafner, S.D., Ambrose, H.W., Adamsen, A.P.S., 2024. Pig manure degr
 Sommer, S.G, Hafner S.D., Laubach, J., van der Weerden, T.J., Pacholski, A., 2022. Model for calculating ammonia emission from stored animal liquid manure. 
 Biosyst Eng \doi{10.1016/j.biosystemseng.2022.08.007}
 } 
-}
 
 \author{
   Sasha D. Hafner and Frederik R. Dalby

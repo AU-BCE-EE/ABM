@@ -172,7 +172,7 @@ grp_pars_cattle2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                         xa_init = c(all = 0.3),
                         decay_rate = c(all = 0.02),
                         ks_coefficient = c(default = 1.153337, sr1 = 0.461335),
-                        qhat_opt = c(m0 = 0.0444, m1 = 0.01, m2 = 1.59, m3 = 8.0, m4 = 8, m5 = 8, sr1 = 8.95),
+                        qhat_opt = c(m0 = 0.0437, m1 = 0.01, m2 = 1.6184, m3 = 8.0, m4 = 8, m5 = 8, sr1 = 8.95),
                         T_opt = c(m0 = 18, m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55, sr1 = 43.75),
                         T_min = c(m0 = 0, m1 = 0.001, m2 = 0.001, m3 = 15, m4 = 26.25, m5 = 30, sr1 = 0),
                         T_max = c(m0 = 25, m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60, sr1 = 51.25),
@@ -302,9 +302,9 @@ arrh_pars_cattle2.0 <- list(lnA = c(VSd_A = 31.2),
                          E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 9244.93, RFd = 57867, VSd = 81557, urea = 81559),  # CP is for GRA treatment in MILK project
                          R = 8.314,  
                          VS_CH4 = 6.67,
-                         scale_alpha_opt = list(VSd = 0.815577, notVSd = 0.1993, CP = 1.068),
+                         scale_alpha_opt = list(VSd = 0.815577, notVSd = 0.2274, CP = 0.818),
                          kl = c(NH3 = 84.34, NH3_floor = 69.03, H2S = 0.02),
-                         scale_EF_NH3 = 1)
+                         scale_EF_NH3 = 0.0000048)
 
 
 arrh_pars_digestate2.0 <- list(lnA = c(VSd_A = 31.2),

@@ -62,7 +62,6 @@ save(grp_pars2.0, file = '../data/grp_pars2.0.rda')
 save(mic_pars2.0, file = '../data/mic_pars2.0.rda')
 save(man_pars2.0, file = '../data/man_pars2.0.rda')
 save(wthr_pars2.0, file = '../data/wthr_pars2.0.rda')
-save(chem_pars2.0, file = '../data/chem_pars2.0.rda')
 save(arrh_pars2.0, file = '../data/arrh_pars2.0.rda')
 
 # best fit grp_pars for Dalby et al. 2023, EST using VSd as input

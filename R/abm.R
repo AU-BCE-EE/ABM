@@ -37,7 +37,7 @@ abm <- function(
   approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'early'), 
   par_key = '\\.',
   value = 'ts',   # Type of output
-  rates_calc = 'average',# Type of rate output (instantaneuous or average)
+  rates_calc = 'instant',# Type of rate output (instantaneuous or average)
   warn = TRUE) {
 
   # If startup repetitions are requested, repeat some number of times before returning results
@@ -397,10 +397,8 @@ abm <- function(
   dat$N_conc <- N_conc <- dat$Ninorg_conc + dat$Norg_conc
   dat$Ninorg_eff_conc <- Ninorg_eff_conc <- dat$urea_eff_conc + dat$TAN_eff_conc
   dat$N_eff_conc <- Ninorg_eff_conc + dat$CP_eff_conc / pars$COD_conv[['N_CP']] + dat$xa_bac_eff_conc / pars$COD_conv[['N_xa']] + dat$xa_aer_eff_conc / pars$COD_conv[['N_xa']]
-
   
   # And flows in g/d
-  #dat$COD_load_rate <- dat$COD_load_rateconc_fresh * dat$slurry_prod_rate
   dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate
   dat$ndCOD_load_rate <- dat$ndCOD_conc_fresh * dat$slurry_prod_rate
   dat$VS_load_rate <- dat$COD_load_rate / pars$COD_conv[['VS']]

@@ -159,7 +159,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     HAC_inhib <- 1
     H2S_inhib <- 1
     
-    # if pH_inhibiion should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
+
+    # if pH_inhibition should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
+    # inhibition is different for the microbial groups IF the inihibiton constants for are different in the grp_pars argument. 
+    # Therefore the calculations are vectorized. 
     if(pH_inhib_overrule){
             pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
     } else{

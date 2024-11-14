@@ -27,6 +27,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     } else {
       stop('pH problem (xi342)')
     }
+    # Remove name 'pH' that sometimes comes along
+    pH <- as.numeric(pH)
     
     # calculate time of a batch
     if (!is.na(wash_int)){
@@ -153,12 +155,13 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # NTS: or just add H2CO3* here?
     # NTS: need TIC production too
     
-    pH_inhib <- 1
-    NH3_inhib <- 1
-    NH4_inhib <- 1
-    HAC_inhib <- 1
-    H2S_inhib <- 1
-    
+    # Using pH_LL here just to get groups
+    pH_inhib  <- 0 * pH_LL + 1 
+    NH3_inhib <- 0 * pH_LL + 1
+    NH4_inhib <- 0 * pH_LL + 1
+    HAC_inhib <- 0 * pH_LL + 1
+    H2S_inhib <- 0 * pH_LL + 1
+
 
     # if pH_inhibition should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
     # inhibition is different for the microbial groups IF the inihibiton constants for are different in the grp_pars argument. 
@@ -166,11 +169,18 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     if(pH_inhib_overrule){
             pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
     } else{
-      #NH3 and NH4 inhibition      
+      # NH3 and NH4 inhibition      
+      # Where set to 1, is still a vector to keep microbial groups in output (this is why 0 * ... bit is used)
       NH3_inhib <- ifelse(NH3_frac * TAN/slurry_mass <= ki_NH3_min, 1, exp(-2.77259 * ((NH3_frac * (TAN/(slurry_mass)) - ki_NH3_min)/(ki_NH3_max - ki_NH3_min))^2))
       NH4_inhib <- ifelse((1 - NH3_frac) * (TAN/slurry_mass) <= ki_NH4_min, 1, exp(-2.77259*(((1 - NH3_frac) * (TAN/(slurry_mass)) - ki_NH4_min)/(ki_NH4_max - ki_NH4_min))^2))
       # HAC inhibition
-      HAC_inhib <- ifelse(HAC_frac * VFA/slurry_mass >= 0.05, (2-ki_HAC/(ki_HAC+0.05)) * ki_HAC/(ki_HAC + (HAC_frac * VFA/slurry_mass)), 1) 
+      # Set to 1 (no inhibition) but still a vector (below 0.05 g /kg)
+      if (HAC_frac * VFA/slurry_mass >= 0.05) {
+        HAC_inhib <- (2-ki_HAC/(ki_HAC+0.05)) * ki_HAC/(ki_HAC + (HAC_frac * VFA/slurry_mass))
+      } else {
+        HAC_inhib <- 0 * ki_HAC + 1
+      }
+  
       # H2S inhibition
       H2S_inhib <- NA * qhat
             
@@ -203,7 +213,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     NH3_emis_rate_pit <- kl[['NH3']] * area * ((NH3_frac_surf * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
     
     # N2O emission g(N) pr day
-    N2O_emis_rate <- area * EF_N2O # 
+    N2O_emis_rate <- as.numeric(area * EF_N2O) # 
     
     # H2S emission g(S) pr day
     H2S_emis_rate <- kl[['H2S']] * area * ((H2S_frac * sulfide)/(slurry_mass)) * 1000 # multiply by 1000 to get from g/kg to g/m3

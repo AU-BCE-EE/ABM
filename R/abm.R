@@ -45,6 +45,11 @@ abm <- function(
 
     cat('\nStartup run ')
 
+    # Check for conc_init pars in add_pars--this is not compatible with startup
+    if (any(grepl('conc_init', names(add_pars)))) {
+      stop('Simulation has a startup period (startup > 0) and initial concentrations in add_pars.\n  These two options do not work together--see issue #57')
+    }
+
     value.orig <- value
     value <- 'ts'
 

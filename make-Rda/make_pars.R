@@ -249,7 +249,7 @@ arrh_pars_pig2.0 <- list(lnA = c(VSd_A = 31.3),
                          VS_CH4 = 6.67,
                          scale_alpha_opt = list(VSd = 1.19844, notVSd = 2.1146, CP = 1.12),
                          kl = c(NH3 = 106.32, NH3_floor = 25.64, H2S = 0.02),
-                         scale_EF_NH3 = 1)
+                         scale_EF_NH3 = 0.0000048)
 
 arrh_pars_cattle2.0 <- list(lnA = c(VSd_A = 31.2),
                          E_CH4 = c(VSd_A = 81000), 
@@ -264,8 +264,8 @@ arrh_pars_cattle2.0 <- list(lnA = c(VSd_A = 31.2),
 
 arrh_pars_digestate2.0 <- list(lnA = c(VSd_A = 31.2),
                                E_CH4 = c(VSd_A = 81000), 
-                               A = c(xa_dead= 22497134.8, starch = 5.86*10^18, Cfat = 0, CP = 0.435144, RFd = 1.499476 * 10^12, VSd = 22497134.8, urea = 4.38*10^15), 
-                               E = c(xa_dead= 55609, starch = 109400, Cfat = 0, CP = 9244.93, RFd = 81052, VSd = 55609, urea = 81559),  
+                               A = c(xa_dead= 22497134.8, starch = 5.86*10^18, Cfat = 0, CP = 0.435144, RFd = 2.567944 * 10^8, VSd = 22497134.8, urea = 4.38*10^15), 
+                               E = c(xa_dead= 55609, starch = 109400, Cfat = 0, CP = 9244.93, RFd = 57867, VSd = 55609, urea = 81559),
                                R = 8.314,  
                                VS_CH4 = 6.67,
                                scale_alpha_opt = list(VSd = 2.95, notVSd = 1, CP = 1),

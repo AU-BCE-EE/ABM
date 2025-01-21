@@ -247,7 +247,7 @@ arrh_pars_pig2.0 <- list(lnA = c(VSd_A = 28.717),
                          E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                          R = 8.314,  
                          VS_CH4 = 6.67,
-                         scale_alpha_opt = list(VSd = 0.5706, notVSd = 0.1393, CP = 1.05),
+                         scale_alpha_opt = list(VSd = 0.26, notVSd = 0.5706, CP = 1.05),
                          kl = c(NH3 = 66.08, NH3_floor = 25.64, H2S = 0.02),
                          scale_EF_NH3 = 0.0000048)
 

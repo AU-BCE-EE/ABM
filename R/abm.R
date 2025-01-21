@@ -367,6 +367,7 @@ abm <- function(
   ## NTS: Add others, e.g., mu
   # Calculate COD/VS flows
   # First concentrations in g/kg
+
   dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_aer + dat$conc_fresh_xa_bac + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))])
   dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_aer + dat$conc_fresh_xa_bac + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CP + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) + dat$conc_fresh_iNDF
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
@@ -386,6 +387,7 @@ abm <- function(
                 dat$starch_conc / pars$COD_conv[['C_starch']] + dat$CP_conc / pars$COD_conv[['C_CP']] + dat$Cfat_conc / pars$COD_conv[['C_Cfat']] +
                 dat$VSd_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
                 dat$urea_conc / pars$COD_conv[['C_N_urea']]
+  
   dat$C_eff_conc <- dat$VFA_eff_conc / pars$COD_conv[['C_VFA']] + dat$xa_aer_eff_conc / pars$COD_conv[['C_xa']] + dat$xa_bac_eff_conc / pars$COD_conv[['C_xa']] + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_eff_conc / pars$COD_conv[['C_starch']] + dat$CP_eff_conc / pars$COD_conv[['C_CP']] + dat$Cfat_eff_conc / pars$COD_conv[['C_Cfat']] +
                 dat$VSd_eff_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
@@ -395,13 +397,13 @@ abm <- function(
   # specifically the N stored in xa_bac needs to be transfered to the CP pool when it degrades.  
   
   dat$Ninorg_conc_fresh <- dat$conc_fresh_urea + dat$conc_fresh_TAN
-  dat$Norg_conc_fresh <- dat$conc_fresh_CP / pars$COD_conv[['N_CP']] # biomass N not included here, because it is already part of CP.
+  dat$Norg_conc_fresh <- dat$conc_fresh_CP / pars$COD_conv[['CP_N']] + dat$conc_fresh_xa_bac / pars$COD_conv[['N_xa']] + dat$conc_fresh_xa_aer / pars$COD_conv[['N_xa']]# Note that the input CP is typically measured and therefore includes.
   dat$N_conc_fresh <- dat$Ninorg_conc_fresh + dat$Norg_conc_fresh
   dat$Ninorg_conc <- Ninorg_conc <- dat$urea_conc + dat$TAN_conc
-  dat$Norg_conc <- Norg_conc <- dat$CP_conc / pars$COD_conv[['N_CP']] + dat$xa_bac_conc / pars$COD_conv[['N_xa']] + dat$xa_aer_conc / pars$COD_conv[['N_xa']]
+  dat$Norg_conc <- Norg_conc <- dat$CP_conc / pars$COD_conv[['CP_N']] + dat$xa_bac_conc / pars$COD_conv[['N_xa']] + dat$xa_aer_conc / pars$COD_conv[['N_xa']]
   dat$N_conc <- N_conc <- dat$Ninorg_conc + dat$Norg_conc
   dat$Ninorg_eff_conc <- Ninorg_eff_conc <- dat$urea_eff_conc + dat$TAN_eff_conc
-  dat$N_eff_conc <- Ninorg_eff_conc + dat$CP_eff_conc / pars$COD_conv[['N_CP']] + dat$xa_bac_eff_conc / pars$COD_conv[['N_xa']] + dat$xa_aer_eff_conc / pars$COD_conv[['N_xa']]
+  dat$N_eff_conc <- Ninorg_eff_conc + dat$CP_eff_conc / pars$COD_conv[['CP_N']] + dat$xa_bac_eff_conc / pars$COD_conv[['N_xa']] + dat$xa_aer_eff_conc / pars$COD_conv[['N_xa']]
   
   # And flows in g/d
   dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate

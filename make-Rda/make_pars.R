@@ -109,12 +109,12 @@ grp_pars_pig2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
                        xa_init = c(all = 0.06),
                        decay_rate = c(all = 0.02),
                        ks_coefficient = c(default = 1.153337, sr1 = 0.461335),
-                       qhat_opt = c(m0 = 0.005, m1 = 0.04, m2 = 1.1952, m3 = 8, m4 = 8, m5 = 8, sr1 = 8.95),
+                       qhat_opt = c(m0 = 0.469136, m1 = 0.2436, m2 = 1.7171, m3 = 8, m4 = 8, m5 = 8, sr1 = 8.95),
                        T_opt = c(m0 = 18, m1 = 18, m2 = 28, m3 = 36, m4 = 43.75, m5 = 55, sr1 = 43.75),
                        T_min = c(m0 = 0, m1 = 1.07, m2 = 1.07, m3 = 15, m4 = 26.25, m5 = 30, sr1 = 0),
                        T_max = c(m0 = 25, m1 = 25, m2 = 38, m3 = 45, m4 = 51.25, m5 = 60, sr1 = 51.25),
                        ki_NH3_min = c(all = 0.015),
-                       ki_NH3_max = c(all = 3.9823),
+                       ki_NH3_max = c(all = 3.223),
                        ki_NH4_min = c(all = 2.7),
                        ki_NH4_max = c(all = 20.05),
                        ki_H2S_slope = c(default = -0.10623, sr1 = -0.1495),
@@ -237,7 +237,7 @@ for (i in c('starch', 'xa_dead','Cfat','RFd','CP','iNDF')){
 wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
 chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                                   Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.57,
-                                  N_CP = 1/0.1014, C_xa = 1/0.3753125, C_RFd = 1/0.376, C_iNDF = 1/0.358, N_xa = 1/0.08754375,
+                                  CP_N = 1/0.1014, C_xa = 1/0.3753125, C_RFd = 1/0.376, C_iNDF = 1/0.358, N_xa = 1/0.08754375,
                                   C_starch = 1/0.377, C_Cfat = 1/0.265, C_CP = 1/0.359 , C_VFA = 1/0.374, C_VSd = 1/0.344, C_N_urea = 1/0.429,
                                   frac_CP_xa = 0.835, C_xa_aer = 1/0.3753125, C_xa_bac = 1/0.3753125, C_xa_dead = 1/0.3753125))
 
@@ -247,8 +247,8 @@ arrh_pars_pig2.0 <- list(lnA = c(VSd_A = 28.717),
                          E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
                          R = 8.314,  
                          VS_CH4 = 6.67,
-                         scale_alpha_opt = list(VSd = 0.2607, notVSd = 0.1393, CP = 4),
-                         kl = c(NH3 = 106.32, NH3_floor = 25.64, H2S = 0.02),
+                         scale_alpha_opt = list(VSd = 0.5706, notVSd = 0.1393, CP = 1.05),
+                         kl = c(NH3 = 66.08, NH3_floor = 25.64, H2S = 0.02),
                          scale_EF_NH3 = 0.0000048)
 
 arrh_pars_cattle2.0 <- list(lnA = c(VSd_A = 31.2),
@@ -260,7 +260,6 @@ arrh_pars_cattle2.0 <- list(lnA = c(VSd_A = 31.2),
                          scale_alpha_opt = list(VSd = 2.4156, notVSd = 0.571, CP = 0.0486),
                          kl = c(NH3 = 84.34, NH3_floor = 69.03, H2S = 0.02),
                          scale_EF_NH3 = 0.0000048)
-
 
 arrh_pars_digestate2.0 <- list(lnA = c(VSd_A = 31.2),
                                E_CH4 = c(VSd_A = 81000), 

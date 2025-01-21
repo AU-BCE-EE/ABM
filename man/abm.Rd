@@ -155,7 +155,7 @@ abm(days = 365,
     \code{S}, COD-substrate to sulfur (g sulfur/g COD-substrate) ;
     \code{VS}, COD to g volatile solids (g COD/g volatile solids);
     \code{CO2_ureo}, carbon dioxide productivity coefficient for urea hydrolysis (g CO2/g urea-N);
-    \code{N_CP}, nitrogen per COD of crude protein (g N/g CP-COD);
+    \code{CP_N}, crude protein COD per g crude protein N (g CP-COD/g CP-N);
     \code{C_N_urea}, carbon to nitrogen (g C/g urea-N);
     Other conversion factors designated \code{C_} are carbon to COD of the named substrate (gC/gCOD) 
 }

@@ -6,12 +6,13 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     # need to remove slurry mass from parms to not overwrite y['slurry_mass']
     parms$slurry_mass <- NULL
-     
+
     # Put all parameters in parms elements directly in rates environment
     for (pp in names(parms)) {
       assign(pp, parms[[pp]])
     }
-  
+
+    
     # correct slurry production rate in periods with grazing
     suppressWarnings({
     if(!is.null(graze_int) & any(graze_int) != 0) {

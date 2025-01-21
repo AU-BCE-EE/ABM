@@ -69,7 +69,7 @@ abm <- function(
       out <- abm(days = days, delta_t = delta_t, wthr_pars = wthr_pars, evap_pars = evap_pars,
                  mng_pars = mng_pars, man_pars = man_pars, init_pars = init_pars,
                  grp_pars = grp_pars, mic_pars = mic_pars, chem_pars = chem_pars, arrh_pars = arrh_pars,
-                 add_pars = add_pars, pars = pars, 
+                 add_pars = add_pars, pars = pars, anim_pars = anim_pars,
                  startup = 0, 
                  starting = starting, 
                  approx_method = approx_method, 
@@ -109,7 +109,7 @@ abm <- function(
   if (is.null(pars)) { 
     pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
   }
-  
+
   if (!is.null(anim_pars)) {
     pars <- c(wthr_pars, evap_pars, mng_pars, init_pars, chem_pars, mic_pars, anim_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
     warning('Using anim_pars instead of grp_pars, arrh_pars and man_pars')
@@ -144,7 +144,7 @@ abm <- function(
     pe.pars <- split(pe.pars, pnames)
     add_pars <- c(sa.pars, pe.pars)
   }
-
+browser()
   # If any additional parameters were added (or modified) using add_pars, update them in pars list here
   # Needs to work in a case where default is all but e.g., m1 is given in add_pars (see def stuff below)
   grp_par_nms <- names(grp_pars)

@@ -144,7 +144,7 @@ abm <- function(
     pe.pars <- split(pe.pars, pnames)
     add_pars <- c(sa.pars, pe.pars)
   }
-browser()
+
   # If any additional parameters were added (or modified) using add_pars, update them in pars list here
   # Needs to work in a case where default is all but e.g., m1 is given in add_pars (see def stuff below)
   grp_par_nms <- names(grp_pars)

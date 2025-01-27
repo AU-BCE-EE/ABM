@@ -32,6 +32,7 @@ These steps should be carried out once to install both packages:
 install.packages('devtools')
 devtools::install_github('AU-BCE-EE/ABM', build_vignettes = T)
 
+```
 
 And to use the ABM model, the package must be loaded.
 

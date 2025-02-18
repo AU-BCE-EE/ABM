@@ -261,7 +261,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # need to implement xa_bac to keep mass balance here: 
     # We need to include COD_load_rate here and possibly add COD_load_cum as state variable to enable instant output, rather than average. 
     # See around line 407 in abm()
-browser()
+
     derivatives <- c(
        xa = scale[['yield']] * yield * rut + scale[['xa_fresh']] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
        slurry_mass = slurry_prod_rate + (rain - evap) * area,

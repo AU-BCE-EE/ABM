@@ -217,7 +217,7 @@ abm_variable <-
     names(out)[1:length(pars$qhat_opt) + 1] <- names(pars$qhat_opt)
 
     # Extract new state variable vector from last row of lsoda output
-    y <- unlist(out[nrow(out), 1:(length(c(pars$qhat_opt)) + 31) + 1])
+    y <- unlist(out[nrow(out), 1:(length(c(pars$qhat_opt)) + 32) + 1])
 
     # Change time in output to cumulative time for complete simulation
     out$time <- out$time + t_run

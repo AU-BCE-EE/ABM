@@ -2,11 +2,11 @@ stoich <- function(alpha, y, conc_fresh, sub_resp, respiration){
 
 # mole fermented per day: coefficients in the end has unit of mole/gCOD and "mol.carb, mol.pro, mol.lip" is mole/day
 mol.carb <- (alpha['RFd'] * y$RFd + alpha['starch'] * y$starch) * 0.005208333
-mol.pro <- (alpha['CP'] * y$CP) * 0.00748503
+mol.pro <- (alpha['CPs'] * y$CPs + alpha['CPf'] * y$CPf) * 0.00748503
 mol.lip <- (alpha['Cfat'] * y$Cfat) * 0.0004194631
 
 mol.carb_resp <- respiration * (y$RFd + y$starch)/sub_resp * 0.005208333
-mol.pro_resp <- respiration * y$CP/sub_resp * 0.00748503
+mol.pro_resp <- (respiration * y$CPs/sub_resp + respiration * y$CPf/sub_resp)  * 0.00748503
 mol.lip_resp <- respiration * y$Cfat/sub_resp * 0.0004194631
 
 # if VSd is used. based on composition of degradable cattle manure excluding vfa (Appendix 1, ABM paper)

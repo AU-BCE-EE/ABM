@@ -28,7 +28,7 @@ mic_pars2.0 <- list(ks_SO4 = 0.00694,
                     decay_rate_xa = 0.02)
 
 man_pars2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 5.25, 
-                                  VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CP = 21.1, 
+                                  VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CPs = 21.1 * 0.55, CPf =  21.1 * 0.45,
                                   RFd = 25.4, iNDF = 11.3, VSd = 0, VSd_A = 55, VSnd_A = 23.5, ash = 15), 
                     pH = 7, dens = 1000)
 
@@ -36,11 +36,11 @@ wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 
 
 arrh_pars2.0 <- list(lnA = c(VSd_A = 31.3),
                      E_CH4 = c(VSd_A = 81000), 
-                     A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
-                     E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
+                     A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CPs = 1.763612 * 10^12, CPf = 4.10669 * 10^11, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
+                     E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CPs = 87515.5450, CPf = 69361.3, RFd = 81052, VSd = 81557, urea = 81559),  
                      R = 8.314,  
                      VS_CH4 = 6.67,
-                     scale_alpha_opt = list(VSd = 1, notVSd = 1, CP = 1),
+                     scale_alpha_opt = list(VSd = 1, notVSd = 1, CPs = 1),
                      kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02),
                      scale_EF_NH3 = 1)
 
@@ -74,7 +74,7 @@ grp_pars1.0 <- list(grps = c('m0','m1','m2', 'sr1'),
                                pH_LL = c(default = 6.5, sr1 = 5.5))
 
 man_pars1.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 0, 
-                                      VFA = 2, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 0, CP = 0, RFd = 0, iNDF = 0, VSd = 75, 
+                                      VFA = 2, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 0, CPs = 0, CPf = 0, RFd = 0, iNDF = 0, VSd = 75, 
                                       VSd_A = 55, VSnd_A = 22, ash = 15), pH = 7, dens = 1000)
 
 save(grp_pars1.0, file = '../data/grp_pars1.0.rda')
@@ -192,15 +192,15 @@ grp_pars_VS_digestate2.0 <- list(grps = c('m0', 'm1', 'm2', 'm3', 'sr1'),
                                  pH_LL = c(default = 6.5, sr1 = 5.5))
 
 man_pars_pig2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.01, TAN = 0.0, starch = 5.25, 
-                                      VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CP = 21.1, RFd = 25.4, iNDF = 11.3, VSd = 0, 
+                                      VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CPs = 21.1 * 0.55, CPf = 21.1 * 0.45, RFd = 25.4, iNDF = 11.3, VSd = 0, 
                                       VSd_A = 55, VSnd_A = 23.5, ash = 15), pH = 7, dens = 1000)
 
 man_pars_cattle2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 2.116, sulfate = 0.01, TAN = 0.0, starch = 1.4864, 
-                                          VFA = 2.54, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 16.04, CP = 30, RFd = 44.4, iNDF = 21.465, VSd = 0, 
+                                          VFA = 2.54, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 16.04, CPs = 30*0.55, CPf = 30*0.45, RFd = 44.4, iNDF = 21.465, VSd = 0, 
                                           VSd_A = 32.86, VSnd_A = 45.4, ash = 15), pH = 7, dens = 1000)
 
 man_pars_digestate2.0 <- list(conc_fresh = list(sulfide = 0, urea = 0, sulfate = 0, TAN = 3, starch = 0.29, 
-                                             VFA = 0.5, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 3.18, CP = 5.95, RFd = 8.8, iNDF = 21.47, VSd = 0, 
+                                             VFA = 0.5, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 3.18, CPs = 5.95, CPf = 0, RFd = 8.8, iNDF = 21.47, VSd = 0, 
                                              VSd_A = 12.6, VSnd_A = 18.13, ash = 15), pH = 8, dens = 1000)
 
 man_pars_VS_pig2.0 <- man_pars_pig2.0
@@ -209,27 +209,30 @@ man_pars_VS_digestate2.0 <- man_pars_digestate2.0
 
 # pig
 man_pars_VS_pig2.0$conc_fresh['VSd'] <- (man_pars_VS_pig2.0$conc_fresh[['starch']] + man_pars_VS_pig2.0$conc_fresh[['xa_dead']] +
-man_pars_VS_pig2.0$conc_fresh[['Cfat']] + man_pars_VS_pig2.0$conc_fresh[['RFd']] + man_pars_VS_pig2.0$conc_fresh[['CP']] + 
+man_pars_VS_pig2.0$conc_fresh[['Cfat']] + man_pars_VS_pig2.0$conc_fresh[['RFd']] + man_pars_VS_pig2.0$conc_fresh[['CPs']] + 
+man_pars_VS_pig2.0$conc_fresh[['CPf']] +
 man_pars_VS_pig2.0$conc_fresh[['iNDF']]) * 0.7
 
-for (i in c('starch', 'xa_dead','Cfat','RFd','CP','iNDF')){
+for (i in c('starch', 'xa_dead','Cfat','RFd','CPs', 'CPf', 'iNDF')){
   man_pars_VS_pig2.0$conc_fresh[i] <- 0
 }
 
 # cattle
 man_pars_VS_cattle2.0$conc_fresh['VSd'] <- (man_pars_VS_cattle2.0$conc_fresh[['starch']] + man_pars_VS_cattle2.0$conc_fresh[['xa_dead']] +
-man_pars_VS_cattle2.0$conc_fresh[['Cfat']] + man_pars_VS_cattle2.0$conc_fresh[['RFd']] + man_pars_VS_cattle2.0$conc_fresh[['CP']] + 
+man_pars_VS_cattle2.0$conc_fresh[['Cfat']] + man_pars_VS_cattle2.0$conc_fresh[['RFd']] + man_pars_VS_cattle2.0$conc_fresh[['CPs']] + 
+man_pars_VS_cattle2.0$conc_fresh[['CPf']] +  
 man_pars_VS_cattle2.0$conc_fresh[['iNDF']]) * 0.42
 
-for (i in c('starch', 'xa_dead','Cfat','RFd','CP','iNDF')){
+for (i in c('starch', 'xa_dead','Cfat','RFd','CPs', 'CPf', 'iNDF')){
   man_pars_VS_cattle2.0$conc_fresh[i] <- 0
 }
 
 # digestate
 man_pars_VS_digestate2.0$conc_fresh['VSd'] <- (man_pars_VS_digestate2.0$conc_fresh[['starch']] + man_pars_VS_digestate2.0$conc_fresh[['xa_dead']] +
-                                              man_pars_VS_digestate2.0$conc_fresh[['Cfat']] + man_pars_VS_digestate2.0$conc_fresh[['RFd']] + man_pars_VS_digestate2.0$conc_fresh[['CP']])
+                                              man_pars_VS_digestate2.0$conc_fresh[['Cfat']] + man_pars_VS_digestate2.0$conc_fresh[['RFd']] + man_pars_VS_digestate2.0$conc_fresh[['CPs']] +
+                                              man_pars_VS_digestate2.0$conc_fresh[['CPf']])
                                               
-for (i in c('starch', 'xa_dead','Cfat','RFd','CP','iNDF')){
+for (i in c('starch', 'xa_dead','Cfat','RFd','CPs', 'CPf', 'iNDF')){
   man_pars_VS_digestate2.0$conc_fresh[i] <- 0
 }
 
@@ -243,31 +246,31 @@ chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.84
 
 arrh_pars_pig2.0 <- list(lnA = c(VSd_A = 28.717),
                          E_CH4 = c(VSd_A = 78479.55), 
-                         A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CP = 181.8, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
-                         E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CP = 23890, RFd = 81052, VSd = 81557, urea = 81559),  
+                         A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CPs = 1.763612 * 10^12, CPf = 4.10669 * 10^11, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
+                         E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CPs = 87515.5450, CPf = 69361.3, RFd = 81052, VSd = 81557, urea = 81559),  
                          R = 8.314,  
                          VS_CH4 = 6.67,
-                         scale_alpha_opt = list(VSd = 0.26, notVSd = 1, CP = 1),
+                         scale_alpha_opt = list(VSd = 0.26, notVSd = 1, CPs = 1),
                          kl = c(NH3 = 66.08, NH3_floor = 25.64, H2S = 0.02),
                          scale_EF_NH3 = 0.0000048)
 
 arrh_pars_cattle2.0 <- list(lnA = c(VSd_A = 31.2),
                          E_CH4 = c(VSd_A = 81000), 
-                         A = c(xa_dead= 22497134.8, starch = 5.86*10^18, Cfat = 0, CP = 0.435144, RFd = 2.567944 * 10^8, VSd = 22497134.8, urea = 4.38*10^15), 
-                         E = c(xa_dead= 55609, starch = 109400, Cfat = 0, CP = 9244.93, RFd = 57867, VSd = 55609, urea = 81559),  # CP is for GRA treatment in MILK project
+                         A = c(xa_dead= 22497134.8, starch = 5.86*10^18, Cfat = 0, CPs = 1.763612 * 10^12, CPf = 4.10669 * 10^11, RFd = 2.567944 * 10^8, VSd = 22497134.8, urea = 4.38*10^15), 
+                         E = c(xa_dead= 55609, starch = 109400, Cfat = 0, CPs = 87515.5450, CPf = 69361.3, RFd = 57867, VSd = 55609, urea = 81559),  # CP is for GRA treatment in MILK project
                          R = 8.314,  
                          VS_CH4 = 6.67,
-                         scale_alpha_opt = list(VSd = 2.4156, notVSd = 0.32, CP = 0.3),
+                         scale_alpha_opt = list(VSd = 2.4156, notVSd = 0.32, CPs = 0.3),
                          kl = c(NH3 = 84.34, NH3_floor = 69.03, H2S = 0.02),
                          scale_EF_NH3 = 0.0000048)
 
 arrh_pars_digestate2.0 <- list(lnA = c(VSd_A = 31.2),
                                E_CH4 = c(VSd_A = 81000), 
-                               A = c(xa_dead= 22497134.8, starch = 5.86*10^18, Cfat = 0, CP = 0.435144, RFd = 2.567944 * 10^8, VSd = 22497134.8, urea = 4.38*10^15), 
-                               E = c(xa_dead= 55609, starch = 109400, Cfat = 0, CP = 9244.93, RFd = 57867, VSd = 55609, urea = 81559),
+                               A = c(xa_dead= 22497134.8, starch = 5.86*10^18, Cfat = 0, CPs = 1.763612 * 10^12, CPf = 4.10669 * 10^11, RFd = 2.567944 * 10^8, VSd = 22497134.8, urea = 4.38*10^15), 
+                               E = c(xa_dead= 55609, starch = 109400, Cfat = 0, CPs = 87515.5450, CPf = 69361.3, RFd = 57867, VSd = 55609, urea = 81559),
                                R = 8.314,  
                                VS_CH4 = 6.67,
-                               scale_alpha_opt = list(VSd = 2.95, notVSd = 1, CP = 1),
+                               scale_alpha_opt = list(VSd = 2.95, notVSd = 1, CPs = 1),
                                kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02),
                                scale_EF_NH3 = 0.0000048)
 

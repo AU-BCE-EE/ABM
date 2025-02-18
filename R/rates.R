@@ -296,7 +296,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        COD_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CPs', 'CPf', 'RFd', 'iNDF', 'VSd')])) + slurry_prod_rate * sum(xa_fresh * scale[['xa_fresh']]),
        C_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CPs', 'CPf', 'RFd', 'iNDF', 'VSd', 'urea')]) / COD_conv[paste0('C_', c('starch', 'VFA', 'xa_aer', 'xa_bac', 'xa_dead', 'Cfat', 'CP', 'CP', 'RFd', 'iNDF', 'VSd', 'N_urea'))]) + 
          slurry_prod_rate * sum(xa_fresh * scale[['xa_fresh']] / COD_conv[['C_xa_bac']]),
-       N_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('CPs', 'CPf', 'TAN', 'urea')]) / c(COD_conv[['CP_N']], 1, 1)),
+       N_load_cum = slurry_prod_rate * sum(as.numeric(conc_fresh[c('CPs', 'CPf', 'TAN', 'urea')]) / c(COD_conv[['CP_N']], COD_conv[['CP_N']], 1, 1)),
        slurry_load_cum = slurry_prod_rate
      )
 

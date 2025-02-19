@@ -144,13 +144,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     # NTS: Move this all out to a speciation function???
     # Chemical speciation (in rates() because is pH dependent)
-    pH_surf <- pH + 1 # rough approximation from Rotz et al. IFSM 2012., "markfoged" thesis, "Petersen et al. 2014", "bilds?e et al. not published", "Elzing & Aarnik 1998", and own measurements..
-    pH_surf_floor <- 8 # pH of manure on floor is not affected by acidification. Kept at 6.8
-    
+    # rough approximation from Rotz et al. IFSM 2012., "markfoged" thesis, "Petersen et al. 2014", "bilds?e et al. not published", "Elzing & Aarnik 1998", and own measurements..
+
     HAC_frac <- 1-(1/(1 + 10^(-log_ka[['HAC']] - pH)))
-    NH3_frac <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH)))) 
-    NH3_frac_surf <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH_surf))))
-    NH3_frac_floor <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH_surf_floor))))
+    NH3_frac <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH))))
     H2S_frac <- 1 - (1/(1 + 10^(- log_ka[['H2S']] - pH))) # H2S fraction of total sulfide
 
     # NTS: or just add H2CO3* here?
@@ -210,8 +207,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     kl[['NH3']] <- kl[['NH3']] * EF_NH3 
   
     # NH3 emission g(N) pr day
-    NH3_emis_rate_floor <- kl[['NH3_floor']] * floor_area * ((NH3_frac_floor * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
-    NH3_emis_rate_pit <- kl[['NH3']] * area * ((NH3_frac_surf * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
+    NH3_emis_rate_floor <- kl[['NH3_floor']] * floor_area * ((NH3_frac * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
+    NH3_emis_rate_pit <- kl[['NH3']] * area * ((NH3_frac * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
     
     # N2O emission g(N) pr day
     N2O_emis_rate <- as.numeric(area * EF_N2O) # 

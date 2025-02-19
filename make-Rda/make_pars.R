@@ -41,7 +41,7 @@ arrh_pars2.0 <- list(lnA = c(VSd_A = 31.3),
                      R = 8.314,  
                      VS_CH4 = 6.67,
                      scale_alpha_opt = list(VSd = 1, notVSd = 1, CPs = 1),
-                     kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02),
+                     kl = c(NH3 = 30, NH3_floor = 15, H2S = 0.02),
                      scale_EF_NH3 = 1)
 
 save(grp_pars2.0, file = '../data/grp_pars2.0.rda')
@@ -251,7 +251,7 @@ arrh_pars_pig2.0 <- list(lnA = c(VSd_A = 28.717),
                          R = 8.314,  
                          VS_CH4 = 6.67,
                          scale_alpha_opt = list(VSd = 0.26, notVSd = 1, CPs = 1),
-                         kl = c(NH3 = 66.08, NH3_floor = 25.64, H2S = 0.02),
+                         kl = c(NH3 = 30, NH3_floor = 15, H2S = 0.02),
                          scale_EF_NH3 = 0.0000048)
 
 arrh_pars_cattle2.0 <- list(lnA = c(VSd_A = 31.2),
@@ -261,7 +261,7 @@ arrh_pars_cattle2.0 <- list(lnA = c(VSd_A = 31.2),
                          R = 8.314,  
                          VS_CH4 = 6.67,
                          scale_alpha_opt = list(VSd = 2.4156, notVSd = 0.32, CPs = 0.3),
-                         kl = c(NH3 = 84.34, NH3_floor = 69.03, H2S = 0.02),
+                         kl = c(NH3 = 30, NH3_floor = 15, H2S = 0.02),
                          scale_EF_NH3 = 0.0000048)
 
 arrh_pars_digestate2.0 <- list(lnA = c(VSd_A = 31.2),
@@ -271,7 +271,7 @@ arrh_pars_digestate2.0 <- list(lnA = c(VSd_A = 31.2),
                                R = 8.314,  
                                VS_CH4 = 6.67,
                                scale_alpha_opt = list(VSd = 2.95, notVSd = 1, CPs = 1),
-                               kl = c(NH3 = 54, NH3_floor = 23, H2S = 0.02),
+                               kl = c(NH3 = 30, NH3_floor = 15, H2S = 0.02),
                                scale_EF_NH3 = 0.0000048)
 
 pig_pars2.0 <- c(grp_pars_pig2.0, arrh_pars_pig2.0, man_pars_pig2.0)

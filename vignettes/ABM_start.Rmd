@@ -224,7 +224,7 @@ The `mng_pars` argument contains parameters related to management;
 `chem_pars` sets some chemical/physical parameters; 
 `arrh_pars` sets kinetic parameters controlling hydrolysis rates of different organic matter components. 
 Values in `arrh_pars` are used when instead of specifying substrate input as degradable volatile solids, we can specify: 
-crude protein (CP), crude fats (Cfat), residual degradable fiber (RFd), starch and sugars (starch), and even more components. 
+crude protein that is quickly degraded (CPf), crude protein that is slowly degraded (CPs), crude fats (Cfat), residual degradable fiber (RFd), starch and sugars (starch), and even more components. 
 In that case VSd should be set to 0. 
 Values in `init_pars` are the initial concentrations of organic matter components in the storage, which by default is equal to the concentration in the excreted manure, but it can be changed here.  
 

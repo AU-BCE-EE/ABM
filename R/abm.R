@@ -66,7 +66,7 @@ abm <- function(
       }
 
       # Call abm() with arguments given in outside call except for startup and value
-      out <- abm(days = days, delta_t = delta_t, wthr_pars = wthr_pars, evap_pars = evap_pars,
+      out <- abm(days = days, delta_t = delta_t, times = times, wthr_pars = wthr_pars, evap_pars = evap_pars,
                  mng_pars = mng_pars, man_pars = man_pars, init_pars = init_pars,
                  grp_pars = grp_pars, mic_pars = mic_pars, chem_pars = chem_pars, arrh_pars = arrh_pars,
                  add_pars = add_pars, pars = pars, anim_pars = anim_pars,

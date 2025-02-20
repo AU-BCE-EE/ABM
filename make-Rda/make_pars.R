@@ -40,7 +40,7 @@ arrh_pars2.0 <- list(lnA = c(VSd_A = 31.3),
                      E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CPs = 87515.5450, CPf = 69361.3, RFd = 81052, VSd = 81557, urea = 81559),  
                      R = 8.314,  
                      VS_CH4 = 6.67,
-                     scale_alpha_opt = list(VSd = 1, notVSd = 1, CPs = 1),
+                     scale_alpha_opt = list(VSd = 1, notVSd = 1, CP = 1),
                      kl = c(NH3 = 64*8, NH3_floor = 36*8, H2S = 0.02),
                      scale_EF_NH3 = 1)
 

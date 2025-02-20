@@ -30,7 +30,7 @@ These steps should be carried out once to install both packages:
 
 ```{r, eval=FALSE}
 install.packages('devtools')
-devtools::install_github('AU-BCE-EE/ABM', build_vignettes = T)
+devtools::install_github('AU-BCE-EE/ABM', build_vignettes = F)
 
 ```
 
@@ -241,11 +241,11 @@ We can use a different value with `add_pars`.
 
 
 ```{r, fig.height=4, fig.width=6}
-out2a <- abm(365)
-out2b <- abm(365, add_pars = list(slurry_prod_rate = 10000))
+#out2a <- abm(365)
+#out2b <- abm(365, add_pars = list(slurry_prod_rate = 10000))
 
-plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,30000))
-lines(CH4_emis_rate ~ time, data = out2b, col = "red")
+#plot(CH4_emis_rate ~ time, data = out2a, type = 'l', xlab = 'Time (d)', ylab = 'CH4 emis rate (g/day)', ylim = c(0,30000))
+#lines(CH4_emis_rate ~ time, data = out2b, col = "red")
 ```
 
 Of course this approach also works if we have explicitly defined our own `mng_pars` values and then want to modify it in a later call.

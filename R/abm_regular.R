@@ -54,16 +54,21 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
   t_rem <- days
   # Time that has already run
   t_run <- 0
-
+browser()
   # Start the time (emptying) loop
   for (i in 1:n_int) {
 
     # Sort out call duration
     t_call <- t_int[i]
-
+    
     # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
     times <- sort(unique(round(c(seq(0, t_call, by = min(t_rem, delta_t)), t_call), 5)))
-
+    
+    if(!is.null(times)){
+      add_time <- times_regular[times_regular >= min(times) & times_regular <= max(times)]
+      times <- sort(c(times, add_time))
+    }
+    
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
     pars$t_call <- t_call

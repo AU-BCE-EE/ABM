@@ -257,7 +257,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     ferm <- stoich(alpha, y, conc_fresh, sub_resp, respiration)
     CO2_ferm_meth_sr <- ferm$ferm[['CO2']] * 44.01 + sum(rut[i_meth])/ferm$COD_conv_meth_CO2[[1]] + sum(rutsr)/ferm$COD_conv_sr_CO2[[1]]
     CO2_ferm <- ferm$ferm[['CO2']] * 44.01 
-    browser()
+    
     # Derivatives, all in gCOD/d except slurry_mass = kg/d, N and S are gN or gS, VSd_A and VSnd_A are g/d
     # NTS: Some of these repeated calculations could be moved up
     # need to implement xa_bac to keep mass balance here: 

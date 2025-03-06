@@ -143,7 +143,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # Microbial substrate utilization rate (vectorized calculation)
     qhat <- scale[['qhat_opt']] * CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt)
     names(qhat) <- names(qhat_opt)
-    
+    decay_rate <- CTM_cpp(temp_K, 313, 273, 325, decay_rate)
+    if(temp_K > 313) decay_rate <- CTM_cpp(313, 313, 273, 325, decay_rate)
+
     # Ks temperature dependence
     ks <- ks_coefficient * (0.8157 * exp(-0.063 * temp_C)) 
     
@@ -265,11 +267,11 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # See around line 407 in abm()
 
     derivatives <- c(
-       xa = scale[['yield']] * yield * rut + scale[['xa_fresh']] * xa_fresh * slurry_prod_rate - alpha[['xa_dead']] * xa, # expands to multiple elements with element for each mic group
+       xa = scale[['yield']] * yield * rut + scale[['xa_fresh']] * xa_fresh * slurry_prod_rate - decay_rate * xa, # expands to multiple elements with element for each mic group
        slurry_mass = slurry_prod_rate + (rain - evap) * area,
-       xa_aer = slurry_prod_rate * conc_fresh[['xa_aer']] + ferm[['xa_aer_rate']] - alpha[['xa_dead']] * xa_aer,
-       xa_bac = slurry_prod_rate * conc_fresh[['xa_bac']] + ferm[["xa_bac_rate"]] - alpha[['xa_dead']] * xa_bac, # xa_bac_rate is the growth pr day (calculated in stoich function, therefore not necessary to multiply with a yield coeff)
-       xa_dead = slurry_prod_rate * conc_fresh[['xa_dead']] - alpha[['xa_dead']] * xa_dead + sum(decay_rate * xa) + alpha[['xa_dead']] * (xa_bac + xa_aer) * (1 - COD_conv[['frac_CP_xa']]), # the bacteria and methanogen mass excluding nitrogen
+       xa_aer = slurry_prod_rate * conc_fresh[['xa_aer']] + ferm[['xa_aer_rate']] - decay_rate * xa_aer,
+       xa_bac = slurry_prod_rate * conc_fresh[['xa_bac']] + ferm[["xa_bac_rate"]] - decay_rate * xa_bac, # xa_bac_rate is the growth pr day (calculated in stoich function, therefore not necessary to multiply with a yield coeff)
+       xa_dead = slurry_prod_rate * conc_fresh[['xa_dead']] - alpha[['xa_dead']] * xa_dead + sum(decay_rate * xa) + decay_rate * (xa_bac + xa_aer) * (1 - COD_conv[['frac_CP_xa']]), # the bacteria and methanogen mass excluding nitrogen
        RFd = slurry_prod_rate * conc_fresh[['RFd']] - alpha[['RFd']] * RFd - respiration * RFd/sub_resp,
        iNDF = slurry_prod_rate * conc_fresh[['iNDF']],
        ash = slurry_prod_rate * conc_fresh[['ash']],

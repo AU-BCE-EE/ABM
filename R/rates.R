@@ -143,8 +143,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # Microbial substrate utilization rate (vectorized calculation)
     qhat <- scale[['qhat_opt']] * CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt)
     names(qhat) <- names(qhat_opt)
+    
+    # Decay of all microorganisms follow same kinetics with faster decay at higher temp up until 313, at which constant decay of 0.02
     decay_rate <- CTM_cpp(temp_K, 313, 273, 325, decay_rate)
-    if(temp_K > 313) decay_rate <- CTM_cpp(313, 313, 273, 325, decay_rate)
+    if(temp_K > 313) decay_rate <- 0.02
 
     # Ks temperature dependence
     ks <- ks_coefficient * (0.8157 * exp(-0.063 * temp_C)) 

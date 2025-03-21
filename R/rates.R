@@ -144,7 +144,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     NH4_inhib <- 0 * pH_LL + 1
     HAC_inhib <- 0 * pH_LL + 1
     H2S_inhib <- 0 * pH_LL + 1
-browser()
+
 
     # if pH_inhibition should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
     # inhibition is different for the microbial groups IF the inihibiton constants for are different in the grp_pars argument. 
@@ -152,6 +152,7 @@ browser()
     ### logical expression could be faster with CPP
     if(pH_inhib_overrule){
             pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
+            cum_inhib <- pH_inhib
     } else{
       # NH3 and NH4 inhibition      
       # Where set to 1, is still a vector to keep microbial groups in output (this is why 0 * ... bit is used)
@@ -181,12 +182,10 @@ browser()
       H2S_inhib <- a * x + b
       H2S_inhib[H2S_inhib < 0] <- 0
       H2S_inhib[H2S_inhib > 1 ] <- 1
-    
+      
+      cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib
     }
     
-    # MOVE IN to if else above
-    cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib * pH_inhib
-      
     # Henrys constant temp dependency
     H.NH3 <- 1431 * 1.053^(293 - temp_K)
     

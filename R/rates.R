@@ -6,13 +6,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     # need to remove slurry mass from parms to not overwrite y['slurry_mass']
     parms$slurry_mass <- NULL
-    #browser()
+    
+    # all elements in parms exported to current environment
     list2env(parms, envir = environment())
-
-    #Put all parameters in parms elements directly in rates environment
-    #for (pp in names(parms)) {
-    #  assign(pp, parms[[pp]])
-    #}
 
     # correct slurry production rate in periods with grazing
     if(!is.null(graze_int) & any(graze_int != 0)) {
@@ -40,6 +36,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       t_batch <- 0
     }
     
+    ######REMOVE BELOW
     # if urea fresh increase during a batch 
     if (!is.na(slopes[['urea']]) & !is.data.frame(conc_fresh)) {
       start_urea <- conc_fresh[['urea']] - slopes[['urea']] * wash_int/2
@@ -83,7 +80,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
         conc <- xa_fresh_fun[[i]](t + t_run)
         return(conc)
       })
-    } else{
+    } else{# ########## this is not needed
       xa_fresh <- xa_fresh
     }
     
@@ -99,6 +96,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     
     # Find methanogens and sulfate reducers
+    #### replace with GREP instead or use C++
     i_meth <- grepl('^[mp]', names(qhat_opt))
     i_sr <- grepl('^sr', names(qhat_opt))
     n_mic <- length(qhat_opt)
@@ -118,9 +116,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     kH_oxygen <- 0.0013 * exp(1700 * ((1 / temp_K) - (1 / temp_standard))) * 32 * 1000
    
     # Hard-wire NH4+ activity coefficient
+    ####### MOVE OUT OF RATES
     g_NH4 <- 0.7
 
-    # Hydrolysis rate with Arrhenius function or CTM. 
+    # Hydrolysis rate with Arrhenius function cpp. 
     alpha <-  Arrh_func_cpp(A, E, R, temp_K)
     names(alpha) <- names(A)
     
@@ -133,7 +132,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       alpha_opt_scale_type  <- scale_alpha_opt[['VSd']]
       alpha_opt_scale_CPs <- 1
       alpha_opt_scale_CPf <- 1
-      
     }
     
     alpha[names(alpha) != 'urea'] <- scale[['alpha_opt']] * alpha_opt_scale_type * alpha[names(alpha) != 'urea']
@@ -157,6 +155,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     HAC_frac <- 1-(1/(1 + 10^(-log_ka[['HAC']] - pH)))
     NH3_frac <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH))))
+    pH_floor <- 7 # OR MOVE OUT OF RATES
+    NH3_frac_floor <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH_floor))))
+    
     H2S_frac <- 1 - (1/(1 + 10^(- log_ka[['H2S']] - pH))) # H2S fraction of total sulfide
 
     # NTS: or just add H2CO3* here?
@@ -172,7 +173,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     # if pH_inhibition should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
     # inhibition is different for the microbial groups IF the inihibiton constants for are different in the grp_pars argument. 
-    # Therefore the calculations are vectorized. 
+    # Therefore the calculations are vectorized.
+    ### logical expression could be faster with CPP
     if(pH_inhib_overrule){
             pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
     } else{
@@ -214,9 +216,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     # Reduction from cover 
     kl[['NH3']] <- kl[['NH3']] * EF_NH3 
-  
+    
     # NH3 emission g(N) pr day
-    NH3_emis_rate_floor <- kl[['NH3_floor']] * floor_area * ((NH3_frac * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
+    NH3_emis_rate_floor <- kl[['NH3_floor']] * floor_area * ((NH3_frac_floor * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
     NH3_emis_rate_pit <- kl[['NH3']] * area * ((NH3_frac * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
     
     # N2O emission g(N) pr day
@@ -258,6 +260,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # CO2 production from fermentation + methanogenesis + sulfate reduction + aerobic respiration at slurry surface
     # also calcualtes growth rate of xa_bac and xa_aer, mineralization rates and COD production from fermentation
     
+    ### stoich is slow. MOVE to CPP!
     ferm <- stoich(alpha, y, conc_fresh, sub_resp, respiration)
     CO2_ferm_meth_sr <- ferm$ferm[['CO2']] * 44.01 + sum(rut[i_meth])/ferm$COD_conv_meth_CO2[[1]] + sum(rutsr)/ferm$COD_conv_sr_CO2[[1]]
     CO2_ferm <- ferm$ferm[['CO2']] * 44.01 

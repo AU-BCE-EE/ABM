@@ -51,11 +51,41 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// computeInhibition_cpp
+List computeInhibition_cpp(bool pH_inhib_overrule, double pH, double NH3_frac, double HAC_frac, double H2S_frac, double TAN, double VFA, double sulfide, double slurry_mass, NumericVector pH_LL, NumericVector pH_UL, NumericVector ki_NH3_min, NumericVector ki_NH3_max, NumericVector ki_NH4_min, NumericVector ki_NH4_max, NumericVector ki_HAC, NumericVector ki_H2S_slope, NumericVector ki_H2S_int, NumericVector IC50_low);
+RcppExport SEXP _ABM_computeInhibition_cpp(SEXP pH_inhib_overruleSEXP, SEXP pHSEXP, SEXP NH3_fracSEXP, SEXP HAC_fracSEXP, SEXP H2S_fracSEXP, SEXP TANSEXP, SEXP VFASEXP, SEXP sulfideSEXP, SEXP slurry_massSEXP, SEXP pH_LLSEXP, SEXP pH_ULSEXP, SEXP ki_NH3_minSEXP, SEXP ki_NH3_maxSEXP, SEXP ki_NH4_minSEXP, SEXP ki_NH4_maxSEXP, SEXP ki_HACSEXP, SEXP ki_H2S_slopeSEXP, SEXP ki_H2S_intSEXP, SEXP IC50_lowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type pH_inhib_overrule(pH_inhib_overruleSEXP);
+    Rcpp::traits::input_parameter< double >::type pH(pHSEXP);
+    Rcpp::traits::input_parameter< double >::type NH3_frac(NH3_fracSEXP);
+    Rcpp::traits::input_parameter< double >::type HAC_frac(HAC_fracSEXP);
+    Rcpp::traits::input_parameter< double >::type H2S_frac(H2S_fracSEXP);
+    Rcpp::traits::input_parameter< double >::type TAN(TANSEXP);
+    Rcpp::traits::input_parameter< double >::type VFA(VFASEXP);
+    Rcpp::traits::input_parameter< double >::type sulfide(sulfideSEXP);
+    Rcpp::traits::input_parameter< double >::type slurry_mass(slurry_massSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type pH_LL(pH_LLSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type pH_UL(pH_ULSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ki_NH3_min(ki_NH3_minSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ki_NH3_max(ki_NH3_maxSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ki_NH4_min(ki_NH4_minSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ki_NH4_max(ki_NH4_maxSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ki_HAC(ki_HACSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ki_H2S_slope(ki_H2S_slopeSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ki_H2S_int(ki_H2S_intSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type IC50_low(IC50_lowSEXP);
+    rcpp_result_gen = Rcpp::wrap(computeInhibition_cpp(pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, IC50_low));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 4},
     {"_ABM_CTM_cpp", (DL_FUNC) &_ABM_CTM_cpp, 5},
     {"_ABM_grepl_cpp", (DL_FUNC) &_ABM_grepl_cpp, 2},
+    {"_ABM_computeInhibition_cpp", (DL_FUNC) &_ABM_computeInhibition_cpp, 19},
     {NULL, NULL, 0}
 };
 

@@ -10,6 +10,20 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// Arrh_func_cpp
+NumericVector Arrh_func_cpp(NumericVector A, NumericVector E, double R, double temp_K);
+RcppExport SEXP _ABM_Arrh_func_cpp(SEXP ASEXP, SEXP ESEXP, SEXP RSEXP, SEXP temp_KSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type A(ASEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type E(ESEXP);
+    Rcpp::traits::input_parameter< double >::type R(RSEXP);
+    Rcpp::traits::input_parameter< double >::type temp_K(temp_KSEXP);
+    rcpp_result_gen = Rcpp::wrap(Arrh_func_cpp(A, E, R, temp_K));
+    return rcpp_result_gen;
+END_RCPP
+}
 // CTM_cpp
 Rcpp::NumericVector CTM_cpp(Rcpp::NumericVector tt, Rcpp::NumericVector top, Rcpp::NumericVector tmin, Rcpp::NumericVector tmax, Rcpp::NumericVector yopt);
 RcppExport SEXP _ABM_CTM_cpp(SEXP ttSEXP, SEXP topSEXP, SEXP tminSEXP, SEXP tmaxSEXP, SEXP yoptSEXP) {
@@ -27,6 +41,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 4},
     {"_ABM_CTM_cpp", (DL_FUNC) &_ABM_CTM_cpp, 5},
     {NULL, NULL, 0}
 };

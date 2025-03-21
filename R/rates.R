@@ -6,18 +6,19 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     # need to remove slurry mass from parms to not overwrite y['slurry_mass']
     parms$slurry_mass <- NULL
+    #browser()
+    list2env(parms, envir = environment())
 
-    # Put all parameters in parms elements directly in rates environment
-    for (pp in names(parms)) {
-      assign(pp, parms[[pp]])
-    }
+    #Put all parameters in parms elements directly in rates environment
+    #for (pp in names(parms)) {
+    #  assign(pp, parms[[pp]])
+    #}
 
     # correct slurry production rate in periods with grazing
-    suppressWarnings({
-    if(!is.null(graze_int) & any(graze_int) != 0) {
+    if(!is.null(graze_int) & any(graze_int != 0)) {
        slurry_prod_rate <- graze_fun(t,  t_run, days, slurry_prod_rate, graze_int, graze_hours = graze[['hours_day']])
     }
-    })
+
        
     # pH, numeric, variable, or from H2SO4
     if (is.numeric(pH) | is.data.frame(pH)) {
@@ -107,10 +108,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     y <- as.list(y[-c(1:n_mic)])
 
     # Move elements of y into rates environment
-    for (pp in names(y)) {
-      assign(pp, y[[pp]])
-    }
-    
+    list2env(y, envir = environment())
+
     # Hard-wired equilibrium constants
     log_ka <- c(NH3 = - 0.09046 - 2729.31/temp_K, 
                 H2S = - 3448.7/temp_K + 47.479 - 7.5227* log(temp_K),
@@ -122,8 +121,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     g_NH4 <- 0.7
 
     # Hydrolysis rate with Arrhenius function or CTM. 
-    alpha <-  Arrh_func(A, E, R, temp_K)
-
+    alpha <-  Arrh_func_cpp(A, E, R, temp_K)
+    names(alpha) <- names(A)
+    
     if(conc_fresh$VSd <= 10E-9){
       alpha_opt_scale_type <- scale_alpha_opt[['notVSd']]
       alpha_opt_scale_CPs <- scale_alpha_opt[['CP']]

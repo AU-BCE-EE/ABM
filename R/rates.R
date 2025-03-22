@@ -151,9 +151,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     NH3_emis_rate_floor <- kl[['NH3_floor']] * floor_area * ((NH3_frac_floor * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
     NH3_emis_rate_pit <- kl[['NH3']] * area * ((NH3_frac * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
     
-    # N2O emission g(N) pr day
-    N2O_emis_rate <- as.numeric(area * EF_N2O) # 
-    
     # H2S emission g(S) pr day
     H2S_emis_rate <- kl[['H2S']] * area * ((H2S_frac * sulfide)/(slurry_mass)) * 1000 # multiply by 1000 to get from g/kg to g/m3
 

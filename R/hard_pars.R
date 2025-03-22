@@ -28,6 +28,9 @@ hard_pars <- function(pars){
   
   pars$kl[['NH3']] <- pars$kl[['NH3']] * pars$EF_NH3 
   
+  # N2O emission g(N) pr day
+  pars$N2O_emis_rate <- as.numeric(pars$area * pars$EF_N2O)
+  
   # calculations moved from stoich to here to speed up model
   pars$carb <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
                  NH3 = -0.1400892, H2O = -2.3396911, C5H7O2N = 0.1400892,

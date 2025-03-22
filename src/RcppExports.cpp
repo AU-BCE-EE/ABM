@@ -81,12 +81,55 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rut_rates_cpp
+List rut_rates_cpp(double temp_K, double temp_C, double temp_standard, double slurry_mass, double area, double floor_area, double NH3_frac, double NH3_frac_floor, double TAN, double H2S_frac, double sulfide, double Cfat, double CPs, double CPf, double RFd, double starch, double VSd, bool resp, List kl, NumericVector qhat, NumericVector i_meth, NumericVector i_sr, NumericVector xa, double VFA, double scale_ks, NumericVector ks, double ks_SO4, double sulfate, NumericVector cum_inhib, double urea, double alpha_urea, double km_urea);
+RcppExport SEXP _ABM_rut_rates_cpp(SEXP temp_KSEXP, SEXP temp_CSEXP, SEXP temp_standardSEXP, SEXP slurry_massSEXP, SEXP areaSEXP, SEXP floor_areaSEXP, SEXP NH3_fracSEXP, SEXP NH3_frac_floorSEXP, SEXP TANSEXP, SEXP H2S_fracSEXP, SEXP sulfideSEXP, SEXP CfatSEXP, SEXP CPsSEXP, SEXP CPfSEXP, SEXP RFdSEXP, SEXP starchSEXP, SEXP VSdSEXP, SEXP respSEXP, SEXP klSEXP, SEXP qhatSEXP, SEXP i_methSEXP, SEXP i_srSEXP, SEXP xaSEXP, SEXP VFASEXP, SEXP scale_ksSEXP, SEXP ksSEXP, SEXP ks_SO4SEXP, SEXP sulfateSEXP, SEXP cum_inhibSEXP, SEXP ureaSEXP, SEXP alpha_ureaSEXP, SEXP km_ureaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type temp_K(temp_KSEXP);
+    Rcpp::traits::input_parameter< double >::type temp_C(temp_CSEXP);
+    Rcpp::traits::input_parameter< double >::type temp_standard(temp_standardSEXP);
+    Rcpp::traits::input_parameter< double >::type slurry_mass(slurry_massSEXP);
+    Rcpp::traits::input_parameter< double >::type area(areaSEXP);
+    Rcpp::traits::input_parameter< double >::type floor_area(floor_areaSEXP);
+    Rcpp::traits::input_parameter< double >::type NH3_frac(NH3_fracSEXP);
+    Rcpp::traits::input_parameter< double >::type NH3_frac_floor(NH3_frac_floorSEXP);
+    Rcpp::traits::input_parameter< double >::type TAN(TANSEXP);
+    Rcpp::traits::input_parameter< double >::type H2S_frac(H2S_fracSEXP);
+    Rcpp::traits::input_parameter< double >::type sulfide(sulfideSEXP);
+    Rcpp::traits::input_parameter< double >::type Cfat(CfatSEXP);
+    Rcpp::traits::input_parameter< double >::type CPs(CPsSEXP);
+    Rcpp::traits::input_parameter< double >::type CPf(CPfSEXP);
+    Rcpp::traits::input_parameter< double >::type RFd(RFdSEXP);
+    Rcpp::traits::input_parameter< double >::type starch(starchSEXP);
+    Rcpp::traits::input_parameter< double >::type VSd(VSdSEXP);
+    Rcpp::traits::input_parameter< bool >::type resp(respSEXP);
+    Rcpp::traits::input_parameter< List >::type kl(klSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type qhat(qhatSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type i_meth(i_methSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type i_sr(i_srSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xa(xaSEXP);
+    Rcpp::traits::input_parameter< double >::type VFA(VFASEXP);
+    Rcpp::traits::input_parameter< double >::type scale_ks(scale_ksSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ks(ksSEXP);
+    Rcpp::traits::input_parameter< double >::type ks_SO4(ks_SO4SEXP);
+    Rcpp::traits::input_parameter< double >::type sulfate(sulfateSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cum_inhib(cum_inhibSEXP);
+    Rcpp::traits::input_parameter< double >::type urea(ureaSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_urea(alpha_ureaSEXP);
+    Rcpp::traits::input_parameter< double >::type km_urea(km_ureaSEXP);
+    rcpp_result_gen = Rcpp::wrap(rut_rates_cpp(temp_K, temp_C, temp_standard, slurry_mass, area, floor_area, NH3_frac, NH3_frac_floor, TAN, H2S_frac, sulfide, Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, qhat, i_meth, i_sr, xa, VFA, scale_ks, ks, ks_SO4, sulfate, cum_inhib, urea, alpha_urea, km_urea));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 4},
     {"_ABM_CTM_cpp", (DL_FUNC) &_ABM_CTM_cpp, 5},
     {"_ABM_grepl_cpp", (DL_FUNC) &_ABM_grepl_cpp, 2},
     {"_ABM_inhib_cpp", (DL_FUNC) &_ABM_inhib_cpp, 20},
+    {"_ABM_rut_rates_cpp", (DL_FUNC) &_ABM_rut_rates_cpp, 32},
     {NULL, NULL, 0}
 };
 

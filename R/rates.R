@@ -74,8 +74,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     log_ka <- c(NH3 = - 0.09046 - 2729.31/temp_K, 
                 H2S = - 3448.7/temp_K + 47.479 - 7.5227* log(temp_K),
                 HAC = -4.8288 + 21.42/temp_K)
-    
-    kH_oxygen <- 0.0013 * exp(1700 * ((1 / temp_K) - (1 / temp_standard))) * 32 * 1000
 
     # Hydrolysis rate with Arrhenius function cpp. 
     alpha <-  Arrh_func_cpp(A, E, R, temp_K)
@@ -104,64 +102,22 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     H2S_frac <- 1 - (1/(1 + 10^(- log_ka[['H2S']] - pH))) # H2S fraction of total sulfide
 
     # if pH_inhibition should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
-    # inhibition is different for the microbial groups IF the inihibiton constants for are different in the grp_pars argument. 
+    # inhibition is different for the microbial groups IF the inhibiton constants for are different in the grp_pars argument. 
     # Therefore the calculations are vectorized.
-    ### logical expression could be faster with CPP. Maybe not?
-    if(pH_inhib_overrule){
-       pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
-       cum_inhib <- pH_inhib
-    } else{
-      # NH3 and NH4 inhibition      
-      # Where set to 1, is still a vector to keep microbial groups in output (this is why 0 * ... bit is used)
-      NH3_inhib <- ifelse(NH3_frac * TAN/slurry_mass <= ki_NH3_min, 1, exp(-2.77259 * ((NH3_frac * (TAN/(slurry_mass)) - ki_NH3_min)/(ki_NH3_max - ki_NH3_min))^2))
-      NH4_inhib <- ifelse((1 - NH3_frac) * (TAN/slurry_mass) <= ki_NH4_min, 1, exp(-2.77259*(((1 - NH3_frac) * (TAN/(slurry_mass)) - ki_NH4_min)/(ki_NH4_max - ki_NH4_min))^2))
-      # HAC inhibition
-      # Set to 1 (no inhibition) but still a vector (below 0.05 g /kg)
-      if (HAC_frac * VFA/slurry_mass >= 0.05) {
-        HAC_inhib <- (2-ki_HAC/(ki_HAC+0.05)) * ki_HAC/(ki_HAC + (HAC_frac * VFA/slurry_mass))
-      } else {
-        HAC_inhib <- 0 * ki_HAC + 1
-      }
-  
-      # H2S inhibition. SIMPLIFY
-      H2S_inhib <- NA * qhat
-            
-      if(pH >= 6.8){
-        IC50 <- ki_H2S_slope * pH + ki_H2S_int
-      } else {
-        IC50 <- IC50_low
-      } 
-      
-      a <- -0.5/(IC50 - (H2S_frac * ki_H2S_min))
-      x <- H2S_frac * sulfide/(slurry_mass)
-      b <- 1 -(-0.5/(IC50 - (H2S_frac * ki_H2S_min)) * H2S_frac * ki_H2S_min/(slurry_mass))
-      
-      H2S_inhib <- a * x + b
-      H2S_inhib[H2S_inhib < 0 ] <- 0
-      H2S_inhib[H2S_inhib > 1 ] <- 1
-    
-      cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib
-    }
+    cum_inhib <- inhib_cpp(pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac,
+                        TAN, VFA, sulfide, slurry_mass,
+                        pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max,
+                        ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low)$cum_inhib
 
     # Henrys constant temp dependency
-    H.NH3 <- 1431 * 1.053^(293 - temp_K)
+    rut_rates <- rut_rates_cpp(
+      temp_K, temp_C, temp_standard, slurry_mass, area, floor_area, 
+      NH3_frac, NH3_frac_floor, TAN, H2S_frac, sulfide, 
+      Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, 
+      qhat, i_meth, i_sr, xa, VFA, scale_ks = scale[['ks_coefficient']], 
+      ks, ks_SO4, sulfate, cum_inhib, urea, alpha_urea = alpha[['urea']], km_urea)
     
-    # NH3 emission g(N) pr day
-    NH3_emis_rate_floor <- kl[['NH3_floor']] * floor_area * ((NH3_frac_floor * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
-    NH3_emis_rate_pit <- kl[['NH3']] * area * ((NH3_frac * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3
-    
-    # H2S emission g(S) pr day
-    H2S_emis_rate <- kl[['H2S']] * area * ((H2S_frac * sulfide)/(slurry_mass)) * 1000 # multiply by 1000 to get from g/kg to g/m3
-
-    # Respiration gCOD/d, second-order reaction where kl applies for substrate concentration of 100 g COD / kg slurry
-    respiration <- 0
-    sub_resp <- Cfat + CPs + CPf + RFd + starch + VSd 
-
-    if(resp & slurry_mass/area >= 1){
-      kl.oxygen <- exp(0.6158816 + 0.09205127 * temp_C) # from own lab experiments (Dalby et al. 2024..unpublished) 
-      respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_resp / slurry_mass) / 100
-    }
-
+browser() # unpack rut_rates before derivatives.
     # VFA consumption rate by sulfate reducers (g/d) affected by inhibition terms
     rut[i_sr] <- ((qhat[i_sr] * VFA / (slurry_mass) * xa[i_sr] / (slurry_mass) / (scale[['ks_coefficient']] * ks[i_sr] + VFA / (slurry_mass))) * (slurry_mass) *
                     (sulfate / (slurry_mass)) / (ks_SO4 + sulfate / (slurry_mass))) * cum_inhib[i_sr]
@@ -239,8 +195,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                                H2S_emis_rate = H2S_emis_rate, NH3_emis_rate_pit = NH3_emis_rate_pit, NH3_emis_rate_floor = NH3_emis_rate_floor,
                                N2O_emis_rate = N2O_emis_rate, CH4_A_emis_rate = derivatives[['CH4_A_emis_cum']],
                                qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = ferm[['CO2_resp']],
-                               H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib,
-                               TAN_min_resp = ferm[['TAN_min_resp']], TAN_min_ferm = ferm[['TAN_min_ferm']], HAC_inhib = HAC_inhib, cum_inhib = cum_inhib, 
+                               H2S_inhib = inhibs["H2S_inhib"], NH3_inhib = inhibs["NH3_inhib"], NH4_inhib = inhibs["NH4_inhib"],
+                               TAN_min_resp = ferm[['TAN_min_resp']], TAN_min_ferm = ferm[['TAN_min_ferm']], HAC_inhib = inhibs["HAC_inhib"], cum_inhib = cum_inhib, 
                                rut = rut, rut_urea = rut_urea, t_run = t_run, conc_fresh = conc_fresh, xa_init = xa_init, 
                                xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))

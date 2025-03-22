@@ -103,21 +103,14 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     NH3_frac <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH))))
     NH3_frac_floor <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH_floor))))
     H2S_frac <- 1 - (1/(1 + 10^(- log_ka[['H2S']] - pH))) # H2S fraction of total sulfide
-    
-    # Using pH_LL here just to get groups. Need to be here, cause they are all returned from rates.
-    pH_inhib  <- 0 * pH_LL + 1 
-    NH3_inhib <- 0 * pH_LL + 1
-    NH4_inhib <- 0 * pH_LL + 1
-    HAC_inhib <- 0 * pH_LL + 1
-    H2S_inhib <- 0 * pH_LL + 1
 
     # if pH_inhibition should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
     # inhibition is different for the microbial groups IF the inihibiton constants for are different in the grp_pars argument. 
     # Therefore the calculations are vectorized.
     ### logical expression could be faster with CPP
     if(pH_inhib_overrule){
-            pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
-            cum_inhib <- pH_inhib
+       pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
+       cum_inhib <- pH_inhib
     } else{
       # NH3 and NH4 inhibition      
       # Where set to 1, is still a vector to keep microbial groups in output (this is why 0 * ... bit is used)
@@ -151,12 +144,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib
     }
 
-      
     # Henrys constant temp dependency
     H.NH3 <- 1431 * 1.053^(293 - temp_K)
-    
-    # Reduction from cover 
-    kl[['NH3']] <- kl[['NH3']] * EF_NH3 
     
     # NH3 emission g(N) pr day
     NH3_emis_rate_floor <- kl[['NH3_floor']] * floor_area * ((NH3_frac_floor * TAN)/(slurry_mass)) * 1000 / H.NH3 # multiply by 1000 to get from g/kg to g/m3

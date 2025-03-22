@@ -317,6 +317,14 @@ abm <- function(
     pars$alpha_opt_scale_CPf <- 1
   }
   
+  pars$pH_inhib  <- 0 * pH_LL + 1 
+  pars$NH3_inhib <- 0 * pH_LL + 1
+  pars$NH4_inhib <- 0 * pH_LL + 1
+  pars$HAC_inhib <- 0 * pH_LL + 1
+  pars$H2S_inhib <- 0 * pH_LL + 1
+  
+  pars$kl[['NH3']] <- pars$kl[['NH3']] * pars$EF_NH3 
+  
   # calculations moved from stoich to here to speed up model
   pars$carb <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
             NH3 = -0.1400892, H2O = -2.3396911, C5H7O2N = 0.1400892,

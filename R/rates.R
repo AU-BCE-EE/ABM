@@ -55,10 +55,9 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
         conc <- xa_fresh_fun[[i]](t + t_run)
         return(conc)
       })
+      names(xa_fresh) <- grps
     }
-    
-    names(xa_fresh) <- grps
-    
+
     #temp functions
     # CPP interpolation func?
     temp_C <- temp_C_fun(t + t_run)
@@ -107,7 +106,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # if pH_inhibition should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
     # inhibition is different for the microbial groups IF the inihibiton constants for are different in the grp_pars argument. 
     # Therefore the calculations are vectorized.
-    ### logical expression could be faster with CPP
+    ### logical expression could be faster with CPP. Maybe not?
     if(pH_inhib_overrule){
        pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
        cum_inhib <- pH_inhib

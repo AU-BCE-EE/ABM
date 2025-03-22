@@ -82,17 +82,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     alpha <-  Arrh_func_cpp(A, E, R, temp_K)
     names(alpha) <- names(A)
     
-    if(conc_fresh$VSd <= 10E-9){
-      alpha_opt_scale_type <- scale_alpha_opt[['notVSd']]
-      alpha_opt_scale_CPs <- scale_alpha_opt[['CP']]
-      alpha_opt_scale_CPf <- scale_alpha_opt[['CP']]
-      
-    } else if(conc_fresh$VSd > 10E-9){
-      alpha_opt_scale_type  <- scale_alpha_opt[['VSd']]
-      alpha_opt_scale_CPs <- 1
-      alpha_opt_scale_CPf <- 1
-    }
-    
     alpha[names(alpha) != 'urea'] <- scale[['alpha_opt']] * alpha_opt_scale_type * alpha[names(alpha) != 'urea']
     alpha['CPs'] <- alpha_opt_scale_CPs * alpha['CPs']
     alpha['CPf'] <- alpha_opt_scale_CPf * alpha['CPf']
@@ -187,10 +176,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       kl.oxygen <- exp(0.6158816 + 0.09205127 * temp_C) # from own lab experiments (Dalby et al. 2024..unpublished) 
       respiration <- kl.oxygen * area * ((kH_oxygen * 0.208) - 0) * (sub_resp / slurry_mass) / 100
     }
-    
-    # VFA uptake rates
-    rut <- NA * qhat
-    
+
     # VFA consumption rate by sulfate reducers (g/d) affected by inhibition terms
     rut[i_sr] <- ((qhat[i_sr] * VFA / (slurry_mass) * xa[i_sr] / (slurry_mass) / (scale[['ks_coefficient']] * ks[i_sr] + VFA / (slurry_mass))) * (slurry_mass) *
                     (sulfate / (slurry_mass)) / (ks_SO4 + sulfate / (slurry_mass))) * cum_inhib[i_sr]
@@ -212,8 +198,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # CO2 production from fermentation + methanogenesis + sulfate reduction + aerobic respiration at slurry surface
     # also calcualtes growth rate of xa_bac and xa_aer, mineralization rates and COD production from fermentation
     
-    ### stoich is slow. MOVE to CPP!
-    ferm <- stoich(alpha, y, conc_fresh, sub_resp, respiration)
+    ### stoich is slow. MOVE to CPP? modified for less calculations inside now.
+    ferm <- stoich(alpha, y, conc_fresh, sub_resp, respiration,
+                   carb, pro, lip, carb_resp, pro_resp, lip_resp, ace, hyd,
+                   ace_sr, hyd_sr)
     CO2_ferm_meth_sr <- ferm$ferm[['CO2']] * 44.01 + sum(rut[i_meth])/ferm$COD_conv_meth_CO2[[1]] + sum(rutsr)/ferm$COD_conv_sr_CO2[[1]]
     CO2_ferm <- ferm$ferm[['CO2']] * 44.01 
     

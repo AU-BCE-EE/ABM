@@ -26,15 +26,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # Remove name 'pH' that sometimes comes along
     pH <- as.numeric(pH)
     
-    # calculate time of a batch. REMOVE FROM RATES TO OUTSIDE.
-    if (!is.na(wash_int)){
-      batches <- c(floor((t + t_run)/(wash_int + rest_d)))
-      t_batch <- (t + t_run) - batches * (wash_int + rest_d)
-      if (t_batch > wash_int) t_batch <- 0
-    } else {
-      t_batch <- 0
-    }
-    
     # For time-variable fresh concentrations, need to use function to get fresh concentrations at particular time
     if(is.data.frame(conc_fresh)){
       conc_fresh <- list()
@@ -73,7 +64,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     temp_C <- temp_C_fun(t + t_run)
     temp_K <- temp_C + 273.15
 
-    
     # Find methanogens and sulfate reducers
     #### replace with GREP instead or use C++. C++ not faster :/ 
     i_meth <- grepl('^[mp]', names(qhat_opt))
@@ -124,21 +114,14 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # Ks temperature dependence
     ks <- ks_coefficient * (0.8157 * exp(-0.063 * temp_C)) 
     
-    # NTS: Move this all out to a speciation function???
-    # Chemical speciation (in rates() because is pH dependent)
     # rough approximation from Rotz et al. IFSM 2012., "markfoged" thesis, "Petersen et al. 2014", "bilds?e et al. not published", "Elzing & Aarnik 1998", and own measurements..
 
     HAC_frac <- 1-(1/(1 + 10^(-log_ka[['HAC']] - pH)))
     NH3_frac <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH))))
-    pH_floor <- 7 # OR MOVE OUT OF RATES
     NH3_frac_floor <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH_floor))))
-    
     H2S_frac <- 1 - (1/(1 + 10^(- log_ka[['H2S']] - pH))) # H2S fraction of total sulfide
-
-    # NTS: or just add H2CO3* here?
-    # NTS: need TIC production too
     
-    # Using pH_LL here just to get groups. MOVE INTO IFELSE (maybe)
+    # Using pH_LL here just to get groups. Need to be here, cause they are all returned from rates.
     pH_inhib  <- 0 * pH_LL + 1 
     NH3_inhib <- 0 * pH_LL + 1
     NH4_inhib <- 0 * pH_LL + 1
@@ -179,7 +162,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       b <- 1 -(-0.5/(IC50 - (H2S_frac * ki_H2S_min)) * H2S_frac * ki_H2S_min/(slurry_mass))
       
       H2S_inhib <- a * x + b
-      H2S_inhib[H2S_inhib < 0] <- 0
+      H2S_inhib[H2S_inhib < 0 ] <- 0
       H2S_inhib[H2S_inhib > 1 ] <- 1
     
       cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib
@@ -291,8 +274,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                                qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = ferm[['CO2_resp']],
                                H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib,
                                TAN_min_resp = ferm[['TAN_min_resp']], TAN_min_ferm = ferm[['TAN_min_ferm']], HAC_inhib = HAC_inhib, cum_inhib = cum_inhib, 
-                               rut = rut, rut_urea = rut_urea, t_run = t_run, t_batch = t_batch, conc_fresh = conc_fresh, xa_init = xa_init, 
-                               xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, t_batch = t_batch, slurry_prod_rate = slurry_prod_rate,
+                               rut = rut, rut_urea = rut_urea, t_run = t_run, conc_fresh = conc_fresh, xa_init = xa_init, 
+                               xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))
    
 }

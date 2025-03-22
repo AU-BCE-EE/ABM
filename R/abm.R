@@ -298,6 +298,7 @@ abm <- function(
   pars$g_NH4 <- 0.7
   pars$temp_standard <- 298
   pars$temp_zero <- 273
+  pars$pH_floor <- 7
   
   
   if (is.numeric(pars$slurry_mass)) {

@@ -4,7 +4,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List computeInhibition_cpp(
+List inhib_cpp(
     bool pH_inhib_overrule,  // Single TRUE/FALSE
     double pH, double NH3_frac, double HAC_frac, double H2S_frac,
     double TAN, double VFA, double sulfide, double slurry_mass,
@@ -12,7 +12,8 @@ List computeInhibition_cpp(
     NumericVector ki_NH3_min, NumericVector ki_NH3_max,
     NumericVector ki_NH4_min, NumericVector ki_NH4_max,
     NumericVector ki_HAC, NumericVector ki_H2S_slope, 
-    NumericVector ki_H2S_int, NumericVector IC50_low
+    NumericVector ki_H2S_int, NumericVector ki_H2S_min,
+    NumericVector IC50_low
 ) {
   int n = pH_LL.size();  // Number of microbial groups
   
@@ -47,10 +48,11 @@ List computeInhibition_cpp(
       ((2 - ki_HAC[i] / (ki_HAC[i] + 0.05)) * ki_HAC[i] / (ki_HAC[i] + HAC_conc)) : 
         1.0;
       
-      // H2S inhibition
+      // H2S inhibitionki_H2S_min
       double IC50 = (pH >= 6.8) ? (ki_H2S_slope[i] * pH + ki_H2S_int[i]) : IC50_low[i];
-      double a = -0.5 / (IC50 - (H2S_frac * ki_H2S_slope[i]));
-      double b = 1 - (a * H2S_frac * ki_H2S_slope[i]);
+      double a = -0.5 / (IC50 - (H2S_frac * ki_H2S_min[i]));
+      double b = 1 - (-0.5 / (IC50 - (H2S_frac * ki_H2S_min[i])) * H2S_frac * ki_H2S_min[i] / slurry_mass);
+    
       H2S_inhib[i] = a * x + b;
       H2S_inhib[i] = std::max(0.0, std::min(1.0, H2S_inhib[i]));  // Clamp between 0 and 1
       

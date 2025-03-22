@@ -13,7 +13,7 @@ grepl_cpp <- function(pattern, x) {
     .Call('_ABM_grepl_cpp', PACKAGE = 'ABM', pattern, x)
 }
 
-computeInhibition_cpp <- function(pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, IC50_low) {
-    .Call('_ABM_computeInhibition_cpp', PACKAGE = 'ABM', pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, IC50_low)
+inhib_cpp <- function(pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low) {
+    .Call('_ABM_inhib_cpp', PACKAGE = 'ABM', pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low)
 }
 

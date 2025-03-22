@@ -299,7 +299,9 @@ abm <- function(
   pars$temp_standard <- 298
   pars$temp_zero <- 273
   pars$pH_floor <- 7
-  
+  pars$i_meth <- grepl('^[mp]', names(pars$qhat_opt))
+  pars$i_sr <- grepl('^sr', names(pars$qhat_opt))
+  pars$n_mic <- length(pars$qhat_opt)
   
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule

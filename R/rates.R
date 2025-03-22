@@ -64,12 +64,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     temp_C <- temp_C_fun(t + t_run)
     temp_K <- temp_C + 273.15
 
-    # Find methanogens and sulfate reducers
-    #### replace with GREP instead or use C++. C++ not faster :/ 
-    i_meth <- grepl('^[mp]', names(qhat_opt))
-    i_sr <- grepl('^sr', names(qhat_opt))
-    n_mic <- length(qhat_opt)
-    
     # Extract state variable values from y argument
     xa <- y[1:n_mic]
     y <- as.list(y[-c(1:n_mic)])

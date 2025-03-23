@@ -41,13 +41,14 @@ List rut_rates_cpp(double temp_K, double temp_C, double temp_standard, double sl
   int n = qhat.size();
   
   NumericVector rut(n);
-  
+  // VFA consumption rate by sulfate reducers (g/d) affected by inhibition terms
   for (int i = 0; i < i_sr.size(); ++i) {
     int idx_sr = i_sr[i] - 1;  // Convert from 1-based to 0-based index
       rut[idx_sr] = ((qhat[idx_sr] * VFA / slurry_mass * xa[idx_sr] / slurry_mass / (scale_ks * ks[idx_sr] + VFA / slurry_mass)) * slurry_mass *
         (sulfate / slurry_mass) / (ks_SO4 + sulfate / slurry_mass)) * cum_inhib[idx_sr];
   }
   
+  // VFA consumption rate by methanogen groups (g/d) affected by inhibition terms
   for(int i = 0; i < i_meth.size(); ++i) {
     int idx = i_meth[i] - 1;
       rut[idx] = ((qhat[idx] * VFA / (slurry_mass) * xa[idx] / (slurry_mass)) / (scale_ks * ks[idx] + VFA / (slurry_mass)) * 
@@ -70,7 +71,7 @@ List rut_rates_cpp(double temp_K, double temp_C, double temp_standard, double sl
   if (std::any_of(rut.begin(), rut.end(), [](double val) { return val < 0; })) {
     Rcpp::stop("In rates() function rut < 0 or otherwise strange. Check qhat parameters (92gg7)");
   }
-  
+  // urea hydrolysis by Michaelis Menten
   double rut_urea = (alpha_urea * urea) / (km_urea + urea/slurry_mass);
   
   return List::create(Named("NH3_emis_rate_floor") = NH3_emis_rate_floor,
@@ -79,6 +80,7 @@ List rut_rates_cpp(double temp_K, double temp_C, double temp_standard, double sl
                       Named("respiration") = respiration,
                       Named("sub_resp") = sub_resp,
                       Named("rut_urea") = rut_urea,
-                      Named("rut") = rut
-                      );
+                      Named("rut") = rut,
+                      Named("rutsr") = rutsr);
+                      
 }

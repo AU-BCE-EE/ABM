@@ -81,6 +81,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// numericToEnv
+void numericToEnv(NumericVector y, Environment env, int n_mic);
+RcppExport SEXP _ABM_numericToEnv(SEXP ySEXP, SEXP envSEXP, SEXP n_micSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< Environment >::type env(envSEXP);
+    Rcpp::traits::input_parameter< int >::type n_mic(n_micSEXP);
+    numericToEnv(y, env, n_mic);
+    return R_NilValue;
+END_RCPP
+}
 // rut_rates_cpp
 List rut_rates_cpp(double temp_K, double temp_C, double temp_standard, double slurry_mass, double area, double floor_area, double NH3_frac, double NH3_frac_floor, double TAN, double H2S_frac, double sulfide, double Cfat, double CPs, double CPf, double RFd, double starch, double VSd, bool resp, List kl, NumericVector qhat, NumericVector i_meth, NumericVector i_sr, NumericVector xa, double VFA, double scale_ks, NumericVector ks, double ks_SO4, double sulfate, NumericVector cum_inhib, double urea, double alpha_urea, double km_urea);
 RcppExport SEXP _ABM_rut_rates_cpp(SEXP temp_KSEXP, SEXP temp_CSEXP, SEXP temp_standardSEXP, SEXP slurry_massSEXP, SEXP areaSEXP, SEXP floor_areaSEXP, SEXP NH3_fracSEXP, SEXP NH3_frac_floorSEXP, SEXP TANSEXP, SEXP H2S_fracSEXP, SEXP sulfideSEXP, SEXP CfatSEXP, SEXP CPsSEXP, SEXP CPfSEXP, SEXP RFdSEXP, SEXP starchSEXP, SEXP VSdSEXP, SEXP respSEXP, SEXP klSEXP, SEXP qhatSEXP, SEXP i_methSEXP, SEXP i_srSEXP, SEXP xaSEXP, SEXP VFASEXP, SEXP scale_ksSEXP, SEXP ksSEXP, SEXP ks_SO4SEXP, SEXP sulfateSEXP, SEXP cum_inhibSEXP, SEXP ureaSEXP, SEXP alpha_ureaSEXP, SEXP km_ureaSEXP) {
@@ -129,6 +141,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ABM_CTM_cpp", (DL_FUNC) &_ABM_CTM_cpp, 5},
     {"_ABM_grepl_cpp", (DL_FUNC) &_ABM_grepl_cpp, 2},
     {"_ABM_inhib_cpp", (DL_FUNC) &_ABM_inhib_cpp, 20},
+    {"_ABM_numericToEnv", (DL_FUNC) &_ABM_numericToEnv, 3},
     {"_ABM_rut_rates_cpp", (DL_FUNC) &_ABM_rut_rates_cpp, 32},
     {NULL, NULL, 0}
 };

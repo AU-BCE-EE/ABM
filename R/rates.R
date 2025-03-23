@@ -104,10 +104,12 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # if pH_inhibition should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
     # inhibition is different for the microbial groups IF the inhibiton constants for are different in the grp_pars argument. 
     # Therefore the calculations are vectorized.
-    cum_inhib <- inhib_cpp(pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac,
+    inhib <- inhib_cpp(pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac,
                         TAN, VFA, sulfide, slurry_mass,
                         pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max,
-                        ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low)$cum_inhib
+                        ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low)
+    
+    list2env(inhib, envir = environment())
 
     # Henrys constant temp dependency
     rut_rates <- rut_rates_cpp(
@@ -116,25 +118,8 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, 
       qhat, i_meth, i_sr, xa, VFA, scale_ks = scale[['ks_coefficient']], 
       ks, ks_SO4, sulfate, cum_inhib, urea, alpha_urea = alpha[['urea']], km_urea)
-    
-browser() # unpack rut_rates before derivatives.
-    # VFA consumption rate by sulfate reducers (g/d) affected by inhibition terms
-    rut[i_sr] <- ((qhat[i_sr] * VFA / (slurry_mass) * xa[i_sr] / (slurry_mass) / (scale[['ks_coefficient']] * ks[i_sr] + VFA / (slurry_mass))) * (slurry_mass) *
-                    (sulfate / (slurry_mass)) / (ks_SO4 + sulfate / (slurry_mass))) * cum_inhib[i_sr]
 
-    # VFA consumption rate by methanogen groups (g/d) affected by inhibition terms
-    rut[i_meth] <- ((qhat[i_meth] * VFA / (slurry_mass) * xa[i_meth] / (slurry_mass)) / (scale[['ks_coefficient']] * ks[i_meth] + VFA / (slurry_mass)) *
-                      (slurry_mass)) * cum_inhib[i_meth]
-    
-    # urea hydrolysis by Michaelis Menten
-    rut_urea <- (alpha[['urea']] * urea) / (km_urea + urea/slurry_mass)
-    
-    # Some checks for safety
-    if (any(rut < 0)) stop('In rates() function rut < 0 or otherwise strange. Check qhat parameters (92gg7)')
-
-    # If there are no SRs...
-    rutsr <- rut[i_sr]
-    if (length(rutsr) == 0) rutsr <- 0
+    list2env(rut_rates, envir = environment())
 
     # CO2 production from fermentation + methanogenesis + sulfate reduction + aerobic respiration at slurry surface
     # also calcualtes growth rate of xa_bac and xa_aer, mineralization rates and COD production from fermentation
@@ -195,8 +180,8 @@ browser() # unpack rut_rates before derivatives.
                                H2S_emis_rate = H2S_emis_rate, NH3_emis_rate_pit = NH3_emis_rate_pit, NH3_emis_rate_floor = NH3_emis_rate_floor,
                                N2O_emis_rate = N2O_emis_rate, CH4_A_emis_rate = derivatives[['CH4_A_emis_cum']],
                                qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = ferm[['CO2_resp']],
-                               H2S_inhib = inhibs["H2S_inhib"], NH3_inhib = inhibs["NH3_inhib"], NH4_inhib = inhibs["NH4_inhib"],
-                               TAN_min_resp = ferm[['TAN_min_resp']], TAN_min_ferm = ferm[['TAN_min_ferm']], HAC_inhib = inhibs["HAC_inhib"], cum_inhib = cum_inhib, 
+                               H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib,
+                               TAN_min_resp = ferm[['TAN_min_resp']], TAN_min_ferm = ferm[['TAN_min_ferm']], HAC_inhib = HAC_inhib, cum_inhib = cum_inhib, 
                                rut = rut, rut_urea = rut_urea, t_run = t_run, conc_fresh = conc_fresh, xa_init = xa_init, 
                                xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))

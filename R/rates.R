@@ -70,11 +70,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # Move elements of y into rates environment
     list2env(y, envir = environment())
 
-    # Hard-wired equilibrium constants
-    log_ka <- c(NH3 = - 0.09046 - 2729.31/temp_K, 
-                H2S = - 3448.7/temp_K + 47.479 - 7.5227* log(temp_K),
-                HAC = -4.8288 + 21.42/temp_K)
-
     # Hydrolysis rate with Arrhenius function cpp. 
     alpha <-  Arrh_func_cpp(A, E, R, temp_K)
     names(alpha) <- names(A)
@@ -91,40 +86,29 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     decay_rate <- CTM_cpp(temp_K, 313, 273, 325, decay_rate)
     if(temp_K > 313) decay_rate <- 0.02
 
-    # Ks temperature dependence
-    ks <- ks_coefficient * (0.8157 * exp(-0.063 * temp_C)) 
+    rates_inhib <- combined_cpp(g_NH4, pH_inhib_overrule,
+      pH, pH_floor,
+      TAN, VFA, sulfide, slurry_mass,
+      pH_LL, pH_UL,
+      ki_NH3_min, ki_NH3_max,
+      ki_NH4_min, ki_NH4_max,
+      ki_HAC, ki_H2S_slope, 
+      ki_H2S_int, ki_H2S_min,
+      IC50_low, 
+      temp_K, temp_C, temp_standard, 
+      area, floor_area,
+      Cfat, CPs, CPf, RFd, 
+      starch, VSd, resp, kl,
+      qhat, i_meth, i_sr, xa,
+      ks_coefficient, scale_ks = scale[['ks_coefficient']], ks_SO4, sulfate,
+      urea, alpha_urea = alpha[['urea']], km_urea)
     
-    # rough approximation from Rotz et al. IFSM 2012., "markfoged" thesis, "Petersen et al. 2014", "bilds?e et al. not published", "Elzing & Aarnik 1998", and own measurements..
-
-    HAC_frac <- 1-(1/(1 + 10^(-log_ka[['HAC']] - pH)))
-    NH3_frac <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH))))
-    NH3_frac_floor <- ((1/(1 + 10^(- log_ka[['NH3']] + log10(g_NH4) - pH_floor))))
-    H2S_frac <- 1 - (1/(1 + 10^(- log_ka[['H2S']] - pH))) # H2S fraction of total sulfide
-
-    # if pH_inhibition should be used, NH4 and NH3 inhibition is ignored and pH inhibition is used instead. 
-    # inhibition is different for the microbial groups IF the inhibiton constants for are different in the grp_pars argument. 
-    # Therefore the calculations are vectorized.
-    inhib <- inhib_cpp(pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac,
-                        TAN, VFA, sulfide, slurry_mass,
-                        pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max,
-                        ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low)
-    
-    list2env(inhib, envir = environment())
-
-    # Henrys constant temp dependency
-    rut_rates <- rut_rates_cpp(
-      temp_K, temp_C, temp_standard, slurry_mass, area, floor_area, 
-      NH3_frac, NH3_frac_floor, TAN, H2S_frac, sulfide, 
-      Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, 
-      qhat, i_meth, i_sr, xa, VFA, scale_ks = scale[['ks_coefficient']], 
-      ks, ks_SO4, sulfate, cum_inhib, urea, alpha_urea = alpha[['urea']], km_urea)
-
-    list2env(rut_rates, envir = environment())
-
+    list2env(rates_inhib, envir = environment())
+  
     # CO2 production from fermentation + methanogenesis + sulfate reduction + aerobic respiration at slurry surface
     # also calcualtes growth rate of xa_bac and xa_aer, mineralization rates and COD production from fermentation
     
-    ### stoich is slow. MOVE to CPP? modified for less calculations inside now.
+    ### MOVE all the stuff below until derivatives to CPP?
     ferm <- stoich(alpha, y, conc_fresh, sub_resp, respiration,
                    carb, pro, lip, carb_resp, pro_resp, lip_resp, ace, hyd,
                    ace_sr, hyd_sr)

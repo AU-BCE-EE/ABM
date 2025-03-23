@@ -7,7 +7,7 @@ List rut_rates_cpp(double temp_K, double temp_C, double temp_standard, double sl
                     double H2S_frac, double sulfide, double Cfat, double CPs, double CPf, double RFd, 
                     double starch, double VSd, bool resp, List kl,
                     NumericVector qhat, NumericVector i_meth, NumericVector i_sr, NumericVector xa,
-                    double VFA, double scale_ks, NumericVector ks, double ks_SO4, double sulfate,
+                    double VFA, NumericVector ks_coefficient, double scale_ks, double ks_SO4, double sulfate,
                     NumericVector cum_inhib, double urea, double alpha_urea, double km_urea)
   {
   
@@ -37,6 +37,8 @@ List rut_rates_cpp(double temp_K, double temp_C, double temp_standard, double sl
     double kl_oxygen = exp(0.6158816 + 0.09205127 * temp_C);
     respiration = kl_oxygen * area * (kH_oxygen * 0.208) * (sub_resp / slurry_mass) / 100;
   }
+  
+  NumericVector ks = ks_coefficient * (0.8157 * exp(-0.063 * temp_C)); 
   
   int n = qhat.size();
   

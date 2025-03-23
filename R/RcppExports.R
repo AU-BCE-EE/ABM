@@ -9,19 +9,15 @@ CTM_cpp <- function(tt, top, tmin, tmax, yopt) {
     .Call('_ABM_CTM_cpp', PACKAGE = 'ABM', tt, top, tmin, tmax, yopt)
 }
 
-grepl_cpp <- function(pattern, x) {
-    .Call('_ABM_grepl_cpp', PACKAGE = 'ABM', pattern, x)
+combined_cpp <- function(g_NH4, pH_inhib_overrule, pH, pH_floor, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low, temp_K, temp_C, temp_standard, area, floor_area, Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, qhat, i_meth, i_sr, xa, ks_coefficient, scale_ks, ks_SO4, sulfate, urea, alpha_urea, km_urea) {
+    .Call('_ABM_combined_cpp', PACKAGE = 'ABM', g_NH4, pH_inhib_overrule, pH, pH_floor, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low, temp_K, temp_C, temp_standard, area, floor_area, Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, qhat, i_meth, i_sr, xa, ks_coefficient, scale_ks, ks_SO4, sulfate, urea, alpha_urea, km_urea)
 }
 
 inhib_cpp <- function(pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low) {
     .Call('_ABM_inhib_cpp', PACKAGE = 'ABM', pH_inhib_overrule, pH, NH3_frac, HAC_frac, H2S_frac, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low)
 }
 
-numericToEnv <- function(y, env, n_mic) {
-    invisible(.Call('_ABM_numericToEnv', PACKAGE = 'ABM', y, env, n_mic))
-}
-
-rut_rates_cpp <- function(temp_K, temp_C, temp_standard, slurry_mass, area, floor_area, NH3_frac, NH3_frac_floor, TAN, H2S_frac, sulfide, Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, qhat, i_meth, i_sr, xa, VFA, scale_ks, ks, ks_SO4, sulfate, cum_inhib, urea, alpha_urea, km_urea) {
-    .Call('_ABM_rut_rates_cpp', PACKAGE = 'ABM', temp_K, temp_C, temp_standard, slurry_mass, area, floor_area, NH3_frac, NH3_frac_floor, TAN, H2S_frac, sulfide, Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, qhat, i_meth, i_sr, xa, VFA, scale_ks, ks, ks_SO4, sulfate, cum_inhib, urea, alpha_urea, km_urea)
+rut_rates_cpp <- function(temp_K, temp_C, temp_standard, slurry_mass, area, floor_area, NH3_frac, NH3_frac_floor, TAN, H2S_frac, sulfide, Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, qhat, i_meth, i_sr, xa, VFA, ks_coefficient, scale_ks, ks_SO4, sulfate, cum_inhib, urea, alpha_urea, km_urea) {
+    .Call('_ABM_rut_rates_cpp', PACKAGE = 'ABM', temp_K, temp_C, temp_standard, slurry_mass, area, floor_area, NH3_frac, NH3_frac_floor, TAN, H2S_frac, sulfide, Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, qhat, i_meth, i_sr, xa, VFA, ks_coefficient, scale_ks, ks_SO4, sulfate, cum_inhib, urea, alpha_urea, km_urea)
 }
 

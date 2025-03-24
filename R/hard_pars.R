@@ -27,7 +27,7 @@ hard_pars <- function(pars){
   pars$H2S_inhib <- 0 * pars$pH_LL + 1
   
   pars$kl[['NH3']] <- pars$kl[['NH3']] * pars$EF_NH3 
-  
+
   # N2O emission g(N) pr day
   pars$N2O_emis_rate <- as.numeric(pars$area * pars$EF_N2O)
   

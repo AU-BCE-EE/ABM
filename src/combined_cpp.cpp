@@ -111,14 +111,14 @@ NumericVector rut(n);
 
 // VFA consumption rate by sulfate reducers (g/d) affected by inhibition terms
 for (int i = 0; i < i_sr.size(); ++i) {
-  int idx_sr = i_sr[i] - 1;  // Convert from 1-based to 0-based index
+  int idx_sr = i_sr[i];  // Convert from 1-based to 0-based index
   rut[idx_sr] = ((qhat[idx_sr] * VFA / slurry_mass * xa[idx_sr] / slurry_mass / (scale_ks * ks[idx_sr] + VFA / slurry_mass)) * slurry_mass *
                    (sulfate / slurry_mass) / (ks_SO4 + sulfate / slurry_mass)) * cum_inhib[idx_sr];
 }
 
 // VFA consumption rate by methanogen groups (g/d) affected by inhibition terms
 for(int i = 0; i < i_meth.size(); ++i) {
-  int idx = i_meth[i] - 1;
+  int idx = i_meth[i];
   rut[idx] = ((qhat[idx] * VFA / (slurry_mass) * xa[idx] / (slurry_mass)) / (scale_ks * ks[idx] + VFA / (slurry_mass)) * 
                 (slurry_mass)) * cum_inhib[idx];
 }
@@ -126,7 +126,7 @@ for(int i = 0; i < i_meth.size(); ++i) {
 NumericVector rutsr(i_sr.size());
 
 for (int i = 0; i < i_sr.size(); ++i) {
-  int idx_sr = i_sr[i] - 1;  // Convert from 1-based to 0-based index
+  int idx_sr = i_sr[i];  // Convert from 1-based to 0-based index
   if (idx_sr >= 0 && idx_sr < rut.size()) {
     rutsr[i] = rut[idx_sr];
   }

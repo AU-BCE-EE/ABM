@@ -4,8 +4,8 @@ hard_pars <- function(pars){
   pars$temp_standard <- 298
   pars$temp_zero <- 273
   pars$pH_floor <- 7
-  pars$i_meth <- grep('^[mp]', names(pars$qhat_opt))
-  pars$i_sr <- grep('^sr', names(pars$qhat_opt))
+  pars$i_meth <- grep('^[mp]', names(pars$qhat_opt))-1 # -1 for match with CPP indexing
+  pars$i_sr <- grep('^sr', names(pars$qhat_opt))-1 # -1 for match with CPP indexing
   pars$n_mic <- length(pars$qhat_opt)
   pars$rut <- NA * pars$qhat_opt
   

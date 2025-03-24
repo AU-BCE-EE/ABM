@@ -3,22 +3,22 @@ stoich <- function(alpha, y, conc_fresh, sub_resp, respiration,
                    ace_sr, hyd_sr){
 
 # mole fermented per day: coefficients in the end has unit of mole/gCOD and "mol.carb, mol.pro, mol.lip" is mole/day
-mol.carb <- (alpha['RFd'] * y$RFd + alpha['starch'] * y$starch) * 0.005208333
-mol.pro <- (alpha['CPs'] * y$CPs + alpha['CPf'] * y$CPf) * 0.00748503
-mol.lip <- (alpha['Cfat'] * y$Cfat) * 0.0004194631
+mol.carb <- (alpha['RFd'] * y['RFd'] + alpha['starch'] * y['starch']) * 0.005208333
+mol.pro <- (alpha['CPs'] * y['CPs'] + alpha['CPf'] * y['CPf']) * 0.00748503
+mol.lip <- (alpha['Cfat'] * y['Cfat']) * 0.0004194631
 
-mol.carb_resp <- respiration * (y$RFd + y$starch)/sub_resp * 0.005208333
-mol.pro_resp <- (respiration * y$CPs/sub_resp + respiration * y$CPf/sub_resp)  * 0.00748503
-mol.lip_resp <- respiration * y$Cfat/sub_resp * 0.0004194631
+mol.carb_resp <- respiration * (y['RFd'] + y['starch'])/sub_resp * 0.005208333
+mol.pro_resp <- (respiration * y['CPs']/sub_resp + respiration * y['CPf']/sub_resp)  * 0.00748503
+mol.lip_resp <- respiration * y['Cfat']/sub_resp * 0.0004194631
 
 # if VSd is used. based on composition of degradable cattle manure excluding vfa (Appendix 1, ABM paper)
 if(conc_fresh[['VSd']] > 1e-10){
-  mol.carb <- alpha['VSd'] * y$VSd * 0.002753327
-  mol.pro <- alpha['VSd'] * y$VSd * 0.00176104
-  mol.lip <- alpha['VSd'] * y$VSd * 9.902938e-05
-  mol.carb_resp <- respiration * y$VSd/sub_resp  * 0.002753327
-  mol.pro_resp <- respiration * y$VSd/sub_resp  * 0.00176104
-  mol.lip_resp <- respiration * y$VSd/sub_resp  * 9.902938e-05
+  mol.carb <- alpha['VSd'] * y['VSd'] * 0.002753327
+  mol.pro <- alpha['VSd'] * y['VSd'] * 0.00176104
+  mol.lip <- alpha['VSd'] * y['VSd'] * 9.902938e-05
+  mol.carb_resp <- respiration * y['VSd']/sub_resp  * 0.002753327
+  mol.pro_resp <- respiration * y['VSd']/sub_resp  * 0.00176104
+  mol.lip_resp <- respiration * y['VSd']/sub_resp  * 9.902938e-05
 }
 
 # stoichiometry. Now assuming cell synthesis, mole/day

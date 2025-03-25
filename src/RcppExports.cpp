@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // Arrh_func_cpp
-NumericVector Arrh_func_cpp(NumericVector A, NumericVector E, double R, double temp_K);
-RcppExport SEXP _ABM_Arrh_func_cpp(SEXP ASEXP, SEXP ESEXP, SEXP RSEXP, SEXP temp_KSEXP) {
+NumericVector Arrh_func_cpp(NumericVector A, NumericVector E, double R, double temp_K, double scale_alpha_opt, double alpha_opt_scale_type, double alpha_opt_scale_CP);
+RcppExport SEXP _ABM_Arrh_func_cpp(SEXP ASEXP, SEXP ESEXP, SEXP RSEXP, SEXP temp_KSEXP, SEXP scale_alpha_optSEXP, SEXP alpha_opt_scale_typeSEXP, SEXP alpha_opt_scale_CPSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -20,7 +20,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type E(ESEXP);
     Rcpp::traits::input_parameter< double >::type R(RSEXP);
     Rcpp::traits::input_parameter< double >::type temp_K(temp_KSEXP);
-    rcpp_result_gen = Rcpp::wrap(Arrh_func_cpp(A, E, R, temp_K));
+    Rcpp::traits::input_parameter< double >::type scale_alpha_opt(scale_alpha_optSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_opt_scale_type(alpha_opt_scale_typeSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_opt_scale_CP(alpha_opt_scale_CPSEXP);
+    rcpp_result_gen = Rcpp::wrap(Arrh_func_cpp(A, E, R, temp_K, scale_alpha_opt, alpha_opt_scale_type, alpha_opt_scale_CP));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -149,7 +152,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 4},
+    {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 7},
     {"_ABM_CTM_cpp", (DL_FUNC) &_ABM_CTM_cpp, 5},
     {"_ABM_combined_cpp", (DL_FUNC) &_ABM_combined_cpp, 43},
     {"_ABM_derivatives_cpp", (DL_FUNC) &_ABM_derivatives_cpp, 45},

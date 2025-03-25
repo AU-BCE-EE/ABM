@@ -11,13 +11,12 @@ hard_pars <- function(pars){
   
   if(pars$conc_fresh$VSd <= 10E-9){
     pars$alpha_opt_scale_type <- pars$scale_alpha_opt[['notVSd']]
-    pars$alpha_opt_scale_CPs <- pars$scale_alpha_opt[['CP']]
-    pars$alpha_opt_scale_CPf <- pars$scale_alpha_opt[['CP']]
+    pars$alpha_opt_scale_CP <- pars$scale_alpha_opt[['CP']]
+
     
   } else if(pars$conc_fresh$VSd > 10E-9){
     pars$alpha_opt_scale_type  <- pars$scale_alpha_opt[['VSd']]
-    pars$alpha_opt_scale_CPs <- 1
-    pars$alpha_opt_scale_CPf <- 1
+    pars$alpha_opt_scale_CP <- 1
   }
   
   pars$pH_inhib  <- 0 * pars$pH_LL + 1 

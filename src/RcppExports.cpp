@@ -42,6 +42,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// call_int
+NumericVector call_int(Rcpp::Function temp_C_fun, double x);
+RcppExport SEXP _ABM_call_int(SEXP temp_C_funSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::Function >::type temp_C_fun(temp_C_funSEXP);
+    Rcpp::traits::input_parameter< double >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(call_int(temp_C_fun, x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // combined_cpp
 List combined_cpp(double g_NH4, bool pH_inhib_overrule, double pH, double pH_floor, double TAN, double VFA, double sulfide, double slurry_mass, NumericVector pH_LL, NumericVector pH_UL, NumericVector ki_NH3_min, NumericVector ki_NH3_max, NumericVector ki_NH4_min, NumericVector ki_NH4_max, NumericVector ki_HAC, NumericVector ki_H2S_slope, NumericVector ki_H2S_int, NumericVector ki_H2S_min, NumericVector IC50_low, double temp_K, double temp_C, double temp_standard, double area, double floor_area, double Cfat, double CPs, double CPf, double RFd, double starch, double VSd, bool resp, List kl, NumericVector qhat, NumericVector i_meth, NumericVector i_sr, NumericVector xa, NumericVector ks_coefficient, double scale_ks, double ks_SO4, double sulfate, double urea, double alpha_urea, double km_urea);
 RcppExport SEXP _ABM_combined_cpp(SEXP g_NH4SEXP, SEXP pH_inhib_overruleSEXP, SEXP pHSEXP, SEXP pH_floorSEXP, SEXP TANSEXP, SEXP VFASEXP, SEXP sulfideSEXP, SEXP slurry_massSEXP, SEXP pH_LLSEXP, SEXP pH_ULSEXP, SEXP ki_NH3_minSEXP, SEXP ki_NH3_maxSEXP, SEXP ki_NH4_minSEXP, SEXP ki_NH4_maxSEXP, SEXP ki_HACSEXP, SEXP ki_H2S_slopeSEXP, SEXP ki_H2S_intSEXP, SEXP ki_H2S_minSEXP, SEXP IC50_lowSEXP, SEXP temp_KSEXP, SEXP temp_CSEXP, SEXP temp_standardSEXP, SEXP areaSEXP, SEXP floor_areaSEXP, SEXP CfatSEXP, SEXP CPsSEXP, SEXP CPfSEXP, SEXP RFdSEXP, SEXP starchSEXP, SEXP VSdSEXP, SEXP respSEXP, SEXP klSEXP, SEXP qhatSEXP, SEXP i_methSEXP, SEXP i_srSEXP, SEXP xaSEXP, SEXP ks_coefficientSEXP, SEXP scale_ksSEXP, SEXP ks_SO4SEXP, SEXP sulfateSEXP, SEXP ureaSEXP, SEXP alpha_ureaSEXP, SEXP km_ureaSEXP) {
@@ -150,12 +162,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// extract_xa_cpp
+NumericVector extract_xa_cpp(NumericVector y, int n_mic);
+RcppExport SEXP _ABM_extract_xa_cpp(SEXP ySEXP, SEXP n_micSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type n_mic(n_micSEXP);
+    rcpp_result_gen = Rcpp::wrap(extract_xa_cpp(y, n_mic));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 7},
     {"_ABM_CTM_cpp", (DL_FUNC) &_ABM_CTM_cpp, 5},
+    {"_ABM_call_int", (DL_FUNC) &_ABM_call_int, 2},
     {"_ABM_combined_cpp", (DL_FUNC) &_ABM_combined_cpp, 43},
     {"_ABM_derivatives_cpp", (DL_FUNC) &_ABM_derivatives_cpp, 45},
+    {"_ABM_extract_xa_cpp", (DL_FUNC) &_ABM_extract_xa_cpp, 2},
     {NULL, NULL, 0}
 };
 

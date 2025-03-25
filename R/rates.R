@@ -60,12 +60,15 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
 
     #temp functions
     # CPP interpolation func?
-    temp_C <- temp_C_fun(t + t_run)
+    #browser()
+    #temp_C <- temp_C_fun(t + t_run)
+    
+    temp_C <- call_int(temp_C_fun, t+t_run)
     temp_K <- temp_C + 273.15
 
     # Extract state variable values from y argument
-    xa <- y[1:n_mic]
-
+    # xa <- y[1:n_mic]
+    xa <- extract_xa_cpp(y, n_mic) 
     # Move elements of y into rates environment
     list2env(as.list(y[-c(1:n_mic)]), envir = environment())
 

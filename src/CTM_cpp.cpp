@@ -1,5 +1,7 @@
 #include <Rcpp.h>
 
+using namespace Rcpp;
+
 // [[Rcpp::export]]
 NumericVector CTM_cpp(NumericVector tt, NumericVector top, NumericVector tmin, 
                             NumericVector tmax, NumericVector yopt) {

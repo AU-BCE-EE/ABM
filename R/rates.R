@@ -11,10 +11,11 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     list2env(parms, envir = environment())
 
     # correct slurry production rate in periods with grazing
-    if(!is.null(graze_int) & any(graze_int != 0)){
+    if(!is.null(graze_int) & any(graze_int != 0)) {
        slurry_prod_rate <- graze_fun(t,  t_run, days, slurry_prod_rate, graze_int, graze_hours = graze[['hours_day']])
     }
 
+       
     # pH, numeric, variable, or from H2SO4
     if (is.numeric(pH) | is.data.frame(pH)) {
       pH <- pH_fun(t + t_run)
@@ -26,13 +27,29 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # Remove name 'pH' that sometimes comes along
     pH <- as.numeric(pH)
     
-    # calculate time of a batch. REMOVE FROM RATES TO OUTSIDE.
+    # calculate time of a batch
     if (!is.na(wash_int)){
       batches <- c(floor((t + t_run)/(wash_int + rest_d)))
       t_batch <- (t + t_run) - batches * (wash_int + rest_d)
       if (t_batch > wash_int) t_batch <- 0
     } else {
       t_batch <- 0
+    }
+    
+    ######REMOVE BELOW
+    # if urea fresh increase during a batch 
+    if (!is.na(slopes[['urea']]) & !is.data.frame(conc_fresh)) {
+      start_urea <- conc_fresh[['urea']] - slopes[['urea']] * wash_int/2
+      conc_fresh[['urea']] <- slopes[['urea']] * t_batch + start_urea
+    }
+    
+    # if slurry production increases during a batch
+    slurry_prod_rate_default <- slurry_prod_rate
+    
+    if (!is.na(slopes[['slurry_prod_rate']]) && slurry_prod_rate_default != 0 && !is.na(wash_int)) {
+      start_slurry_prod_rate <- slurry_prod_rate_default - slopes[['slurry_prod_rate']] * wash_int/2
+      slurry_prod_rate <- slopes[['slurry_prod_rate']] * t_batch + start_slurry_prod_rate
+      if (t_batch > wash_int) slurry_prod_rate <- 0
     }
     
     # For time-variable fresh concentrations, need to use function to get fresh concentrations at particular time
@@ -58,24 +75,28 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       conc_fresh$ash <- conc_fresh_fun$conc_fresh_fun_ash(t + t_run)
     }
     
-    #INTERPOLATE CPP. Check this
-    if(is.data.frame(xa_fresh)) {
-      xa_fresh <- sapply(seq_along(grps), function(i) {
+    xa_fresh <- if (is.data.frame(xa_fresh)) {
+      sapply(seq_along(grps), function(i) {
         conc <- xa_fresh_fun[[i]](t + t_run)
         return(conc)
       })
+    } else{# ########## this is not needed
+      xa_fresh <- xa_fresh
     }
     
     names(xa_fresh) <- grps
     
+    # Hard-wired temp settings settings
+    temp_standard <- 298
+    temp_zero <- 273
+    
     #temp functions
-    # CPP interpolation func?
     temp_C <- temp_C_fun(t + t_run)
     temp_K <- temp_C + 273.15
 
     
     # Find methanogens and sulfate reducers
-    #### replace with GREP instead or use C++. C++ not faster :/ 
+    #### replace with GREP instead or use C++
     i_meth <- grepl('^[mp]', names(qhat_opt))
     i_sr <- grepl('^sr', names(qhat_opt))
     n_mic <- length(qhat_opt)
@@ -93,6 +114,10 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                 HAC = -4.8288 + 21.42/temp_K)
     
     kH_oxygen <- 0.0013 * exp(1700 * ((1 / temp_K) - (1 / temp_standard))) * 32 * 1000
+   
+    # Hard-wire NH4+ activity coefficient
+    ####### MOVE OUT OF RATES
+    g_NH4 <- 0.7
 
     # Hydrolysis rate with Arrhenius function cpp. 
     alpha <-  Arrh_func_cpp(A, E, R, temp_K)
@@ -138,7 +163,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     # NTS: or just add H2CO3* here?
     # NTS: need TIC production too
     
-    # Using pH_LL here just to get groups. MOVE INTO IFELSE (maybe)
+    # Using pH_LL here just to get groups
     pH_inhib  <- 0 * pH_LL + 1 
     NH3_inhib <- 0 * pH_LL + 1
     NH4_inhib <- 0 * pH_LL + 1
@@ -152,7 +177,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     ### logical expression could be faster with CPP
     if(pH_inhib_overrule){
             pH_inhib <- (1 + 2*10^(0.5* (pH_LL - pH_UL)))/(1+ 10^(pH - pH_UL) + 10^(pH_LL - pH))
-            cum_inhib <- pH_inhib
     } else{
       # NH3 and NH4 inhibition      
       # Where set to 1, is still a vector to keep microbial groups in output (this is why 0 * ... bit is used)
@@ -166,7 +190,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
         HAC_inhib <- 0 * ki_HAC + 1
       }
   
-      # H2S inhibition. SIMPLIFY
+      # H2S inhibition
       H2S_inhib <- NA * qhat
             
       if(pH >= 6.8){
@@ -182,10 +206,11 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       H2S_inhib <- a * x + b
       H2S_inhib[H2S_inhib < 0] <- 0
       H2S_inhib[H2S_inhib > 1 ] <- 1
-      
-      cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib
+    
     }
     
+    cum_inhib <- HAC_inhib * NH3_inhib * NH4_inhib * H2S_inhib * pH_inhib
+      
     # Henrys constant temp dependency
     H.NH3 <- 1431 * 1.053^(293 - temp_K)
     
@@ -294,5 +319,4 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                                rut = rut, rut_urea = rut_urea, t_run = t_run, t_batch = t_batch, conc_fresh = conc_fresh, xa_init = xa_init, 
                                xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, t_batch = t_batch, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))
-   
 }

@@ -9,7 +9,3 @@ CTM_cpp <- function(tt, top, tmin, tmax, yopt) {
     .Call('_ABM_CTM_cpp', PACKAGE = 'ABM', tt, top, tmin, tmax, yopt)
 }
 
-grepl_cpp <- function(pattern, x) {
-    .Call('_ABM_grepl_cpp', PACKAGE = 'ABM', pattern, x)
-}
-

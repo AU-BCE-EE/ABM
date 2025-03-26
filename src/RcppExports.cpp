@@ -39,23 +39,10 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// grepl_cpp
-LogicalVector grepl_cpp(std::string pattern, CharacterVector x);
-RcppExport SEXP _ABM_grepl_cpp(SEXP patternSEXP, SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type pattern(patternSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(grepl_cpp(pattern, x));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 4},
     {"_ABM_CTM_cpp", (DL_FUNC) &_ABM_CTM_cpp, 5},
-    {"_ABM_grepl_cpp", (DL_FUNC) &_ABM_grepl_cpp, 2},
     {NULL, NULL, 0}
 };
 

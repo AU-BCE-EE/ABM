@@ -1,10 +1,10 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
-Rcpp::NumericVector CTM_cpp(Rcpp::NumericVector tt, Rcpp::NumericVector top, Rcpp::NumericVector tmin, 
-                            Rcpp::NumericVector tmax, Rcpp::NumericVector yopt) {
+NumericVector CTM_cpp(NumericVector tt, NumericVector top, NumericVector tmin, 
+                            NumericVector tmax, NumericVector yopt) {
   int n = top.size();
-  Rcpp::NumericVector y(n);
+  NumericVector y(n);
   
     for (int i = 0; i < n; i++) {
       

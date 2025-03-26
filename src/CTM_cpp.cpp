@@ -19,7 +19,7 @@ NumericVector CTM_cpp(NumericVector tt, NumericVector top, NumericVector tmin,
         if (y[i] < 0){
           y[i] = 0;
         }
-        if (tt[0] <= tmin[i] | tt[0] >= tmax[i]) {
+        if (tt[0] <= tmin[i] || tt[0] >= tmax[i]) {
           y[i] = 0;
         }
         
@@ -32,7 +32,7 @@ NumericVector CTM_cpp(NumericVector tt, NumericVector top, NumericVector tmin,
         if (y[i] < 0){
           y[i] = 0;
         }
-        if (tt[0] <= tmin[i] | tt[0] >= tmax[i]) {
+        if (tt[0] <= tmin[i] || tt[0] >= tmax[i]) {
           y[i] = 0;
         }
       }

@@ -18,7 +18,6 @@ abm <- function(
                   rest_d = 5,
                   cover = 'none',
                   resid_enrich = 0.9,
-                  slopes = c(urea = NA, slurry_prod_rate = NA),
                   graze = c(start = 'May', duration = 0, hours_day = 0),
                   scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
   man_pars = ABM::man_pars2.0,
@@ -122,11 +121,6 @@ abm <- function(
   
   
   # Combine pars to make extraction and pass to rates() easier
-
-  # Create error if batch time is not determined and slurry rate should increase over a batch
-  if (is.na(pars$wash_int) && !is.na(pars$slopes['slurry_prod_rate'])){
-    stop('wash interval cannot be "NA" when slurry production rate increase over a batch of animals, since wash interval defines a batch time')
-  }
   # Sort out parameter inputs
   # Note: pe.pars = add_pars that use par.element approach, these are converted to normal (simple) add_par elements here
   # Note: sa.pars = normal (simple) add_pars that do not need to be converted
@@ -299,6 +293,12 @@ abm <- function(
   if (any(pars$conc_fresh[['VSd']] > 2e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$A)[!names(pars$A) %in% c('VSd','urea')]] > 2)) {
     stop('Cannot have both VSd and other organic matter components being above 0')
   }
+  
+  # hard wired parms, that will not change added here:
+  pars$g_NH4 <- 0.7
+  pars$temp_standard <- 298
+  pars$temp_zero <- 273
+  
   
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule

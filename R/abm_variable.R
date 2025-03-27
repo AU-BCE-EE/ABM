@@ -202,9 +202,9 @@ abm_variable <-
     pars$t_run <- t_run
 
     # Call up ODE solver
-    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, 
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, temp_C_fun = temp_C_fun, 
                           pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp)
     
     # Change format of output and drop first (time 0) row (duplicated in last row of previous)
     if (i == 2) {

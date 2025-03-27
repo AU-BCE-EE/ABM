@@ -71,17 +71,20 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     
     # Call up ODE solver
     #cat(t_rem, '\n')
-    
-    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, 
                           temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
-    
+                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp)
+    #out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
+    #                      temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
+    #                      conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+  
     # Get number of microbial groups
-    n_mic <- length(pars$qhat_opt)
+    n_mic <- length(pars$n_mic)
 
     # Extract new state variable vector from last row
     y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 29) + 1]
 
+    
     # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
     y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
     y.eff <- y[grepl('_eff$', names(y))]
@@ -102,8 +105,9 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
         times <- seq(0, pars$rest_d, delta_t)
         parsr <- pars
         parsr$slurry_prod_rate <- 0
-        outr <- deSolve::lsoda(y = y, times = times, rates, parms = parsr, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                               SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+        outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
+                               SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, 
+                               xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp)
         # Extract new state variable vector from last row
         y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 29) + 1]
         # Correct time in outr and combine with main output

@@ -174,6 +174,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rates_cpp
+List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun, Rcpp::Function pH_fun, Rcpp::Function SO4_inhibition_fun, List conc_fresh_fun, NumericVector xa_fresh_fun, Rcpp::Function CTM_cpp);
+RcppExport SEXP _ABM_rates_cpp(SEXP tSEXP, SEXP ySEXP, SEXP parmsSEXP, SEXP temp_C_funSEXP, SEXP pH_funSEXP, SEXP SO4_inhibition_funSEXP, SEXP conc_fresh_funSEXP, SEXP xa_fresh_funSEXP, SEXP CTM_cppSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type t(tSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< List >::type parms(parmsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Function >::type temp_C_fun(temp_C_funSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Function >::type pH_fun(pH_funSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Function >::type SO4_inhibition_fun(SO4_inhibition_funSEXP);
+    Rcpp::traits::input_parameter< List >::type conc_fresh_fun(conc_fresh_funSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xa_fresh_fun(xa_fresh_funSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Function >::type CTM_cpp(CTM_cppSEXP);
+    rcpp_result_gen = Rcpp::wrap(rates_cpp(t, y, parms, temp_C_fun, pH_fun, SO4_inhibition_fun, conc_fresh_fun, xa_fresh_fun, CTM_cpp));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 7},
@@ -182,6 +201,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ABM_combined_cpp", (DL_FUNC) &_ABM_combined_cpp, 43},
     {"_ABM_derivatives_cpp", (DL_FUNC) &_ABM_derivatives_cpp, 45},
     {"_ABM_extract_xa_cpp", (DL_FUNC) &_ABM_extract_xa_cpp, 2},
+    {"_ABM_rates_cpp", (DL_FUNC) &_ABM_rates_cpp, 9},
     {NULL, NULL, 0}
 };
 

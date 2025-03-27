@@ -43,20 +43,42 @@ hard_pars <- function(pars){
                 NH3 = -0.9111515, H2O = -41.2980881, C5H7O2N = 0.9111515,
                 C2H4O2 = 23.7180355, H2 = 40.9726177, CO2 = 1.4659059)
   
-  pars$carb_resp <- c(C6H12O6 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
+  carb_resp <- c(C6H12O6 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
                       NH4 = -0.78, HCO3 = -0.78, O2 =  -2.1, H2O = 5.22, C5H7O2N = 0.78,
-                      CO2 = 2.88)
-  pars$pro_resp <- c(C6H12O6 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
+                      CO2 = 2.88) # 
+  pro_resp <- c(C6H12O6 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
                      NH4 = 0.45725, HCO3 = 0.45725, O2 = -1.46125, H2O = 0.007249637, C5H7O2N = 0.54275,
                      CO2 = 0.829)
-  pars$lip_resp <- c(C6H12O6 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
+  lip_resp <- c(C6H12O6 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
                      NH4 = -9.425, HCO3 = -9.425, O2 = -25.375, H2O = 39.575, C5H7O2N = 9.425,
                      CO2 = 13.3) 
   
-  pars$ace <- c(H2 = 0, C2H4O2 = -1, CO2 = 1, CH4 = 1, H2O = 0)
+  pars$carb_resp <- carb_resp # delete later if new rates_cpp works
+  pars$pro_resp <- pro_resp # delete later if new rates_cpp works
+  pars$lip_resp <- lip_resp # delete later if new rates_cpp works
+  
+  
+  pars$ace <- c(H2 = 0, C2H4O2 = -1, CO2 = 1, CH4 = 1, H2O = 0) # moles stoichiometry 
   pars$hyd <- c(H2 = -1, C2H4O2 = 0, CO2 = -1/4, CH4 = 1/4, H2O = 2/4)
   pars$ace_sr <- c(H2 = 0, C2H4O2 = -1, H2SO4 = -1, CO2 = 2, H2O = 2, H2S = 1) 
   pars$hyd_sr <- c(H2 = -1, C2H4O2 = 0, H2SO4 = -1/4, CO2 = 0, H2O = 1, H2S = 1/4) 
+  
+  resp_stoich_out <- resp_stoich(pars$conc_fresh, carb_resp, pro_resp, lip_resp)
+
+  # these should be factored by "respiration" inside rates call.
+  pars$TAN_min_resp <- resp_stoich_out[['TAN_min_resp']] 
+  pars$CO2_resp <- resp_stoich_out[['CO2_resp']]
+  pars$xa_aer_rate <- resp_stoich_out[['xa_aer_rate']]
+  
+  # these needs to be actually calculated but are set here to test speed in rates_cpp.
+  # need a way to implement stoichiometry of fermentation to calculate properly.
+  pars$xa_bac_rate <- 1.1 
+  pars$TAN_min_ferm <- 2.1
+  pars$VFA_H2_ferm <- 3.1
+  pars$CO2_ferm = 4.1
+  # 
+  pars$COD_conv_meth_CO2 <- 2.926 # gCOD consumed /gCO2 produced from methanogenesis
+  pars$COD_conv_sr_CO2 <- 0.971 # gCOD consumed /gCO2 produced from sulfate reduction
   
   return(pars)
 }

@@ -291,8 +291,9 @@ abm <- function(
     stop('Cannot have both VSd and other organic matter components being above 0')
   }
   
-  # hard wired parameters, that will not change during a rates call 
+  # hard wired parameters, that will not change during a rates call
   # and was moved from rates to here to speed up model. These parameters are added in the hard_pars().
+  
   pars <- hard_pars(pars)
   
   if (is.numeric(pars$slurry_mass)) {
@@ -304,7 +305,7 @@ abm <- function(
     dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
                         SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx = approx_method['slurry_mass'])
   } 
-  
+
   colnames(dat) <- gsub("conc_fresh.","conc_fresh_", colnames(dat))
   
   # Calculate concentrations where relevant
@@ -318,7 +319,7 @@ abm <- function(
   names(dat_conc) <- paste0(names(dat_conc), '_conc')
   names(dat_eff_conc) <- paste0(names(dat_eff_conc), '_conc')
   dat <- cbind(dat, dat_conc, dat_eff_conc)
-  
+
   # Add temperature and pH
   dat$temp_C <- temp_C_fun(dat$time)
   if (is.numeric(pars$pH) | is.data.frame(pars$pH)) {

@@ -1,9 +1,9 @@
 #include <Rcpp.h>
 
 using namespace Rcpp;
-
+using namespace std;
 // [[Rcpp::export]]
-List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun, Rcpp::Function pH_fun, 
+List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp::Function temp_C_fun, Rcpp::Function pH_fun, 
                   Rcpp::Function SO4_inhibition_fun, List conc_fresh_fun, NumericVector xa_fresh_fun, Rcpp::Function CTM_cpp){
   
   //y[y < 1E-10] <- 1E-10
@@ -11,9 +11,9 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
     return (value < 1E-10) ? 1E-10 : value;
   });
 
-  double slurry_prod_rate = parms["slurry_prod_rate"];
-  double t_run = parms["t_run"];
-  int n_mic = parms["n_mic"];
+  double slurry_prod_rate = parms[p_idx[0]];
+  double t_run = parms[p_idx[1]];
+  int n_mic = parms[p_idx[2]];
   
   //# NOT IMPLEMENTED YET
   //#if(!is.null(graze_int) & any(graze_int != 0)){
@@ -29,7 +29,7 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
   double pH = as<double>(pH_fun(t + t_run)); // missing the H2SO4 calc stuff.
   double temp_C = as<double>(temp_C_fun(t + t_run));
   double temp_K = temp_C + 273.15;
-  double temp_standard = 298;
+  double temp_standard = parms[p_idx[3]];
   
   // Extract state variable values from y argument
   NumericVector xa = y[Range(0, n_mic - 1)];
@@ -65,9 +65,9 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
   double slurry_load_cum = y[n_mic+28];
 
   // Arrhenius parms for hydrolysis stuff
-  NumericVector A = parms["A"];
-  NumericVector E = parms["E"];
-  NumericVector scale = as<NumericVector>(parms["scale"]);
+  NumericVector A = parms[p_idx[4]];
+  NumericVector E = parms[p_idx[5]];
+  NumericVector scale = as<NumericVector>(parms[p_idx[6]]);
   
   double scale_ks_coefficient = scale[0];
   double scale_qhat_opt = scale[1];
@@ -75,25 +75,25 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
   double scale_yield = scale[3];
   double scale_alpha_opt = scale[4];
   
-  double R = parms["R"];
-  double alpha_opt_scale_type = parms["alpha_opt_scale_type"];
-  double alpha_opt_scale_CP = parms["alpha_opt_scale_CP"];
+  double R = parms[p_idx[7]];
+  double alpha_opt_scale_type = parms[p_idx[8]];
+  double alpha_opt_scale_CP = parms[p_idx[9]];
   
   //# Hydrolysis rate with Arrhenius function cpp. 
   NumericVector alpha = A * exp(-E / (R * temp_K));
   alpha[Rcpp::Range(0,6)] = alpha[Rcpp::Range(0,6)] * scale_alpha_opt * alpha_opt_scale_type;
   alpha[Rcpp::Range(3,4)] = alpha[Rcpp::Range(3,4)] * alpha_opt_scale_CP;
 
-  NumericVector T_opt = parms["T_opt"];
-  NumericVector T_min = parms["T_min"];
-  NumericVector T_max = parms["T_max"];
-  NumericVector qhat_opt = parms["qhat_opt"];
+  NumericVector T_opt = parms[p_idx[10]];
+  NumericVector T_min = parms[p_idx[11]];
+  NumericVector T_max = parms[p_idx[12]];
+  NumericVector qhat_opt = parms[p_idx[13]];
   
   //# Microbial substrate utilization rate (vectorized calculation)
   NumericVector qhat = scale_qhat_opt * as<NumericVector>(CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt));
   
   //# Decay of all microorganisms follow same kinetics with faster decay at higher temp up until 313, at which constant decay of 0.02
-  NumericVector decay_rate_vec = parms["decay_rate"];
+  NumericVector decay_rate_vec = parms[p_idx[14]];
   decay_rate_vec = as<NumericVector>(CTM_cpp(temp_K, 313, 273, 325, decay_rate_vec));
   double decay_rate_double = decay_rate_vec[0];
   
@@ -101,29 +101,29 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
     decay_rate_double = 0.02;
   }
   
-  double g_NH4 = parms["g_NH4"];
-  bool pH_inhib_overrule = parms["pH_inhib_overrule"];
+  double g_NH4 = parms[p_idx[15]];
+  bool pH_inhib_overrule = parms[p_idx[16]];
   
-  double pH_floor = parms["pH_floor"];
-  NumericVector pH_LL = parms["pH_LL"];
-  NumericVector pH_UL = parms["pH_UL"];
-  NumericVector ki_NH3_min = parms["ki_NH3_min"];
-  NumericVector ki_NH3_max = parms["ki_NH3_max"];
-  NumericVector ki_NH4_min = parms["ki_NH4_min"];
-  NumericVector ki_NH4_max = parms["ki_NH4_max"];
-  NumericVector ki_HAC = parms["ki_HAC"];
-  NumericVector ki_H2S_slope = parms["ki_H2S_slope"];
-  NumericVector ki_H2S_int = parms["ki_H2S_int"];
-  NumericVector ki_H2S_min = parms["ki_H2S_min"];
-  NumericVector IC50_low = parms["IC50_low"];
-  double area = parms["area"];
-  double floor_area = parms["floor_area"];
-  bool resp = parms["resp"];
-  NumericVector kl = parms["kl"];
-  NumericVector i_meth = parms["i_meth"];
-  NumericVector i_sr = parms["i_sr"];
-  NumericVector ks_coefficient = parms["ks_coefficient"];
-  double ks_SO4 = parms["ks_SO4"];
+  double pH_floor = parms[p_idx[17]];
+  NumericVector pH_LL = parms[p_idx[18]];
+  NumericVector pH_UL = parms[p_idx[19]];
+  NumericVector ki_NH3_min = parms[p_idx[20]];
+  NumericVector ki_NH3_max = parms[p_idx[21]];
+  NumericVector ki_NH4_min = parms[p_idx[22]];
+  NumericVector ki_NH4_max = parms[p_idx[23]];
+  NumericVector ki_HAC = parms[p_idx[24]];
+  NumericVector ki_H2S_slope = parms[p_idx[25]];
+  NumericVector ki_H2S_int = parms[p_idx[26]];
+  NumericVector ki_H2S_min = parms[p_idx[27]];
+  NumericVector IC50_low = parms[p_idx[28]];
+  double area = parms[p_idx[29]];
+  double floor_area = parms[p_idx[30]];
+  bool resp = parms[p_idx[31]];
+  NumericVector kl = parms[p_idx[32]];
+  NumericVector i_meth = parms[p_idx[33]];
+  NumericVector i_sr = parms[p_idx[34]];
+  NumericVector ks_coefficient = parms[p_idx[35]];
+  double ks_SO4 = parms[p_idx[36]];
   
   double alpha_xa_dead = alpha[0];  // Assuming "xa_dead" is the first element
   double alpha_starch = alpha[1];   // Assuming "starch" is the second element
@@ -135,7 +135,7 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
   double alpha_urea = alpha[7];
   
   
-  double km_urea = parms["km_urea"];
+  double km_urea = parms[p_idx[37]];
   
   double log_HAC = -4.8288 + 21.42/temp_K;
   double log_NH3 = - 0.09046 - 2729.31/temp_K;
@@ -274,7 +274,7 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
   
   // derivatives
   
-  List conc_fresh = parms["conc_fresh"];
+  List conc_fresh = parms[p_idx[38]];
   
   double conc_fresh_sulfide = conc_fresh[0];  // Assuming "sulfide" is the first element
   double conc_fresh_urea = conc_fresh[1];     // Assuming "urea" is the second element
@@ -295,19 +295,19 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
   
   // NOT IMPLEMENTED YET. End products of fermentation (previously from stoich()). 
   // Right now are just placeholder to test speed. Need to be properly calculated in hard_pars() or otherwise
-  double xa_bac_rate = parms["xa_bac_rate"];
-  double TAN_min_ferm = parms["TAN_min_ferm"];
-  double VFA_H2_ferm = parms["VFA_H2_ferm"];
-  double COD_conv_meth_CO2 = parms["COD_conv_meth_CO2"];
-  double COD_conv_sr_CO2 = parms["COD_conv_sr_CO2"];
-  double CO2_ferm = parms["CO2_ferm"];
+  double xa_bac_rate = parms[p_idx[39]];
+  double TAN_min_ferm = parms[p_idx[40]];
+  double VFA_H2_ferm = parms[p_idx[41]];
+  double COD_conv_meth_CO2 = parms[p_idx[42]];
+  double COD_conv_sr_CO2 = parms[p_idx[43]];
+  double CO2_ferm = parms[p_idx[44]];
   
   // below are calculated from conc_fresh composition  
-  double TAN_min_resp = as<double>(parms["TAN_min_resp"]) * respiration;
-  double CO2_resp = as<double>(parms["CO2_resp"]) * respiration;
-  double xa_aer_rate = as<double>(parms["xa_aer_rate"]) * respiration;
+  double TAN_min_resp = as<double>(parms[p_idx[45]]) * respiration;
+  double CO2_resp = as<double>(parms[p_idx[46]]) * respiration;
+  double xa_aer_rate = as<double>(parms[p_idx[47]]) * respiration;
   
-  NumericVector COD_conv = parms["COD_conv"];
+  NumericVector COD_conv = parms[p_idx[48]];
   
   double COD_conv_frac_CP_xa = COD_conv[24];
   double COD_conv_S = COD_conv[8];
@@ -339,7 +339,7 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
   // this calculates the CO2 produced from combined fermentation, methanogenesis and sulfate reduction
   double CO2_ferm_meth_sr = CO2_ferm * 44.01 + sum_rutmeth/COD_conv_meth_CO2 + sum_rutsr/COD_conv_sr_CO2;
   
-  NumericVector xa_fresh = parms["xa_fresh"];
+  NumericVector xa_fresh = parms[p_idx[49]];
   
   double sum_xa_fresh = std::accumulate(xa_fresh.begin(), xa_fresh.end(), 0.0);
 
@@ -347,15 +347,15 @@ List rates_cpp(double t, NumericVector y, List parms, Rcpp::Function temp_C_fun,
   
   NumericVector derivatives(nn);
   
-  NumericVector yield = parms["yield"];
+  NumericVector yield = parms[p_idx[50]];
   
   for (int i = 0; i < n_mic; i++) {
     derivatives[i] = scale_yield * yield[i] * rut[i] + scale_xa_fresh * xa_fresh[i] * slurry_prod_rate - decay_rate_double * xa[i];
   }
   
-  double rain = parms[2];
-  double evap = parms[5];
-  double N2O_emis_rate = parms["N2O_emis_rate"];
+  double rain = parms[p_idx[51]];
+  double evap = parms[52];
+  double N2O_emis_rate = parms[p_idx[53]];
   
   derivatives[n_mic] = slurry_prod_rate + (rain - evap) * area;
   derivatives[n_mic+1] = slurry_prod_rate * conc_fresh_xa_aer + xa_aer_rate - decay_rate_double * xa_aer;

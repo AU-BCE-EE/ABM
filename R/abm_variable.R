@@ -200,9 +200,11 @@ abm_variable <-
 
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
-
+    
+    p_idx <- pars_indices(pars)
+    
     # Call up ODE solver
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, temp_C_fun = temp_C_fun, 
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, p_idx = p_idx, temp_C_fun = temp_C_fun, 
                           pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
                           conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp)
     

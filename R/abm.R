@@ -293,7 +293,6 @@ abm <- function(
   
   # hard wired parameters, that will not change during a rates call
   # and was moved from rates to here to speed up model. These parameters are added in the hard_pars().
-  
   pars <- hard_pars(pars)
   
   if (is.numeric(pars$slurry_mass)) {

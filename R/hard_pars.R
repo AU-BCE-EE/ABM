@@ -7,7 +7,6 @@ hard_pars <- function(pars){
   pars$i_meth <- grep('^[mp]', names(pars$qhat_opt))-1 # -1 for match with CPP indexing
   pars$i_sr <- grep('^sr', names(pars$qhat_opt))-1 # -1 for match with CPP indexing
   pars$n_mic <- length(pars$qhat_opt)
-  pars$rut <- NA * pars$qhat_opt
   
   if(pars$conc_fresh$VSd <= 10E-9){
     pars$alpha_opt_scale_type <- pars$scale_alpha_opt[['notVSd']]
@@ -56,7 +55,6 @@ hard_pars <- function(pars){
   pars$carb_resp <- carb_resp # delete later if new rates_cpp works
   pars$pro_resp <- pro_resp # delete later if new rates_cpp works
   pars$lip_resp <- lip_resp # delete later if new rates_cpp works
-  
   
   pars$ace <- c(H2 = 0, C2H4O2 = -1, CO2 = 1, CH4 = 1, H2O = 0) # moles stoichiometry 
   pars$hyd <- c(H2 = -1, C2H4O2 = 0, CO2 = -1/4, CH4 = 1/4, H2O = 2/4)

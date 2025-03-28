@@ -3,8 +3,6 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
   
   #initialize dat for storage of results to speed up bind_rows
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) 
-   
-  pars$abm_regular <- TRUE
   
   empty_int <- pars$empty_int
   
@@ -68,10 +66,12 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     pars$t_run <- t_run
     pars$t_call <- t_call
     pars$times <- times
-    
+
+    p_idx <- pars_indices(pars)
+
     # Call up ODE solver
     #cat(t_rem, '\n')
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, 
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, p_idx = p_idx,
                           temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
                           conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp)
     #out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
@@ -105,7 +105,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
         times <- seq(0, pars$rest_d, delta_t)
         parsr <- pars
         parsr$slurry_prod_rate <- 0
-        outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
+        outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, p_idx = p_idx, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
                                SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, 
                                xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp)
         # Extract new state variable vector from last row

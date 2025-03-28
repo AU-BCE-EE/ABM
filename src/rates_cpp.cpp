@@ -400,18 +400,9 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
                         Named("NH3_emis_rate_pit") = NH3_emis_rate_pit,
                         Named("NH3_emis_rate_floor") = NH3_emis_rate_floor,
                         Named("N2O_emis_rate") = N2O_emis_rate,
-                        Named("qhat") = qhat,
-                        Named("alpha") = alpha,
-                        Named("H2S_inhib") = H2S_inhib,
-                        Named("NH3_inhib") = NH3_inhib,
-                        Named("NH4_inhib") = NH4_inhib,
-                        Named("HAC_inhib") = HAC_inhib,
-                        Named("cum_inhib") = cum_inhib,
                         Named("conc_fresh") = conc_fresh,
                         Named("xa_fresh") = xa_fresh * scale_xa_fresh,
-                        Named("area") = area,
                         Named("slurry_prod_rate") = slurry_prod_rate,
-                        Named("respiration") = respiration,  
                         Named("rain") = rain,
                         Named("evap") = evap);
   }

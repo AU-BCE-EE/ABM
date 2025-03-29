@@ -15,6 +15,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(biogas)
 ```
 
+# 1. simple
+
 Create stoichiometry matrix
 
 
@@ -37,5 +39,11 @@ And calculate all derivatives with matrix multiplication--one line of code!
 
 ```{r}
 s %*% dy
+```
+
+# 2. Multiple steps
+
+```{r}
+s
 ```
 

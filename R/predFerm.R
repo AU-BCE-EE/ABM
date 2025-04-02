@@ -7,7 +7,10 @@
 # predFerm('C6H10O5', acefrac = 1)
 
 # Function to get stoichiometry for custom organic reaction (O-19)
-customOrgStoich <- function(form, elements =  c('C', 'H', 'O', 'N')) {
+customOrgStoich <- function(
+  form, 
+  elements =  c('C', 'H', 'O', 'N')
+  ) {
   
   fc <- readFormula(form, elements)
 
@@ -19,7 +22,7 @@ customOrgStoich <- function(form, elements =  c('C', 'H', 'O', 'N')) {
   d <- 4 * n + a - 2 * b - 3 * cc
   
   # Put together
-  rr <- c(CO2 = - (n - cc) / d, NH4. = - cc / d, HCO3. = - cc / d)
+  rr <- c(CO2 = - (n - cc) / d, NH4. = - cc / d, HCO3. = - cc / d, H. = -1)
   rr[form] <-  1/d
   
   return(rr)
@@ -31,7 +34,10 @@ predFerm <- function(
   biomassform = 'C5H7O2N',  # Biomass empirical formula
   acefrac = 0.5,            # Acetate (vs. H2) fraction
   fs = 0,                    # Fraction substrate going to cell synthesis, fs in Rittmann and McCarty
-  elements = c('C', 'H', 'O', 'N')
+  elements = c('C', 'H', 'O', 'N'),
+  order = 'sort',
+  drop = TRUE,
+  tol = 1E-10
   ) {
 
   # Donor half reaction
@@ -42,7 +48,7 @@ predFerm <- function(
 
   # Acceptor reactions
   # Acetate production
-  raa <- c(CO2 = - 1/8, HCO3. = - 1/8, CH3COO. = 1/8, H2O = 3/8)
+  raa <- c(CO2 = - 1/8, HCO3. = - 1/8, H. = -1, CH3COO. = 1/8, H2O = 3/8)
   # Hydrogen production
   rah <- c(H. = - 1, H2 = 1 / 2)
 
@@ -61,12 +67,34 @@ predFerm <- function(
   rah <- rah[ii]
 
   # Acceptor reaction
-  ra <- acefrac * raa + (1 - acefrac) * rah - rd
+  ra <- acefrac * raa + (1 - acefrac) * rah 
 
   fe <- 1 - fs
   
   # Combine
   rtot <- fe * ra + fs * rc  - rd
+
+  # Simplify: Add TIC elements, combine NH4+ and H+
+  rtot['H.'] <- rtot['H.'] - rtot['HCO3.'] - rtot['CH3COO.'] + rtot['NH4.']
+  rtot['CO2'] <- rtot['CO2'] + rtot['HCO3.']
+  rtot['NH3'] <- rtot['NH4.']
+  rtot['CH3COOH'] <- rtot['CH3COO.'] 
+  rtot['CH3COO.'] <- rtot['NH4.'] <- rtot['HCO3.'] <- 0
+
+  rtot[abs(rtot) < tol] <- 0 
+  
+  # Drop empty elements
+  if (drop) {
+    rtot <- rtot[rtot != 0]
+  }
+
+  if (!is.na(order[1]) && tolower(order[1]) == 'sort') {
+    rtot <- rtot[order(rtot < 0, abs(rtot), decreasing = TRUE)]
+  } else if (!is.na(order[1]) && all(sort(order) == sort(names(rtot)))) {
+    rtot <- rtot[order]
+  } else if (!is.na(order[1])) {
+    warning('order argument ignored')
+  }
 
   return(rtot)
 

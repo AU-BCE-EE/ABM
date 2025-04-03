@@ -1,9 +1,10 @@
 ---
-title: 'New predFerm() function'
+title: 'New predFerm() and predMethan() function'
 author: 'Sasha D. Hafner'
-date: '2025-04-02'
+date: '2025-04-03'
 ---
 
+# Prep
 Load functions
 
 ```{r}
@@ -16,6 +17,8 @@ Or
 source('../../R/predFerm.R')
 source('../../R/readFormula.R')
 ```
+
+# Fermentation
 
 Arguments
 
@@ -38,4 +41,62 @@ predFerm('C6H10O5', acefrac = 1, fs = 0.2, order = NA)
 predFerm('C6H10O5', acefrac = 1, fs = 0.2, order = c('H2O', 'NH3', 'C6H10O5', 'C5H7O2N', 'CH3COOH'))
 
 predFerm('C6H10O5', acefrac = 0, fs = 0.2, drop = FALSE)
+```
+
+Check elemental balance
+
+```{r}
+x <- predFerm('C4H6.1O1.2N', acefrac = 0.5, fs = 0.2, biomassform = 'C5H7O2N1.1')
+x
+```
+
+H
+
+```{r}
+sum(x * c(2, 6.1, 2, 0, 4, 3, 7))
+```
+
+C
+
+```{r}
+sum(x * c(0, 4, 0, 1, 2, 0, 5))
+```
+
+
+# Methanogenesis
+
+```{r}
+predMethan('CH3COOH')
+predMethan('H2')
+
+predMethan('CH3COOH', fs = 0.1)
+predMethan('H2', fs = 0.1)
+
+predMethan('H2', fs = 0.1)
+```
+
+Could combine substrates, but would require `paste()` in ABM I guess.
+Molar ratios of course.
+
+```{r}
+predMethan('(CH3COOH)1 (H2)4', fs = 0.1)
+```
+
+Check elemental balance.
+
+```{r}
+x = predMethan('CH3COOH', fs = 0.1)
+x
+```
+
+H
+
+```{r}
+sum(x * c(4, 3, 4, 0, 2, 7))
+```
+
+C
+
+```{r}
+sum(x * c(2, 0, 1, 1, 0, 5))
 ```

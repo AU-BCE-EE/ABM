@@ -30,6 +30,7 @@ Usage
 
 ```{r}
 predFerm('C6H10O5', acefrac = 0)
+predFerm(c('C6H10O5', ' H3COOH'), acefrac = 0)
 predFerm('C6H10O5', acefrac = 1)
 predFerm('C6H10O5', acefrac = 0.5)
 predFerm('C4H6.1O1.2N', acefrac = 0.5)

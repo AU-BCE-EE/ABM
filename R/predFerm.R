@@ -37,9 +37,26 @@ predFerm <- function(
   fs = 0,                    # Fraction substrate going to cell synthesis, fs in Rittmann and McCarty
   elements = c('C', 'H', 'O', 'N'),
   order = 'sort',
-  drop = TRUE,
+  dropsub = FALSE,
+  dropzero = TRUE,
   tol = 1E-10
   ) {
+
+  # Vectorize, return matrix without substrate (for 1 mole substrate)
+  if (length(subform) > 1) {
+    res <- lapply(as.list(subform), predFerm, biomassform = biomassform, acefrac = acefrac, 
+                  fs = fs, elements = elements, order = FALSE, dropsub = TRUE, dropzero = FALSE, 
+                  tol = tol)
+    resmat <- matrix(unlist(res), nrow = length(subform), byrow = TRUE)
+    colnames(resmat) <- names(res[[1]])
+    rownames(resmat) <- subform
+
+    if (dropzero) {
+      resmat <- resmat[, colSums(resmat) != 0]
+    }
+    
+    return(resmat)
+  }
 
   # Donor half reaction
   rd <- customOrgStoich(subform, elements = elements)
@@ -76,17 +93,17 @@ predFerm <- function(
   # Combine
   rtot <- fe * ra + fs * rc  - rd
 
-  ## Simplify: Add TIC elements, combine NH4+ and H+
-  #rtot['H.'] <- rtot['H.'] - rtot['HCO3.'] - rtot['CH3COO.'] + rtot['NH4.']
-  #rtot['CO2'] <- rtot['CO2'] + rtot['HCO3.']
-  #rtot['NH3'] <- rtot['NH4.']
-  #rtot['CH3COOH'] <- rtot['CH3COO.'] 
-  #rtot['CH3COO.'] <- rtot['NH4.'] <- rtot['HCO3.'] <- 0
+  # Drop substrate if requested
+  if (isTRUE(dropsub)) {
+    # Adjust coefficients to 1 mol substrate
+    rtot <- - rtot / rtot[subform]
+    rtot <- rtot[names(rtot) != subform] 
+  }
 
   rtot[abs(rtot) < tol] <- 0 
   
   # Drop empty elements
-  if (drop) {
+  if (dropzero) {
     rtot <- rtot[rtot != 0]
   }
 
@@ -94,7 +111,7 @@ predFerm <- function(
     rtot <- rtot[order(rtot < 0, abs(rtot), decreasing = TRUE)]
   } else if (!is.na(order[1]) && all(sort(order) == sort(names(rtot)))) {
     rtot <- rtot[order]
-  } else if (!is.na(order[1])) {
+  } else if (!is.na(order[1]) || (inherits(order, 'logical') && isTRUE(order))) {
     warning('order argument ignored')
   }
 
@@ -139,15 +156,6 @@ predMethan <- function(
   
   # Combine
   rtot <- fe * ra + fs * rc  - rd
-
-  ## Simplify: Add TIC elements, combine NH4+ and H+
-  #minsp <- c('H.', 'HCO3.', 'CH3COOH', 'CH3COO.', 'NH4.', 'CO2', 'NH3', subform, biomassform)
-  #rtot[minsp[!minsp %in% names(rtot)]] <- 0
-  #rtot['H.'] <- rtot['H.'] - rtot['HCO3.'] - rtot['CH3COO.'] + rtot['NH4.']
-  #rtot['CO2'] <- rtot['CO2'] + rtot['HCO3.']
-  #rtot['NH3'] <- rtot['NH4.']
-  #rtot['CH3COOH'] <- rtot['CH3COOH'] + rtot['CH3COO.'] 
-  #rtot['CH3COO.'] <- rtot['NH4.'] <- rtot['HCO3.'] <- 0
 
   rtot[abs(rtot) < tol] <- 0 
   

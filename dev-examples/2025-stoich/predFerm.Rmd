@@ -30,7 +30,14 @@ Usage
 
 ```{r}
 predFerm('C6H10O5', acefrac = 0)
-predFerm(c('C6H10O5', ' H3COOH'), acefrac = 0)
+predFerm('C6H10O5', acefrac = 0.5)
+
+predMethan('(H2)0.25 (CO2)0.125 (CH3COOH)0.0625')
+# Maybe this
+#predMethan(acefrac = 0.5)
+
+predFerm(c('C6H10O5', 'CH3COOH2', 'C5H8O2N'), acefrac = 0.5, fs = 0.1)
+
 predFerm('C6H10O5', acefrac = 1)
 predFerm('C6H10O5', acefrac = 0.5)
 predFerm('C4H6.1O1.2N', acefrac = 0.5)
@@ -41,7 +48,7 @@ predFerm('C6H10O5', acefrac = 1, fs = 0.2)
 predFerm('C6H10O5', acefrac = 1, fs = 0.2, order = NA)
 predFerm('C6H10O5', acefrac = 1, fs = 0.2, order = c('H2O', 'NH3', 'C6H10O5', 'C5H7O2N', 'CH3COOH'))
 
-predFerm('C6H10O5', acefrac = 0, fs = 0.2, drop = FALSE)
+predFerm('C6H10O5', acefrac = 0, fs = 0.2, dropzero = FALSE)
 ```
 
 Check elemental balance
@@ -67,6 +74,10 @@ sum(x * c(0, 4, 0, 1, 2, 0, 5))
 # Methanogenesis
 
 ```{r}
+predMethan('CH3COOH')
+predMethan('H2')
+predMethan(c('CH3COOH', 'H2', 'C6H10O5'))
+predMethan(c('CH3COOH', 'H2', 'C6H10O5'), fs = 0.1)
 predMethan('CH3COOH')
 predMethan('H2')
 

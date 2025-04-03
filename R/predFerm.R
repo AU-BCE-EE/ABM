@@ -30,63 +30,20 @@ customOrgStoich <- function(
   
 }
 
-predFerm <- function(
-  subform = NULL,           # Character chemical formula of substrate
-  biomassform = 'C5H7O2N',  # Biomass empirical formula
-  acefrac = 0.5,            # Acetate (vs. H2) fraction
-  fs = 0,                    # Fraction substrate going to cell synthesis, fs in Rittmann and McCarty
-  elements = c('C', 'H', 'O', 'N'),
-  order = 'sort',
-  dropsub = FALSE,
-  dropzero = TRUE,
-  tol = 1E-10
-  ) {
+# General Rittmann and McCarty stype stoichiometry calculations
+RMStoich <- function(subform, rd, ra, rc, fs, dropzero, dropsub, order, tol) {
 
-  # Vectorize, return matrix without substrate (for 1 mole substrate)
-  if (length(subform) > 1) {
-    res <- lapply(as.list(subform), predFerm, biomassform = biomassform, acefrac = acefrac, 
-                  fs = fs, elements = elements, order = FALSE, dropsub = TRUE, dropzero = FALSE, 
-                  tol = tol)
-    resmat <- matrix(unlist(res), nrow = length(subform), byrow = TRUE)
-    colnames(resmat) <- names(res[[1]])
-    rownames(resmat) <- subform
-
-    if (dropzero) {
-      resmat <- resmat[, colSums(resmat) != 0]
-    }
-    
-    return(resmat)
-  }
-
-  # Donor half reaction
-  rd <- customOrgStoich(subform, elements = elements)
-
-  # Synthesis half reaction
-  rc <- customOrgStoich(biomassform, elements = elements)
-
-  # Acceptor reactions
-  # Acetate production
-  #raa <- c(CO2 = - 1/8, HCO3. = - 1/8, H. = -1, CH3COO. = 1/8, H2O = 3/8)
-  raa <- c(CO2 = - 1/4, H. = -1, CH3COOH = 1/8, H2O = 1/4)
-  # Hydrogen production
-  rah <- c(H. = - 1, H2 = 1 / 2)
-
-  ii <- unique(names(c(rd, rc, raa, rah)))
+  ii <- unique(names(c(rd, rc, ra)))
 
   # Blanks
   rd[ii[!ii %in% names(rd)]] <- 0
   rc[ii[!ii %in% names(rc)]] <- 0
-  raa[ii[!ii %in% names(raa)]] <- 0
-  rah[ii[!ii %in% names(rah)]] <- 0
+  ra[ii[!ii %in% names(ra)]] <- 0
 
   # Order
   rd <- rd[ii]
   rc <- rc[ii]
-  raa <- raa[ii]
-  rah <- rah[ii]
-
-  # Acceptor reaction
-  ra <- acefrac * raa + (1 - acefrac) * rah 
+  ra <- ra[ii]
 
   fe <- 1 - fs
   
@@ -111,9 +68,60 @@ predFerm <- function(
     rtot <- rtot[order(rtot < 0, abs(rtot), decreasing = TRUE)]
   } else if (!is.na(order[1]) && all(sort(order) == sort(names(rtot)))) {
     rtot <- rtot[order]
-  } else if (!is.na(order[1]) || (inherits(order, 'logical') && isTRUE(order))) {
+  } else if (inherits(order, 'logical') && isFALSE(order)) {
+    # Skips order
+  } else if (!is.na(order[1])) {
     warning('order argument ignored')
   }
+
+  return(rtot)
+
+}
+
+predFerm <- function(
+  subform = NULL,           # Character chemical formula of substrate
+  biomassform = 'C5H7O2N',  # Biomass empirical formula
+  acefrac = 0.5,            # Acetate (vs. H2) fraction
+  fs = 0,                    # Fraction substrate going to cell synthesis, fs in Rittmann and McCarty
+  elements = c('C', 'H', 'O', 'N'),
+  order = 'sort',
+  dropsub = FALSE,
+  dropzero = TRUE,
+  tol = 1E-10
+  ) {
+
+  # Vectorize, return matrix without substrate (for 1 mole substrate)
+  if (length(subform) > 1) {
+    res <- lapply(as.list(subform), predFerm, biomassform = biomassform, acefrac = acefrac, 
+                  fs = fs, elements = elements, order = FALSE, dropsub = TRUE, dropzero = FALSE, 
+                  tol = tol)
+    resmat <- matrix(unlist(res), nrow = length(subform), byrow = TRUE)
+    colnames(resmat) <- names(res[[1]])
+    rownames(resmat) <- subform
+
+    if (dropzero) {
+      resmat <- resmat[, colSums(resmat) != 0]
+    }
+    return(resmat)
+  }
+
+  # Donor half reaction
+  rd <- customOrgStoich(subform, elements = elements)
+
+  # Synthesis half reaction
+  rc <- customOrgStoich(biomassform, elements = elements)
+
+  # Acceptor reactions
+  # Acetate production
+  #raa <- c(CO2 = - 1/8, HCO3. = - 1/8, H. = -1, CH3COO. = 1/8, H2O = 3/8)
+  raa <- c(CO2 = - 1/4, H. = -1, CH3COOH = 1/8, H2O = 1/4)
+  # Hydrogen production
+  rah <- c(H. = - 1, H2 = 1 / 2)
+  
+  # Acceptor reaction
+  ra <- acefrac * raa + (1 - acefrac) * rah 
+
+  rtot <- RMStoich(subform = subform, rd = rd, ra = ra, rc = rc, fs = fs, dropzero = dropzero, dropsub = dropsub, order = order, tol = tol)
 
   return(rtot)
 
@@ -127,7 +135,7 @@ predMethan <- function(
   fs = 0,                   # Fraction substrate going to cell synthesis, fs in Rittmann and McCarty
   elements = c('C', 'H', 'O', 'N'),
   order = 'sort',
-  drop = TRUE,
+  dropzero = TRUE,
   tol = 1E-10
   ) {
 
@@ -137,7 +145,7 @@ predMethan <- function(
   # Synthesis half reaction
   rc <- customOrgStoich(biomassform, elements = elements)
 
-  # Acceptor reactions
+  # Acceptor reaction
   ra <- c(CO2 = - 1/8, H. = -1, CH4 = 1/8, H2O = 1/4)
 
   ii <- unique(names(c(rd, rc, ra)))
@@ -157,10 +165,17 @@ predMethan <- function(
   # Combine
   rtot <- fe * ra + fs * rc  - rd
 
-  rtot[abs(rtot) < tol] <- 0 
+  # Drop substrate if requested
+  if (isTRUE(dropsub)) {
+    # Adjust coefficients to 1 mol substrate
+    rtot <- - rtot / rtot[subform]
+    rtot <- rtot[names(rtot) != subform] 
+  }
+
+   rtot[abs(rtot) < tol] <- 0 
   
   # Drop empty elements
-  if (drop) {
+  if (dropzero) {
     rtot <- rtot[rtot != 0]
   }
 

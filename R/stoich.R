@@ -11,7 +11,8 @@ mol.carb_resp <- respiration * (y['RFd'] + y['starch'])/sub_resp * 0.005208333
 mol.pro_resp <- (respiration * y['CPs']/sub_resp + respiration * y['CPf']/sub_resp)  * 0.00748503
 mol.lip_resp <- respiration * y['Cfat']/sub_resp * 0.0004194631
 
-# if VSd is used. based on composition of degradable cattle manure excluding vfa (Appendix 1, ABM paper)
+# if VSd is used. based on composition of degradable cattle manure excluding 
+# vfa (Appendix 1, ABM paper)
 if(conc_fresh[['VSd']] > 1e-10){
   mol.carb <- alpha['VSd'] * y['VSd'] * 0.002753327
   mol.pro <- alpha['VSd'] * y['VSd'] * 0.00176104

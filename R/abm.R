@@ -205,15 +205,16 @@ abm <- function(
 
   # Create time-variable functions
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
+  # Need to decide if pH = 'calc' should be an option. Then need to ix below.  
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
-  pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method['pH'])
+  pH_fun <- ifelse(pars$pH != 'calc', makeTimeFunc(pars$pH, approx_method = approx_method['pH']), pars$pH)
   conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
   
   # add time to xa_fresh and get xa_fresh funs
   if(is.data.frame(pars$xa_fresh)) pars$xa_fresh$time <- xa_fresh_time
   xa_fresh_fun <- makeXaFreshFunc(pars$xa_fresh)
   
-  # Inhibition function
+  # Inhibition function. Not used currently. Instead we use inhibition from NH3, NH4, H2S and VFA
   td <- data.frame(SO4_conc = c(0, 0.09, 0.392251223, 0.686439641, 1.046003263, 1.470942088, 1.961256117, 4), 
                    SO4_inhib = c(1, 1, 0.85, 0.3172, 0.29, 0.1192, 0.05, 0.001))
   SO4_inhibition_fun <- approxfun(td$SO4_conc, td$SO4_inhib, rule = 2)

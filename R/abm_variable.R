@@ -49,9 +49,17 @@ abm_variable <-
 
   # Adjust slurry_mass for rain and evaporation, so that it is actually the mass of *slurry* added or removed (excluding downstream addition or removal of water) 
   # First get net precip/evap addition as a daily rate in kg/d (mm/d * m2 * density = kg/d)
-  pe_netr <- (pars$rain - pars$evap) * pars$area * (pars$dens / 1000) 
-  slurry_mass_orig <- pars$slurry_mass$slurry_mass
-  pars$slurry_mass$slurry_mass <- pars$slurry_mass$slurry_mass - cumsum(c(0, diff(pars$slurry_mass$time) * pe_netr))
+  # Cannot combine this with mid approach--technically impossible and practically difficult
+  if (slurry_mass_approx != 'mid') {
+    pe_netr <- (pars$rain - pars$evap) * pars$area * (pars$dens / 1000) 
+    slurry_mass_orig <- pars$slurry_mass$slurry_mass
+    pars$slurry_mass$slurry_mass <- pars$slurry_mass$slurry_mass - cumsum(c(0, diff(pars$slurry_mass$time) * pe_netr))
+  } else {
+    if (any(c(pars$rain != 0, pars$evap != 0))) {
+      warning('Setting rain and evap to 0 because "mid" method was selected.')
+    }
+    pars$rain <- pars$evap <- 0
+  }
   if (any(pars$slurry_mass$slurry_mass < 0)) {
     stop('Negative slurry mass values after adjustment for rain and evaporation.\n  Check parameters and try again.')
   }
@@ -70,21 +78,21 @@ abm_variable <-
     mm <- pars$slurry_mass[ir, 'slurry_mass']
     pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm))
     pars$slurry_mass <- pars$slurry_mass[order(pars$slurry_mass$time), ]
-    # Then apply early (late??) removal method
+    # Then apply late removal method
     removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0
-    #removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0
-    slurry_mass_approx <- 'late'
   } 
 
   # Extract slurry_mass for use in emptying calculations
   slurry_mass <- pars$slurry_mass[, 'slurry_mass']
   
   # For removal/emptying events, which are instant, set slurry_mass back to original
-  if (slurry_mass_approx %in% c('late', 'mid')) {
+  if (slurry_mass_approx == 'late') {
     slurry_mass[c(removals[-1], FALSE)] <- slurry_mass_orig[c(removals[-1], FALSE)]
   } else if (slurry_mass_approx == 'early') {
     slurry_mass[removals] <- slurry_mass_orig[removals]
-  } 
+  } else if (slurry_mass_approx == 'mid') {
+    slurry_mass_approx <- 'late'
+  }
   
   # Extract washing mass
   if ('wash_water' %in% names(pars$slurry_mass)) {

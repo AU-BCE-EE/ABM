@@ -209,7 +209,7 @@ abm <- function(
   
   # Convert temperature constants to K if needed
   pars <- tempsC2K(pars, ll = 200)
-  
+
   # Create time-variable functions
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])

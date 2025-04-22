@@ -15,7 +15,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        slurry_prod_rate <- graze_fun(t,  t_run, days, slurry_prod_rate, graze_int, graze_hours = graze[['hours_day']])
     }
 
-       
     # pH, numeric, variable, or from H2SO4
     if (is.numeric(pH) | is.data.frame(pH)) {
       pH <- pH_fun(t + t_run)
@@ -26,31 +25,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     }
     # Remove name 'pH' that sometimes comes along
     pH <- as.numeric(pH)
-    
-    # calculate time of a batch
-    if (!is.na(wash_int)){
-      batches <- c(floor((t + t_run)/(wash_int + rest_d)))
-      t_batch <- (t + t_run) - batches * (wash_int + rest_d)
-      if (t_batch > wash_int) t_batch <- 0
-    } else {
-      t_batch <- 0
-    }
-    
-    ######REMOVE BELOW
-    # if urea fresh increase during a batch 
-    if (!is.na(slopes[['urea']]) & !is.data.frame(conc_fresh)) {
-      start_urea <- conc_fresh[['urea']] - slopes[['urea']] * wash_int/2
-      conc_fresh[['urea']] <- slopes[['urea']] * t_batch + start_urea
-    }
-    
-    # if slurry production increases during a batch
-    slurry_prod_rate_default <- slurry_prod_rate
-    
-    if (!is.na(slopes[['slurry_prod_rate']]) && slurry_prod_rate_default != 0 && !is.na(wash_int)) {
-      start_slurry_prod_rate <- slurry_prod_rate_default - slopes[['slurry_prod_rate']] * wash_int/2
-      slurry_prod_rate <- slopes[['slurry_prod_rate']] * t_batch + start_slurry_prod_rate
-      if (t_batch > wash_int) slurry_prod_rate <- 0
-    }
     
     # For time-variable fresh concentrations, need to use function to get fresh concentrations at particular time
     if(is.data.frame(conc_fresh)){
@@ -316,7 +290,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
                                qhat = qhat, alpha = alpha, CO2_ferm = CO2_ferm, CO2_ferm_meth_sr = CO2_ferm_meth_sr, CO2_resp = ferm[['CO2_resp']],
                                H2S_inhib = H2S_inhib, NH3_inhib = NH3_inhib, NH4_inhib = NH4_inhib,
                                TAN_min_resp = ferm[['TAN_min_resp']], TAN_min_ferm = ferm[['TAN_min_ferm']], HAC_inhib = HAC_inhib, cum_inhib = cum_inhib, 
-                               rut = rut, rut_urea = rut_urea, t_run = t_run, t_batch = t_batch, conc_fresh = conc_fresh, xa_init = xa_init, 
-                               xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, t_batch = t_batch, slurry_prod_rate = slurry_prod_rate,
+                               rut = rut, rut_urea = rut_urea, t_run = t_run, conc_fresh = conc_fresh, xa_init = xa_init, 
+                               xa_fresh = xa_fresh * scale[['xa_fresh']], area = area, slurry_prod_rate = slurry_prod_rate,
                                respiration = respiration, rain = rain, evap = evap)))
 }

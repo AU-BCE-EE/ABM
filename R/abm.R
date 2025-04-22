@@ -120,13 +120,6 @@ abm <- function(
     pars$conc_init <- pars$conc_fresh[1, -which(names(pars$conc_fresh) == "time")]
   } 
   
-  
-  # Combine pars to make extraction and pass to rates() easier
-
-  # Create error if batch time is not determined and slurry rate should increase over a batch
-  if (is.na(pars$wash_int) && !is.na(pars$slopes['slurry_prod_rate'])){
-    stop('wash interval cannot be "NA" when slurry production rate increase over a batch of animals, since wash interval defines a batch time')
-  }
   # Sort out parameter inputs
   # Note: pe.pars = add_pars that use par.element approach, these are converted to normal (simple) add_par elements here
   # Note: sa.pars = normal (simple) add_pars that do not need to be converted

@@ -224,7 +224,7 @@ abm <- function(
   # Convert some supplied parameters
   # Maximum slurry mass in kg
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
-  pars$resid_mass <- pars$resid_depth * pars$area * 1000
+  pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
 
   # Cover effect on NH3 emission rate and N2O
   # reduction from cover 

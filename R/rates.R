@@ -9,6 +9,19 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     
     # all elements in parms exported to current environment
     list2env(parms, envir = environment())
+    
+    # Find methanogens and sulfate reducers
+    #### replace with GREP instead or use C++
+    i_meth <- grepl('^[mp]', names(qhat_opt))
+    i_sr <- grepl('^sr', names(qhat_opt))
+    n_mic <- length(qhat_opt)
+    
+    # Extract state variable values from y argument
+    xa <- y[1:n_mic]
+    y <- as.list(y[-c(1:n_mic)])
+    
+    # Move elements of y into rates environment
+    list2env(y, envir = environment())
 
     # correct slurry production rate in periods with grazing
     if(!is.null(graze_int) & any(graze_int != 0)) {
@@ -42,15 +55,13 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     if (is.numeric(pH) | is.data.frame(pH)) {
       pH <- pH_fun(t + t_run)
     } else if (pH == 'calc') {
-      pH <- H2SO4_titrat(conc_SO4 = conc_fresh[['sulfate']], class_anim = "pig")$pH
+      # need to be the concentration of sulfate in the slurry, not concentration in the fresh
+      pH <- H2SO4_titrat(conc_SO4 = sulfate/slurry_mass, class_anim = "pig")$pH
     } else {
       stop('pH problem (xi342)')
     }
     # Remove name 'pH' that sometimes comes along
     pH <- as.numeric(pH)
-    
-    
-    
     
     xa_fresh <- if (is.data.frame(xa_fresh)) {
       sapply(seq_along(grps), function(i) {
@@ -70,20 +81,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     #temp functions
     temp_C <- temp_C_fun(t + t_run)
     temp_K <- temp_C + 273.15
-
-    
-    # Find methanogens and sulfate reducers
-    #### replace with GREP instead or use C++
-    i_meth <- grepl('^[mp]', names(qhat_opt))
-    i_sr <- grepl('^sr', names(qhat_opt))
-    n_mic <- length(qhat_opt)
-    
-    # Extract state variable values from y argument
-    xa <- y[1:n_mic]
-    y <- as.list(y[-c(1:n_mic)])
-
-    # Move elements of y into rates environment
-    list2env(y, envir = environment())
 
     # Hard-wired equilibrium constants
     log_ka <- c(NH3 = - 0.09046 - 2729.31/temp_K, 

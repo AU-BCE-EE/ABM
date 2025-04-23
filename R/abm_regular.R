@@ -79,7 +79,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     #out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
     #                      temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
     #                      conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
-  
+
     # Get number of microbial groups
     n_mic <- length(pars$n_mic)
 

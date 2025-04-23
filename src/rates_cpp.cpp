@@ -299,56 +299,25 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   if (Rcpp::is<Rcpp::DataFrame>(conc_fresh_object)){
   
   // If it is a DataFrame, we need to declare a temp list for results
-    Rcpp::List temp_new_list_from_df;
-
-    // For sulfide
-    Rcpp::Function sulfide_func = as<Rcpp::Function>(conc_fresh_fun[0]);
-    temp_new_list_from_df[0] = as<double>(sulfide_func(time_sum)); // Assign to element of the NEW list
-    // For urea
-    Rcpp::Function urea_func = as<Rcpp::Function>(conc_fresh_fun[1]);
-    temp_new_list_from_df[1] = as<double>(urea_func(time_sum));
-    // For sulfate
-    Rcpp::Function sulfate_func = as<Rcpp::Function>(conc_fresh_fun[2]);
-    temp_new_list_from_df[2] = as<double>(sulfate_func(time_sum));
-    // For TAN
-    Rcpp::Function TAN_func = as<Rcpp::Function>(conc_fresh_fun[3]);
-    temp_new_list_from_df[3] = as<double>(TAN_func(time_sum));
-    // For starch
-    Rcpp::Function starch_func = as<Rcpp::Function>(conc_fresh_fun[4]);
-    temp_new_list_from_df[4] = as<double>(starch_func(time_sum));
-    // For VFA
-    Rcpp::Function VFA_func = as<Rcpp::Function>(conc_fresh_fun[5]);
-    temp_new_list_from_df[5] = as<double>(VFA_func(time_sum));
-    // For xa_aer
-    Rcpp::Function xa_aer_func = as<Rcpp::Function>(conc_fresh_fun[6]);
-    temp_new_list_from_df[6] = as<double>(xa_aer_func(time_sum));
-    // For xa_bac
-    Rcpp::Function xa_bac_func = as<Rcpp::Function>(conc_fresh_fun[7]);
-    temp_new_list_from_df[7] = as<double>(xa_bac_func(time_sum));
-    // For xa_dead
-    Rcpp::Function xa_dead_func = as<Rcpp::Function>(conc_fresh_fun[8]);
-    temp_new_list_from_df[8] = as<double>(xa_dead_func(time_sum));
-    // For Cfat
-    Rcpp::Function Cfat_func = as<Rcpp::Function>(conc_fresh_fun[9]);
-    temp_new_list_from_df[9] = as<double>(Cfat_func(time_sum));
-    // For CPs
-    Rcpp::Function CPs_func = as<Rcpp::Function>(conc_fresh_fun[10]);
-    temp_new_list_from_df[10] = as<double>(CPs_func(time_sum));
-    // For CPf
-    Rcpp::Function CPf_func = as<Rcpp::Function>(conc_fresh_fun[11]);
-    temp_new_list_from_df[11] = as<double>(CPf_func(time_sum));
-    // For RFd
-    Rcpp::Function RFd_func = as<Rcpp::Function>(conc_fresh_fun[12]);
-    temp_new_list_from_df[12] = as<double>(RFd_func(time_sum));
-    // For iNDF
-    Rcpp::Function iNDF_func = as<Rcpp::Function>(conc_fresh_fun[13]);
-    temp_new_list_from_df[13] = as<double>(iNDF_func(time_sum));
-    // For VSd
-    Rcpp::Function VSd_func = as<Rcpp::Function>(conc_fresh_fun[14]);
-    temp_new_list_from_df[14] = as<double>(VSd_func(time_sum));
-    // For ash
-    Rcpp::Function ash_func = as<Rcpp::Function>(conc_fresh_fun[15]);
-    temp_new_list_from_df[15] = as<double>(ash_func(time_sum));
+  // this step is extremely slow, but works.
+    Rcpp::List temp_new_list_from_df(16);
+    temp_new_list_from_df['sulfide'] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_sulfide"])(time_sum));
+    temp_new_list_from_df["urea"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_urea"])(time_sum));
+    temp_new_list_from_df["sulfate"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_sulfate"])(time_sum));
+    temp_new_list_from_df["TAN"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_TAN"])(time_sum));
+    temp_new_list_from_df["starch"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_starch"])(time_sum));
+    temp_new_list_from_df["VFA"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_VFA"])(time_sum));
+    temp_new_list_from_df["xa_aer"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_aer"])(time_sum));
+    temp_new_list_from_df["xa_bac"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_bac"])(time_sum));
+    temp_new_list_from_df["xa_dead"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_dead"])(time_sum));
+    temp_new_list_from_df["Cfat"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_Cfat"])(time_sum));
+    temp_new_list_from_df["CPs"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_CPs"])(time_sum));
+    temp_new_list_from_df["CPf"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_CPf"])(time_sum));
+    temp_new_list_from_df["RFd"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_RFd"])(time_sum));
+    temp_new_list_from_df["iNDF"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_iNDF"])(time_sum));
+    temp_new_list_from_df["VSd"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_VSd"])(time_sum));
+    temp_new_list_from_df["ash"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_ash"])(time_sum)); // Added ash
+    
     // After populating the new list, assign it to the 'conc_fresh' variable
     // declared BEFORE the if/else. This makes the list available afterwards.
     conc_fresh = temp_new_list_from_df; // Assign the NEWLY CREATED list to the outer 'conc_fresh'

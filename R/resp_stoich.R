@@ -2,16 +2,16 @@ resp_stoich <- function(conc_fresh, carb_resp, pro_resp, lip_resp){
   
   # mole fermented per day: coefficients in the end has unit of mole/gCOD and "mol.carb, mol.pro, mol.lip" is mole /day
   
-  sub_resp <- conc_fresh$starch + conc_fresh$Cfat + conc_fresh$RFd + conc_fresh$CPf + conc_fresh$CPs + conc_fresh$VSd
+  sub_resp <- conc_fresh$starch[1] + conc_fresh$Cfat[1] + conc_fresh$RFd[1] + conc_fresh$CPf[1] + conc_fresh$CPs[1] + conc_fresh$VSd[1]
   
-  if (conc_fresh['VSd'] <= 1e-10) { # macro molecular approach
-    mol.carb_resp <- (conc_fresh$RFd + conc_fresh$starch) / sub_resp * 0.005208333 * carb_resp
-    mol.pro_resp  <- (conc_fresh$CPs + conc_fresh$CPf) / sub_resp * 0.00748503 * pro_resp
-    mol.lip_resp  <- conc_fresh$Cfat / sub_resp * 0.0004194631 * lip_resp
+  if (any(conc_fresh['VSd'] <= 1e-10)) { # macro molecular approach
+    mol.carb_resp <- (conc_fresh$RFd[1] + conc_fresh$starch[1]) / sub_resp * 0.005208333 * carb_resp
+    mol.pro_resp  <- (conc_fresh$CPs[1] + conc_fresh$CPf[1]) / sub_resp * 0.00748503 * pro_resp
+    mol.lip_resp  <- conc_fresh$Cfat[1] / sub_resp * 0.0004194631 * lip_resp
   } else { # VSd approach
-    mol.carb_resp <- (conc_fresh$VSd) / sub_resp * 0.002753327 * carb_resp
-    mol.pro_resp  <- (conc_fresh$VSd)/ sub_resp * 0.00176104 * pro_resp
-    mol.lip_resp  <- (conc_fresh$VSd)/ sub_resp * 9.902938e-05 * lip_resp
+    mol.carb_resp <- (conc_fresh$VSd[1]) / sub_resp * 0.002753327 * carb_resp
+    mol.pro_resp  <- (conc_fresh$VSd[1])/ sub_resp * 0.00176104 * pro_resp
+    mol.lip_resp  <- (conc_fresh$VSd[1])/ sub_resp * 9.902938e-05 * lip_resp
   }
   
   resp <- mol.carb_resp + mol.pro_resp + mol.lip_resp

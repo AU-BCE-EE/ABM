@@ -7,13 +7,13 @@ hard_pars <- function(pars){
   pars$i_meth <- grep('^[mp]', names(pars$qhat_opt))-1 # -1 for match with CPP indexing
   pars$i_sr <- grep('^sr', names(pars$qhat_opt))-1 # -1 for match with CPP indexing
   pars$n_mic <- length(pars$qhat_opt)
-  
-  if(pars$conc_fresh$VSd <= 10E-9){
+
+  if(any(pars$conc_fresh$VSd <= 10E-9)){
     pars$alpha_opt_scale_type <- pars$scale_alpha_opt[['notVSd']]
     pars$alpha_opt_scale_CP <- pars$scale_alpha_opt[['CP']]
 
     
-  } else if(pars$conc_fresh$VSd > 10E-9){
+  } else if(any(pars$conc_fresh$VSd > 10E-9)){
     pars$alpha_opt_scale_type  <- pars$scale_alpha_opt[['VSd']]
     pars$alpha_opt_scale_CP <- 1
   }
@@ -60,7 +60,7 @@ hard_pars <- function(pars){
   pars$hyd <- c(H2 = -1, C2H4O2 = 0, CO2 = -1/4, CH4 = 1/4, H2O = 2/4)
   pars$ace_sr <- c(H2 = 0, C2H4O2 = -1, H2SO4 = -1, CO2 = 2, H2O = 2, H2S = 1) 
   pars$hyd_sr <- c(H2 = -1, C2H4O2 = 0, H2SO4 = -1/4, CO2 = 0, H2O = 1, H2S = 1/4) 
-  
+
   resp_stoich_out <- resp_stoich(pars$conc_fresh, carb_resp, pro_resp, lip_resp)
 
   # these should be factored by "respiration" inside rates call.

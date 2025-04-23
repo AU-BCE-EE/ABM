@@ -4,7 +4,8 @@ using namespace Rcpp;
 using namespace std;
 // [[Rcpp::export]]
 List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp::Function temp_C_fun, Rcpp::Function pH_fun, 
-                  Rcpp::Function SO4_inhibition_fun, List conc_fresh_fun, NumericVector xa_fresh_fun, Rcpp::Function CTM_cpp){
+                  Rcpp::Function SO4_inhibition_fun, List conc_fresh_fun, NumericVector xa_fresh_fun, Rcpp::Function CTM_cpp, 
+                  Rcpp::Function H2SO4_titrate){
   
   //y[y < 1E-10] <- 1E-10
   std::transform(y.begin(), y.end(), y.begin(), [](double value) {
@@ -21,16 +22,10 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   //#}
   
   // not implemented variable conc_fresh and variable xa_fresh either
-  // variable conc_frehs should be calculated from the List conc_fresh_fun
+  // variable conc_fresh should be calculated from the List conc_fresh_fun
   // variable xa_fresh should be calculated from the xa_fresh_fun, which currently is a numeric vector or a data.frame.
   // need to always be of the same type (this could be a list or just an interpolation function).This is for later. 
   // print()Currently I pass it as a NumericVector (so variable is not an option currently)
-  
-  double pH = as<double>(pH_fun(t + t_run)); // missing the H2SO4 calc stuff.
-  double temp_C = as<double>(temp_C_fun(t + t_run));
-  double temp_K = temp_C + 273.15;
-  double temp_standard = parms[p_idx[3]];
-  
   // Extract state variable values from y argument
   NumericVector xa = y[Range(0, n_mic - 1)];
   
@@ -64,6 +59,29 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   double N_load_cum = y[n_mic+27];
   double slurry_load_cum = y[n_mic+28];
 
+  // ... (previous includes, namespace, function signature, and variable extractions) ...
+  
+  double time_sum = t + t_run; // This calculation is necessary as it's the input to pH_fun
+  
+  double pH = as<double>(pH_fun(time_sum)); // Necessary call to pH_fun to get the result
+  
+  if (pH == -1.0) {
+      double conc_SO4_arg = sulfate / slurry_mass;
+      
+      // Call the R H2SO4_titrate function - necessary call ONLY in this branch
+      List titration_result = as<List>(H2SO4_titrate(
+        Rcpp::Named("conc_SO4") = conc_SO4_arg,
+        Rcpp::Named("pH_target") = 7, // not used, but must be stated
+        Rcpp::Named("class_anim") = "pig"
+      ));
+      
+      pH = titration_result[0]; // Assign the result from H2SO4_titrate
+    }
+
+  double temp_C = as<double>(temp_C_fun(time_sum));
+  double temp_K = temp_C + 273.15;
+  double temp_standard = parms[p_idx[3]];
+  
   // Arrhenius parms for hydrolysis stuff
   NumericVector A = parms[p_idx[4]];
   NumericVector E = parms[p_idx[5]];

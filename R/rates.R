@@ -19,7 +19,7 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
     if (is.numeric(pH) | is.data.frame(pH)) {
       pH <- pH_fun(t + t_run)
     } else if (pH == 'calc') {
-      pH <- H2SO4_titrat(conc_SO4 = conc_fresh[['sulfate']], class_anim = "pig")$pH
+      pH <- H2SO4_titrat(conc_SO4 = sulfate, class_anim = "pig")$pH
     } else {
       stop('pH problem (xi342)')
     }

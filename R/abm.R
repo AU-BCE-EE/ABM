@@ -206,6 +206,7 @@ abm <- function(
   
   # Create time-variable functions
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
+
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
   pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method['pH'])
   conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
@@ -214,7 +215,7 @@ abm <- function(
   if(is.data.frame(pars$xa_fresh)) pars$xa_fresh$time <- xa_fresh_time
   xa_fresh_fun <- makeXaFreshFunc(pars$xa_fresh)
   
-  # Inhibition function
+  # NTS Inhibition function. Can be exported as separate function (like H2SO4_titrate)!
   td <- data.frame(SO4_conc = c(0, 0.09, 0.392251223, 0.686439641, 1.046003263, 1.470942088, 1.961256117, 4), 
                    SO4_inhib = c(1, 1, 0.85, 0.3172, 0.29, 0.1192, 0.05, 0.001))
   SO4_inhibition_fun <- approxfun(td$SO4_conc, td$SO4_inhib, rule = 2)
@@ -294,7 +295,7 @@ abm <- function(
   # hard wired parameters, that will not change during a rates call
   # and was moved from rates to here to speed up model. These parameters are added in the hard_pars().
   pars <- hard_pars(pars)
-  
+
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
     dat <- abm_regular(days = days, delta_t = delta_t, times_regular = times, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  

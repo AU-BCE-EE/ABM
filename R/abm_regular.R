@@ -71,9 +71,11 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
 
     # Call up ODE solver
     #cat(t_rem, '\n')
+
     out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, p_idx = p_idx,
                           temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp)
+                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp,
+                          H2SO4_titrat = H2SO4_titrat)
     #out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
     #                      temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
     #                      conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
@@ -107,7 +109,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
         parsr$slurry_prod_rate <- 0
         outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, p_idx = p_idx, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
                                SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, 
-                               xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp)
+                               xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp, H2SO4_titrat = H2SO4_titrat)
         # Extract new state variable vector from last row
         y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 29) + 1]
         # Correct time in outr and combine with main output

@@ -200,7 +200,8 @@ abm_variable <-
     # Call up ODE solver
     out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, p_idx = p_idx, temp_C_fun = temp_C_fun, 
                           pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp)
+                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp, 
+                          H2SO4_titrat = H2SO4_titrat)
     
     # Change format of output and drop first (time 0) row (duplicated in last row of previous)
     if (i == 2) {

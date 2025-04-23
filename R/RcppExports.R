@@ -25,7 +25,7 @@ extract_xa_cpp <- function(y, n_mic) {
     .Call('_ABM_extract_xa_cpp', PACKAGE = 'ABM', y, n_mic)
 }
 
-rates_cpp <- function(t, y, parms, p_idx, temp_C_fun, pH_fun, SO4_inhibition_fun, conc_fresh_fun, xa_fresh_fun, CTM_cpp) {
-    .Call('_ABM_rates_cpp', PACKAGE = 'ABM', t, y, parms, p_idx, temp_C_fun, pH_fun, SO4_inhibition_fun, conc_fresh_fun, xa_fresh_fun, CTM_cpp)
+rates_cpp <- function(t, y, parms, p_idx, temp_C_fun, pH_fun, SO4_inhibition_fun, conc_fresh_fun, xa_fresh_fun, CTM_cpp, H2SO4_titrate) {
+    .Call('_ABM_rates_cpp', PACKAGE = 'ABM', t, y, parms, p_idx, temp_C_fun, pH_fun, SO4_inhibition_fun, conc_fresh_fun, xa_fresh_fun, CTM_cpp, H2SO4_titrate)
 }
 

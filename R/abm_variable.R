@@ -48,34 +48,22 @@ abm_variable <-
   droptimes <- times[!times %in% times.orig]
 
   # Adjust slurry_mass for rain and evaporation, so that it is actually the mass of *slurry* added or removed (excluding downstream addition or removal of water) 
-  # Since removals are all instant, rain/evap has no effect on them (but does eventually catch up)
-  # First get net precip/evap addition as a daily rate in kg/d
-  
-  pe_netr <- (pars$rain - pars$evap) * pars$area * (pars$dens / 1000) 
-  tempty <- 0
-  
-  for (i in 2:nrow(pars$slurry_mass)) {
-    ddt <- pars$slurry_mass$time[i] - tempty
-    pe_net <- pe_netr * ddt
-    dm <- pars$slurry_mass$slurry_mass[i] - pars$slurry_mass$slurry_mass[i - 1]
-    dmadj <- pars$slurry_mass$slurry_mass[i] - pars$slurry_mass$slurry_mass[i - 1] - pe_net
-
-    # Then event will be addition
-    if (dm > 0) {
-      if (dmadj < 0) {
-        pars$slurry_mass$slurry_mass[i] <- pars$slurry_mass$slurry_mass[i - 1]
-      } else {
-        pars$slurry_mass$slurry_mass[i] <- pars$slurry_mass$slurry_mass[i] - pe_net
-      }
-    } else {
-      if(dmadj >= 0) {
-        pars$slurry_mass$slurry_mass[i] <- pars$slurry_mass$slurry_mass[i] - pe_net
-      } else {
-        tempty <- pars$slurry_mass$time[i]
-      }
+  # First get net precip/evap addition as a daily rate in kg/d (mm/d * m2 * density = kg/d)
+  # Cannot combine this with mid approach--technically impossible and practically difficult
+  if (slurry_mass_approx != 'mid') {
+    pe_netr <- (pars$rain - pars$evap) * pars$area * (pars$dens / 1000) 
+    slurry_mass_orig <- pars$slurry_mass$slurry_mass
+    pars$slurry_mass$slurry_mass <- pars$slurry_mass$slurry_mass - cumsum(c(0, diff(pars$slurry_mass$time) * pe_netr))
+  } else {
+    if (any(c(pars$rain != 0, pars$evap != 0))) {
+      warning('Setting rain and evap to 0 because "mid" method was selected.')
     }
+    pars$rain <- pars$evap <- 0
   }
-
+  if (any(pars$slurry_mass$slurry_mass < 0)) {
+    stop('Negative slurry mass values after adjustment for rain and evaporation.\n  Check parameters and try again.')
+  }
+  
   # Determine slurry removal quantity in each time interval
   # Note final 0--alignment is a bit tricky
   if (slurry_mass_approx == 'late') {
@@ -90,16 +78,22 @@ abm_variable <-
     mm <- pars$slurry_mass[ir, 'slurry_mass']
     pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm))
     pars$slurry_mass <- pars$slurry_mass[order(pars$slurry_mass$time), ]
-    # Then apply early removal method
+    # Then apply late removal method
     removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0
-    #removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0
-    slurry_mass_approx <- 'late'
   } 
-
 
   # Extract slurry_mass for use in emptying calculations
   slurry_mass <- pars$slurry_mass[, 'slurry_mass']
-
+  
+  # For removal/emptying events, which are instant, set slurry_mass back to original
+  if (slurry_mass_approx == 'late') {
+    slurry_mass[c(removals[-1], FALSE)] <- slurry_mass_orig[c(removals[-1], FALSE)]
+  } else if (slurry_mass_approx == 'early') {
+    slurry_mass[removals] <- slurry_mass_orig[removals]
+  } else if (slurry_mass_approx == 'mid') {
+    slurry_mass_approx <- 'late'
+  }
+  
   # Extract washing mass
   if ('wash_water' %in% names(pars$slurry_mass)) {
     wash_water <- pars$slurry_mass[, 'wash_water']

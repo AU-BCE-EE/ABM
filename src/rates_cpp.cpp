@@ -288,29 +288,98 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   
   //CO2_ferm_meth_sr <- ferm$ferm[['CO2']] * 44.01 + sum(rut[i_meth+1])/ferm$COD_conv_meth_CO2[[1]] + sum(rutsr)/ferm$COD_conv_sr_CO2[[1]]
   //CO2_ferm <- ferm$ferm[['CO2']] * 44.01 
+
+  // Using user's name 'conc_fresh_object'
+  Rcpp::RObject conc_fresh_object = parms[p_idx[38]];
+  
+  // Declare the variable that will hold the final 'conc_fresh' list.
+  Rcpp::List conc_fresh; //
+  
+  // Check if the element is a DataFrame
+  if (Rcpp::is<Rcpp::DataFrame>(conc_fresh_object)){
+  
+  // If it is a DataFrame, we need to declare a temp list for results
+    Rcpp::List temp_new_list_from_df;
+
+    // For sulfide
+    Rcpp::Function sulfide_func = as<Rcpp::Function>(conc_fresh_fun[0]);
+    temp_new_list_from_df[0] = as<double>(sulfide_func(time_sum)); // Assign to element of the NEW list
+    // For urea
+    Rcpp::Function urea_func = as<Rcpp::Function>(conc_fresh_fun[1]);
+    temp_new_list_from_df[1] = as<double>(urea_func(time_sum));
+    // For sulfate
+    Rcpp::Function sulfate_func = as<Rcpp::Function>(conc_fresh_fun[2]);
+    temp_new_list_from_df[2] = as<double>(sulfate_func(time_sum));
+    // For TAN
+    Rcpp::Function TAN_func = as<Rcpp::Function>(conc_fresh_fun[3]);
+    temp_new_list_from_df[3] = as<double>(TAN_func(time_sum));
+    // For starch
+    Rcpp::Function starch_func = as<Rcpp::Function>(conc_fresh_fun[4]);
+    temp_new_list_from_df[4] = as<double>(starch_func(time_sum));
+    // For VFA
+    Rcpp::Function VFA_func = as<Rcpp::Function>(conc_fresh_fun[5]);
+    temp_new_list_from_df[5] = as<double>(VFA_func(time_sum));
+    // For xa_aer
+    Rcpp::Function xa_aer_func = as<Rcpp::Function>(conc_fresh_fun[6]);
+    temp_new_list_from_df[6] = as<double>(xa_aer_func(time_sum));
+    // For xa_bac
+    Rcpp::Function xa_bac_func = as<Rcpp::Function>(conc_fresh_fun[7]);
+    temp_new_list_from_df[7] = as<double>(xa_bac_func(time_sum));
+    // For xa_dead
+    Rcpp::Function xa_dead_func = as<Rcpp::Function>(conc_fresh_fun[8]);
+    temp_new_list_from_df[8] = as<double>(xa_dead_func(time_sum));
+    // For Cfat
+    Rcpp::Function Cfat_func = as<Rcpp::Function>(conc_fresh_fun[9]);
+    temp_new_list_from_df[9] = as<double>(Cfat_func(time_sum));
+    // For CPs
+    Rcpp::Function CPs_func = as<Rcpp::Function>(conc_fresh_fun[10]);
+    temp_new_list_from_df[10] = as<double>(CPs_func(time_sum));
+    // For CPf
+    Rcpp::Function CPf_func = as<Rcpp::Function>(conc_fresh_fun[11]);
+    temp_new_list_from_df[11] = as<double>(CPf_func(time_sum));
+    // For RFd
+    Rcpp::Function RFd_func = as<Rcpp::Function>(conc_fresh_fun[12]);
+    temp_new_list_from_df[12] = as<double>(RFd_func(time_sum));
+    // For iNDF
+    Rcpp::Function iNDF_func = as<Rcpp::Function>(conc_fresh_fun[13]);
+    temp_new_list_from_df[13] = as<double>(iNDF_func(time_sum));
+    // For VSd
+    Rcpp::Function VSd_func = as<Rcpp::Function>(conc_fresh_fun[14]);
+    temp_new_list_from_df[14] = as<double>(VSd_func(time_sum));
+    // For ash
+    Rcpp::Function ash_func = as<Rcpp::Function>(conc_fresh_fun[15]);
+    temp_new_list_from_df[15] = as<double>(ash_func(time_sum));
+    // After populating the new list, assign it to the 'conc_fresh' variable
+    // declared BEFORE the if/else. This makes the list available afterwards.
+    conc_fresh = temp_new_list_from_df; // Assign the NEWLY CREATED list to the outer 'conc_fresh'
+    
+  } else {
+    
+    conc_fresh = as<Rcpp::List>(conc_fresh_object); // Assign to the outer 'conc_fresh'
+  
+  }
+  
+   double conc_fresh_sulfide = as<double>(conc_fresh[0]);
+   double conc_fresh_urea = as<double>(conc_fresh[1]);
+   double conc_fresh_sulfate = as<double>(conc_fresh[2]);
+   double conc_fresh_TAN = as<double>(conc_fresh[3]);
+   double conc_fresh_starch = as<double>(conc_fresh[4]);
+   double conc_fresh_VFA = as<double>(conc_fresh[5]);
+   double conc_fresh_xa_aer = as<double>(conc_fresh[6]);
+   double conc_fresh_xa_bac = as<double>(conc_fresh[7]);
+   double conc_fresh_xa_dead = as<double>(conc_fresh[8]);
+   double conc_fresh_Cfat = as<double>(conc_fresh[9]);
+   double conc_fresh_CPs = as<double>(conc_fresh[10]);
+   double conc_fresh_CPf = as<double>(conc_fresh[11]);
+   double conc_fresh_RFd = as<double>(conc_fresh[12]);
+   double conc_fresh_iNDF = as<double>(conc_fresh[13]);
+   double conc_fresh_VSd = as<double>(conc_fresh[14]);
+   double conc_fresh_ash = as<double>(conc_fresh[15]); // Adjusted index
+
   
   
-  // derivatives
   
-  List conc_fresh = parms[p_idx[38]];
-  
-  double conc_fresh_sulfide = conc_fresh[0];  // Assuming "sulfide" is the first element
-  double conc_fresh_urea = conc_fresh[1];     // Assuming "urea" is the second element
-  double conc_fresh_sulfate = conc_fresh[2];  // And so on...
-  double conc_fresh_TAN = conc_fresh[3];
-  double conc_fresh_starch = conc_fresh[4];
-  double conc_fresh_VFA = conc_fresh[5];
-  double conc_fresh_xa_aer = conc_fresh[6];
-  double conc_fresh_xa_bac = conc_fresh[7];
-  double conc_fresh_xa_dead = conc_fresh[8];
-  double conc_fresh_Cfat = conc_fresh[9];
-  double conc_fresh_CPs = conc_fresh[10];
-  double conc_fresh_CPf = conc_fresh[11];
-  double conc_fresh_RFd = conc_fresh[12];
-  double conc_fresh_iNDF = conc_fresh[13];
-  double conc_fresh_VSd = conc_fresh[14];
-  double conc_fresh_ash = conc_fresh[15];
-  
+
   // NOT IMPLEMENTED YET. End products of fermentation (previously from stoich()). 
   // Right now are just placeholder to test speed. Need to be properly calculated in hard_pars() or otherwise
   double xa_bac_rate = parms[p_idx[39]];

@@ -207,6 +207,8 @@ abm <- function(
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
   # Need to decide if pH = 'calc' should be an option. Then need to ix below.  
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
+  
+  # DIG INTO THIS STILL!!! # implement in dev? 
   pH_fun <- ifelse(pars$pH != 'calc', makeTimeFunc(pars$pH, approx_method = approx_method['pH']), pars$pH)
   conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
   
@@ -246,7 +248,7 @@ abm <- function(
   } else {
     slurry_mass_init <- pars$slurry_mass
   }
-  
+
   if (slurry_mass_init == 0) {
     slurry_mass_init <- 1E-10
   }

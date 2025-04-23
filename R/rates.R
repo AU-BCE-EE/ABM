@@ -15,17 +15,6 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
        slurry_prod_rate <- graze_fun(t,  t_run, days, slurry_prod_rate, graze_int, graze_hours = graze[['hours_day']])
     }
 
-    # pH, numeric, variable, or from H2SO4
-    if (is.numeric(pH) | is.data.frame(pH)) {
-      pH <- pH_fun(t + t_run)
-    } else if (pH == 'calc') {
-      pH <- H2SO4_titrat(conc_SO4 = conc_fresh[['sulfate']], class_anim = "pig")$pH
-    } else {
-      stop('pH problem (xi342)')
-    }
-    # Remove name 'pH' that sometimes comes along
-    pH <- as.numeric(pH)
-    
     # For time-variable fresh concentrations, need to use function to get fresh concentrations at particular time
     if(is.data.frame(conc_fresh)){
       conc_fresh <- list()
@@ -48,6 +37,20 @@ rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun,
       conc_fresh$VSnd_A <- conc_fresh_fun$conc_fresh_fun_VSnd_A(t + t_run)
       conc_fresh$ash <- conc_fresh_fun$conc_fresh_fun_ash(t + t_run)
     }
+    
+    # pH, numeric, variable, or from H2SO4
+    if (is.numeric(pH) | is.data.frame(pH)) {
+      pH <- pH_fun(t + t_run)
+    } else if (pH == 'calc') {
+      pH <- H2SO4_titrat(conc_SO4 = conc_fresh[['sulfate']], class_anim = "pig")$pH
+    } else {
+      stop('pH problem (xi342)')
+    }
+    # Remove name 'pH' that sometimes comes along
+    pH <- as.numeric(pH)
+    
+    
+    
     
     xa_fresh <- if (is.data.frame(xa_fresh)) {
       sapply(seq_along(grps), function(i) {

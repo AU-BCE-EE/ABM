@@ -410,7 +410,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   }
   
   double rain = parms[p_idx[51]];
-  double evap = parms[52];
+  double evap = parms[p_idx[52]];
   double N2O_emis_rate = parms[p_idx[53]];
   
   derivatives[n_mic] = slurry_prod_rate + (rain - evap) * area;

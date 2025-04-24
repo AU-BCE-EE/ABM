@@ -1,41 +1,9 @@
 
 
 processing file: 01_slurry_mass.Rmd
-Fejl: objekt 'man_pars' blev ikke fundet
-Advarsel i abm_variable(days = days, delta_t = delta_t, times = times, y = y,  :
-  Fixed wash_water value of 75000
-will be ignored because variable slurry input is used.
-Advarsel i emptyStore(y, resid_mass = 0, resid_enrich = 0) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = 0, resid_enrich = 0) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = 0, resid_enrich = 0) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = 0, resid_enrich = 0) :
-  Emptying skipped because of low slurry level.
-arguments overwritten by slurry_mass: slurry_prod_rate, empty_int, resid_depth, wash_water, wash_int, rest_d
-rain = 0 kg/m2/day
-evaporation = 0 kg/m2/day
-ℹ Loading ABM
-Advarsel i abm_variable(days = days, delta_t = delta_t, times = times, y = y,  :
-  Fixed wash_water value of 75000
-will be ignored because variable slurry input is used.
-Advarsel i emptyStore(y, resid_mass = 0, resid_enrich = 0) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = 0, resid_enrich = 0) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = 0, resid_enrich = 0) :
-  Emptying skipped because of low slurry level.
-Advarsel i emptyStore(y, resid_mass = 0, resid_enrich = 0) :
-  Emptying skipped because of low slurry level.
-arguments overwritten by slurry_mass: slurry_prod_rate, empty_int, resid_depth, wash_water, wash_int, rest_d
-rain = 0 kg/m2/day
-evaporation = 0 kg/m2/day
+output file: 01_slurry_mass.knit.md
+
+
+Output created: 01_slurry_mass.pdf
+Warning message:
+In sink() : no sink to remove

@@ -164,14 +164,21 @@ out_b <- abm(days = 4*365, add_pars = list(slurry_mass = slurry_mass_dat, rain =
 Check for mismatch between input slurry_mass and output slurry_mass
 
 ```{r}
+plot(out_a1$time, out_a1$slurry_mass, col = 'red', type = 'l')
+lines(out_a2$time, out_a2$slurry_mass, col = 'orange', lty = 2)
+lines(out_a3$time, out_a3$slurry_mass, col = 'purple', lty = 3)
+lines(out_b$time, out_b$slurry_mass, col = 'blue', lty = '3131')
+```
+
+These different simulations should have different CH4 production.
+With no net rain, `abm()` interprets input as having more loading, so more methane.
+
+```{r}
 plot(out_a1$time, out_a1$CH4_emis_rate, col = 'red', type = 'l')
 lines(out_a2$time, out_a2$CH4_emis_rate, col = 'orange', lty = 2)
 lines(out_a3$time, out_a3$CH4_emis_rate, col = 'purple', lty = 3)
 lines(out_b$time, out_b$CH4_emis_rate, col = 'blue', lty = '3131')
 ```
-
-These different simulations should have different CH4 production.
-With no net rain, `abm()` interprets input as having more loading, so more methane.
 
 ```{r}
 plot(out_a1$time, out_a1$CH4_emis_cum, col = 'red', type = 'l', ylim = c(0, 2E7))

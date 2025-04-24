@@ -100,8 +100,8 @@ abm <- function(
   # Note that additional state variables are extracted from starting in abm_*.R
   if (!is.null(starting) & is.data.frame(starting)) {
     message('Using starting conditions from `starting` argument')
-    grp_pars[['xa_init']] <- as.numeric(starting[nrow(starting), paste0(names(grp_pars[['qhat_opt']]), '_conc')])
-    names(grp_pars[['xa_init']]) <- names(grp_pars[['qhat_opt']])
+    grp_pars[['xa_init']] <- as.numeric(starting[nrow(starting), paste0(grp_pars[['grps']], '_conc')])
+    names(grp_pars[['xa_init']]) <- grp_pars[['grps']]
     mng_pars['slurry_mass'] <- starting[nrow(starting), 'slurry_mass']
   }
   
@@ -207,8 +207,7 @@ abm <- function(
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
   # Need to decide if pH = 'calc' should be an option. Then need to ix below.  
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
-  
-  # DIG INTO THIS STILL!!! # implement in dev? 
+
   pH_fun <- ifelse(pars$pH != 'calc', makeTimeFunc(pars$pH, approx_method = approx_method['pH']), pars$pH)
   conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
   
@@ -252,7 +251,7 @@ abm <- function(
   if (slurry_mass_init == 0) {
     slurry_mass_init <- 1E-10
   }
-  
+
   y <- c(xa = pars$xa_init * slurry_mass_init,
          slurry_mass = slurry_mass_init, 
          xa_aer = pars$conc_init[['xa_aer']] * slurry_mass_init,
@@ -289,7 +288,7 @@ abm <- function(
   
   if (!is.null(starting) & is.data.frame(starting)) {
     start.vars <- c('slurry_mass', 'xa_aer', 'xa_bac', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')
-    y[start.vars]  <- starting[nrow(starting), start.vars]
+    y[start.vars]  <- as.numeric(starting[nrow(starting), start.vars])
   }  
 
   if (any(pars$conc_fresh[['VSd']] > 2e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$A)[!names(pars$A) %in% c('VSd','urea')]] > 2)) {

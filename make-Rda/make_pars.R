@@ -251,7 +251,7 @@ arrh_pars_pig2.0 <- list(lnA = c(VSd_A = 28.717),
                          R = 8.314,  
                          VS_CH4 = 6.67,
                          scale_alpha_opt = list(VSd = 0.26, notVSd = 0.55, CP = 6.84),
-                         kl = c(NH3 = 107, NH3_floor = 0.36*107, H2S = 0.02),
+                         kl = c(NH3 = 375, NH3_floor = 0.36*375, H2S = 0.02),
                          scale_EF_NH3 = 0.0000048)
 
 arrh_pars_cattle2.0 <- list(lnA = c(VSd_A = 31.2),

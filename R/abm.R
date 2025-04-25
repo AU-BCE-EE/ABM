@@ -208,7 +208,7 @@ abm <- function(
   # Need to decide if pH = 'calc' should be an option. Then need to ix below.  
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
 
-  pH_fun <- ifelse(pars$pH != 'calc', makeTimeFunc(pars$pH, approx_method = approx_method['pH']), pars$pH)
+  pH_fun <- ifelse(any(pars$pH != 'calc'), makeTimeFunc(pars$pH, approx_method = approx_method['pH']), pars$pH)
   conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
   
   # add time to xa_fresh and get xa_fresh funs

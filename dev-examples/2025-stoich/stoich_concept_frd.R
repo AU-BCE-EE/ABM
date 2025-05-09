@@ -303,14 +303,48 @@ VFA_sr <- setNames(
   all_names
 )
 
-VFA_meth
 # change names in VFA_sr to fit to matrix. Look above for methanogens
-VFA_sr
+VFA_sr['H2'] <- VFA_sr['H2'] * biogas::molMass('H2') * biogas::calcCOD('H2')
+VFA_sr['CO2_emis_cum'] <- (VFA_sr['CO2'] + VFA_sr['HCO3']) * 44.01
+VFA_sr['CH3COOH'] <- VFA_sr['CH3COOH'] * biogas::molMass('CH3COOH') * biogas::calcCOD('CH3COOH')
+VFA_sr['TAN'] <- VFA_sr['NH3'] * 14.007
+VFA_sr['xa'] <- VFA_sr["C5H7O2N"] * biogas::molMass('C5H7O2N') * biogas::calcCOD('C5H7O2N')
+VFA_sr['VFA'] <- VFA_sr['CH3COOH'] + VFA_sr['H2']
+VFA_sr['sulfate'] <- VFA_sr['SO4'] * biogas::molMass('S')
+VFA_sr['sulfide'] <- (VFA_sr['HS'] + VFA_sr['H2S']) * biogas::molMass('S')
+# remove names
+VFA_sr <- VFA_sr[!names(VFA_sr) %in% c('H2','CH3COOH', 'C5H7O2N','H2O','CO2','NH3','NH4','CH4','HCO3','HS','H2S','SO4','H')]
+# convert to per gCOD of VFA_sr consumed
+VFA_sr <- VFA_sr/VFA_sr['VFA']*-1
 
+# check the total stoichiometry of methanogenesis and sulfate reduction
+print(VFA_meth)
+print(VFA_sr)
+
+# dummy for rut and positions!
+rut <- c(m0 = 0.01, m1 = 0.02, m2 = 0.03, sr1 = 0.015)
+i_meth <- c(1,2,3)
+i_sr <- 4
+
+# edit names for merge consistency
+all_names <- union(names(VFA_meth), names(VFA_sr))
+VFA_meth[setdiff(all_names, names(VFA_meth))] <- 0
+VFA_sr[setdiff(all_names, names(VFA_sr))] <- 0
+
+# apply same order of names
+VFA_meth <- VFA_meth[names(VFA_sr)]
+VFA <- (VFA_meth * sum(rut[i_meth]) + VFA_sr * sum(rut[i_sr]))
+
+# need to have each xa in this matrix, but for now it is just the sum.
 cc_meth_sr <- cc_t
 cc_meth_sr[,] <- 0
 
-cc_meth_sr['VFA', names(VFA)] <- VFA
-cc_meth_sr
+# add to matrix
+cc_meth_sr[names(VFA), 'VFA'] <- VFA
 
+state_vector  <- rep(1, ncol(cc_meth_sr))  # or your actual slurry_prod_rate values
+names(state_vector) <- colnames(cc_meth_sr)
+
+rut_derivative <- cc_meth_sr %*% state_vector
+print(rut_derivative)
 

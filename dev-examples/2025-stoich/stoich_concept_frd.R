@@ -348,3 +348,4 @@ names(state_vector) <- colnames(cc_meth_sr)
 rut_derivative <- cc_meth_sr %*% state_vector
 print(rut_derivative)
 
+total_derivative <- rut_derivative + fresh_derivative + resp_derivative + alpha_derivative

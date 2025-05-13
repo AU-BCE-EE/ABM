@@ -42,6 +42,8 @@ acefrac = 0.66
 # state variables that are involved in hydrolysis/fermentation part (both consumption and production)
 #y_names_alpha <- c('xa_dead','xa_bac','RFd','VSd','starch','CPs','CPf','Cfat','VFA','urea','TAN','CO2_emis_cum')
 y_names <- names(y)
+
+functio
   
 # calc molar stoichiometry for compounds being hydrolyzed through alpha
 

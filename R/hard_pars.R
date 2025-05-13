@@ -47,10 +47,10 @@ hard_pars <- function(pars){
                       CO2 = 2.88) # 
   pro_resp <- c(C6H12O6 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
                      NH4 = 0.45725, HCO3 = 0.45725, O2 = -1.46125, H2O = 0.007249637, C5H7O2N = 0.54275,
-                     CO2 = 0.829)
+                     CO2 = 0.829) #
   lip_resp <- c(C6H12O6 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
                      NH4 = -9.425, HCO3 = -9.425, O2 = -25.375, H2O = 39.575, C5H7O2N = 9.425,
-                     CO2 = 13.3) 
+                     CO2 = 13.3) #
   
   pars$carb_resp <- carb_resp # delete later if new rates_cpp works
   pars$pro_resp <- pro_resp # delete later if new rates_cpp works

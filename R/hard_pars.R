@@ -4,79 +4,15 @@ hard_pars <- function(pars){
   pars$temp_standard <- 298
   pars$temp_zero <- 273
   pars$pH_floor <- 7
-  pars$i_meth <- grep('^[mp]', names(pars$qhat_opt))-1 # -1 for match with CPP indexing
-  pars$i_sr <- grep('^sr', names(pars$qhat_opt))-1 # -1 for match with CPP indexing
+  pars$i_meth <- grep('^[mp]', names(pars$qhat_opt))
+  pars$i_sr <- grep('^sr', names(pars$qhat_opt))
   pars$n_mic <- length(pars$qhat_opt)
 
-  if(any(pars$conc_fresh$VSd <= 10E-9)){
-    pars$alpha_opt_scale_type <- pars$scale_alpha_opt[['notVSd']]
-    pars$alpha_opt_scale_CP <- pars$scale_alpha_opt[['CP']]
-
-    
-  } else if(any(pars$conc_fresh$VSd > 10E-9)){
-    pars$alpha_opt_scale_type  <- pars$scale_alpha_opt[['VSd']]
-    pars$alpha_opt_scale_CP <- 1
-  }
-  
   pars$pH_inhib  <- 0 * pars$pH_LL + 1 
   pars$NH3_inhib <- 0 * pars$pH_LL + 1
   pars$NH4_inhib <- 0 * pars$pH_LL + 1
   pars$HAC_inhib <- 0 * pars$pH_LL + 1
   pars$H2S_inhib <- 0 * pars$pH_LL + 1
-  
-  pars$kl[['NH3']] <- pars$kl[['NH3']] * pars$EF_NH3 
-
-  # N2O emission g(N) pr day
-  pars$N2O_emis_rate <- as.numeric(pars$area * pars$EF_N2O)
-  
-  # calculations moved from stoich to here to speed up model
-  pars$carb <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
-                 NH3 = -0.1400892, H2O = -2.3396911, C5H7O2N = 0.1400892,
-                 C2H4O2 = 1.7509058, H2 = 3.5198056, CO2 = 1.7603468)
-  
-  pars$pro <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
-                NH3 = 0.9098195, H2O = -2.91011939, C5H7O2N = 0.09091805,
-                C2H4O2 = 1.32238963, H2 = 1.24392800, CO2 = 0.53512875)
-  
-  pars$lip <- c(C6H10O5 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
-                NH3 = -0.9111515, H2O = -41.2980881, C5H7O2N = 0.9111515,
-                C2H4O2 = 23.7180355, H2 = 40.9726177, CO2 = 1.4659059)
-  
-  carb_resp <- c(C6H12O6 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
-                      NH4 = -0.78, HCO3 = -0.78, O2 =  -2.1, H2O = 5.22, C5H7O2N = 0.78,
-                      CO2 = 2.88) # 
-  pro_resp <- c(C6H12O6 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
-                     NH4 = 0.45725, HCO3 = 0.45725, O2 = -1.46125, H2O = 0.007249637, C5H7O2N = 0.54275,
-                     CO2 = 0.829) #
-  lip_resp <- c(C6H12O6 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
-                     NH4 = -9.425, HCO3 = -9.425, O2 = -25.375, H2O = 39.575, C5H7O2N = 9.425,
-                     CO2 = 13.3) #
-  
-  pars$carb_resp <- carb_resp # delete later if new rates_cpp works
-  pars$pro_resp <- pro_resp # delete later if new rates_cpp works
-  pars$lip_resp <- lip_resp # delete later if new rates_cpp works
-  
-  pars$ace <- c(H2 = 0, C2H4O2 = -1, CO2 = 1, CH4 = 1, H2O = 0) # moles stoichiometry 
-  pars$hyd <- c(H2 = -1, C2H4O2 = 0, CO2 = -1/4, CH4 = 1/4, H2O = 2/4)
-  pars$ace_sr <- c(H2 = 0, C2H4O2 = -1, H2SO4 = -1, CO2 = 2, H2O = 2, H2S = 1) 
-  pars$hyd_sr <- c(H2 = -1, C2H4O2 = 0, H2SO4 = -1/4, CO2 = 0, H2O = 1, H2S = 1/4) 
-
-  resp_stoich_out <- resp_stoich(pars$conc_fresh, carb_resp, pro_resp, lip_resp)
-
-  # these should be factored by "respiration" inside rates call.
-  pars$TAN_min_resp <- resp_stoich_out[['TAN_min_resp']] 
-  pars$CO2_resp <- resp_stoich_out[['CO2_resp']]
-  pars$xa_aer_rate <- resp_stoich_out[['xa_aer_rate']]
-  
-  # these needs to be actually calculated but are set here to test speed in rates_cpp.
-  # need a way to implement stoichiometry of fermentation to calculate properly.
-  pars$xa_bac_rate <- 1.1 
-  pars$TAN_min_ferm <- 2.1
-  pars$VFA_H2_ferm <- 3.1
-  pars$CO2_ferm = 4.1
-  # 
-  pars$COD_conv_meth_CO2 <- 2.926 # gCOD consumed /gCO2 produced from methanogenesis
-  pars$COD_conv_sr_CO2 <- 0.971 # gCOD consumed /gCO2 produced from sulfate reduction
   
   return(pars)
 }

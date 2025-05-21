@@ -30,7 +30,7 @@ mic_parsx <- list(ks_SO4 = 0.00694,
 man_parsx <- list(conc_fresh = list(sulfide = 0.01, 
 				    sulfate = 0.2, 
 				    TAN = 0.0, 
-                                    VFA = 1.7, 
+            VFA = 1.7, 
 				    xa_aer = 0, 
 				    xa_bac = 0, 
 				    xa_dead = 0, 
@@ -48,5 +48,5 @@ chem_parsx <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
 save(grp_parsx, file = '../data/grp_parsx.rda')
 save(mic_parsx, file = '../data/mic_parsx.rda')
 save(man_parsx, file = '../data/man_parsx.rda')
-save(chem_parsx, file = '../data/man_parsx.rda')
+save(chem_parsx, file = '../data/chem_parsx.rda')
 

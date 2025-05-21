@@ -1,81 +1,32 @@
-rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                  SO4_inhibition_fun = SO4_inhibition_fun, 
-                  conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) {
+rates <- function(t, 
+		  y, 
+		  parms, 
+		  temp_C_fun = temp_C_fun, 
+		  pH_fun = pH_fun, 
+                  SO4_inhibition_fun = SO4_inhibition_fun) {
 
     y[y < 1E-10] <- 1E-10
 
-    # need to remove slurry mass from parms to not overwrite y['slurry_mass']
+    # Remove slurry mass from parms to not overwrite y['slurry_mass']
     parms$slurry_mass <- NULL
     
     # all elements in parms exported to current environment
     list2env(parms, envir = environment())
 
-    # correct slurry production rate in periods with grazing
-    if(!is.null(graze_int) & any(graze_int != 0)){
-       slurry_prod_rate <- graze_fun(t,  t_run, days, slurry_prod_rate, graze_int, graze_hours = graze[['hours_day']])
-    }
-
-    # pH, numeric, variable, or from H2SO4
-    if (is.numeric(pH) | is.data.frame(pH)) {
-      pH <- pH_fun(t + t_run)
-    } else if (pH == 'calc') {
-      pH <- H2SO4_titrat(conc_SO4 = sulfate, class_anim = "pig")$pH
-    } else {
-      stop('pH problem (xi342)')
-    }
-    # Remove name 'pH' that sometimes comes along
-    pH <- as.numeric(pH)
-    
-    # For time-variable fresh concentrations, need to use function to get fresh concentrations at particular time
-    if(is.data.frame(conc_fresh)){
-      conc_fresh <- list()
-      conc_fresh$sulfide <- conc_fresh_fun$conc_fresh_fun_sulfide(t + t_run)
-      conc_fresh$urea <- conc_fresh_fun$conc_fresh_fun_urea(t + t_run)
-      conc_fresh$sulfate <- conc_fresh_fun$conc_fresh_fun_sulfate(t + t_run)
-      conc_fresh$TAN <- conc_fresh_fun$conc_fresh_fun_TAN(t + t_run)
-      conc_fresh$starch <- conc_fresh_fun$conc_fresh_fun_starch(t + t_run)
-      conc_fresh$VFA <- conc_fresh_fun$conc_fresh_fun_VFA(t + t_run)
-      conc_fresh$xa_aer <- conc_fresh_fun$conc_fresh_fun_xa_aer(t + t_run)
-      conc_fresh$xa_bac <- conc_fresh_fun$conc_fresh_fun_xa_bac(t + t_run)
-      conc_fresh$xa_dead <- conc_fresh_fun$conc_fresh_fun_xa_dead(t + t_run)
-      conc_fresh$Cfat <- conc_fresh_fun$conc_fresh_fun_Cfat(t + t_run)
-      conc_fresh$CPs <- conc_fresh_fun$conc_fresh_fun_CPs(t + t_run)
-      conc_fresh$CPf <- conc_fresh_fun$conc_fresh_fun_CPf(t + t_run)
-      conc_fresh$RFd <- conc_fresh_fun$conc_fresh_fun_RFd(t + t_run)
-      conc_fresh$iNDF <- conc_fresh_fun$conc_fresh_fun_iNDF(t + t_run)
-      conc_fresh$VSd <- conc_fresh_fun$conc_fresh_fun_VSd(t + t_run)
-      conc_fresh$VSd_A <- conc_fresh_fun$conc_fresh_fun_VSd_A(t + t_run)
-      conc_fresh$VSnd_A <- conc_fresh_fun$conc_fresh_fun_VSnd_A(t + t_run)
-      conc_fresh$ash <- conc_fresh_fun$conc_fresh_fun_ash(t + t_run)
-    }
-    
-    #INTERPOLATE CPP. Check this
-    if(is.data.frame(xa_fresh)) {
-      xa_fresh <- sapply(seq_along(grps), function(i) {
-        conc <- xa_fresh_fun[[i]](t + t_run)
-        return(conc)
-      })
-      names(xa_fresh) <- grps
-    }
-
-    #temp functions
-    # CPP interpolation func?
-    #browser()
-    #temp_C <- temp_C_fun(t + t_run)
-    
-    temp_C <- call_int(temp_C_fun, t+t_run)
+    pH <- pH_fun(t + t_run)
+   
+    temp_C <- temp_C_fun(t + t_run)
     temp_K <- temp_C + 273.15
 
     # Extract state variable values from y argument
-    # xa <- y[1:n_mic]
-    xa <- extract_xa_cpp(y, n_mic) 
+    xa <- y[1:n_mic]
+
     # Move elements of y into rates environment
     list2env(as.list(y[-c(1:n_mic)]), envir = environment())
 
-    # Hydrolysis rate with Arrhenius function cpp. 
-    alpha <-  Arrh_func_cpp(A, E, R, temp_K, scale_alpha_opt = scale[['alpha_opt']], alpha_opt_scale_type, alpha_opt_scale_CP)
-    names(alpha) <- names(A)
-    
+    # Hydrolysis rate . . . 
+    alpha <- 0.1    
+
     # Microbial substrate utilization rate (vectorized calculation)
     qhat <- scale[['qhat_opt']] * CTM_cpp(temp_K, T_opt, T_min, T_max, qhat_opt)
     names(qhat) <- names(qhat_opt)

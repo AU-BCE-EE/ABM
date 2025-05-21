@@ -51,6 +51,6 @@ makeInitState <- function(pars,
     y[start.vars]  <- starting[nrow(starting), start.vars]
   }  
 
-  return(pars)
+  return(y)
 
 }

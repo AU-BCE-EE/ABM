@@ -1,34 +1,29 @@
 # Internal function for repeated abm() calls
 # Argument list should exactly match abm()
 
-abmRepeat <- function(days,
-                      delta_t,
-                      times,
-                      wthr_pars,
-                      evap_pars,
-                      mng_pars,
-                      man_pars,
-                      init_pars,
-                      grp_pars,
-                      mic_pars,
-                      chem_pars,
-                      arrh_pars,
-                      anim_pars,
-                      resp,
-                      pH_inhib_overrule,
-                      add_pars,
-                      pars,
-                      startup,
-                      starting,
-                      approx_method,
-                      par_key,
-                      value,
-                      rates_calc,
-                      warn)
+abmRepeat <- function(
+  days,
+  delta_t,
+  times,
+  mng_pars,
+  man_pars,
+  init_pars,
+  grp_pars,
+  mic_pars,
+  chem_pars,
+  ctrl_pars,
+  add_pars,
+  pars,
+  startup,
+  starting,
+  value,
+  warn
+  ) {
 
   # Check for conc_init pars in add_pars--this is not compatible with startup
   if (any(grepl('conc_init', names(add_pars)))) {
-    stop('Simulation has a startup period (startup > 0) and initial concentrations in add_pars.\n  These two options do not work together--see issue #57')
+    stop('Simulation includes startup replications (startup > 0) and initial concentrations in add_pars.\n  
+	 These two options do not work together--see issue #57')
   }
 
   value.orig <- value
@@ -47,33 +42,24 @@ abmRepeat <- function(days,
     }
 
     # Call abm() with arguments given in outside call except for startup and value
-    out <- abm(days = days,                     days,              
-               delta_t = delta_t,               delta_t,                          
-               times = times,                   times,
-               wthr_pars = wthr_pars,           wthr_pars,
-               evap_pars = evap_pars,           evap_pars,
-               mng_pars = mng_pars,             mng_pars,
-               man_pars = man_pars,             man_pars,
-               init_pars = init_pars,           init_pars,
-               grp_pars = grp_pars,             grp_pars,
-               mic_pars = mic_pars,             mic_pars,
-               chem_pars = chem_pars,           chem_pars,
-               arrh_pars = arrh_pars,           arrh_pars,
-               anim_pars,
-               add_pars = add_pars,             resp,
-               pars = pars,                     pH_inhib_overrule,
-                                                add_pars,
-               startup = 0,                     pars,
-               starting = starting,             startup,
-               approx_method = approx_method,   starting,
-               par_key = par_key,               approx_method,
-               value = value,                   par_key,
-               warn = warn)                     value,
-                                                rates_calc,
-                                                warn)
-                                                
-    
- 
+    out <- abm(
+  days,
+  delta_t,
+  times,
+  mng_pars,
+  man_pars,
+  init_pars,
+  grp_pars,
+  mic_pars,
+  chem_pars,
+  ctrl_pars,
+  add_pars,
+  pars,
+  startup,
+  starting,
+  value,
+  warn)
+  
     if (i <= startup) {
       # Pull starting *concentrations* (inlcuding xa) from previous sim
       tso <- out

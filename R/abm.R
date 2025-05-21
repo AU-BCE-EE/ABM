@@ -7,7 +7,7 @@ abm <- function(
                   slurry_mass = 39000,       # Initial slurry mass (kg) 
                   storage_depth = 0.6,       # Storge structure depth, assued to be maximum slurry depth (m)
                   resid_depth = 0.05,        # Residual slurry depth after emptying (m)
-                  area = 715,                # Tank/pit slurry surface area (assume vertical sides, but also includes slurry underneath the walking path) (m2)
+                  area = 715,                # Tank/pit slurry surface area (assume vertical sides, includes slurry underneath walking path) (m2)
                   empty_int = 42,            # Fixed emptying interval (days)
                   temp_C = 20,
                   wash_water = 75000,            
@@ -16,11 +16,11 @@ abm <- function(
                   cover = 'none',
                   resid_enrich = 0.9,
                   scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
-  man_pars = ABM::man_pars2.0,
+  man_pars = man_parsx,
   init_pars = list(conc_init = man_pars$conc_fresh),
-  grp_pars = ABM::grp_pars2.0,
-  mic_pars = ABM::mic_pars2.0,
-  chem_pars = ABM::chem_pars2.0,
+  grp_pars = grp_parsx,
+  mic_pars = mic_parsx,
+  chem_pars = chem_parsx,
   ctrl_pars = list(respir = TRUE,
                    pH_inhib = FALSE, 
                    approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'early'), 
@@ -42,9 +42,7 @@ abm <- function(
   #} 
 
   # Sort out parameters, ultimately packaging all parameters into a single list pars
-  pars <- packPars(wthr_pars = wthr_pars, 
-                   evap_pars = evap_pars,
-                   mng_pars = mng_pars,
+  pars <- packPars(mng_pars = mng_pars,
                    man_pars = man_pars,
                    init_pars = init_pars,
                    grp_pars = grp_pars,

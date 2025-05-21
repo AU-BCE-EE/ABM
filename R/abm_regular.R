@@ -1,16 +1,25 @@
-abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                        SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) { 
+abm_regular <- function(days, 
+			delta_t, 
+			times_regular, 
+			y, 
+			pars, 
+			starting = NULL, 
+			temp_C_fun = temp_C_fun, 
+			pH_fun = pH_fun, 
+                        SO4_inhibition_fun = SO4_inhibition_fun, 
+			conc_fresh_fun = conc_fresh_fun, 
+			xa_fresh_fun = xa_fresh_fun) { 
   
   #initialize dat for storage of results to speed up bind_rows
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) 
   
   empty_int <- pars$empty_int
   
-  # if empty interval is set to 0 or NA it means the storage is never emptied. 
-  if(empty_int == 0 || is.na(empty_int)) empty_int <- days + 1
+  # If empty interval is set to 0 or NA the storage is never emptied. 
+  if(empty_int == 0 || is.na(empty_int)) {
+    empty_int <- days + 1
+  }
   
-  if (pars$slurry_mass == 0) pars$slurry_mass <- 1E-10
-
   # Figure out time intervals for loop
   if (!is.na(pars$wash_int) && pars$wash_water > 0) {  
     wash_int <- pars$wash_int
@@ -67,18 +76,10 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     pars$t_call <- t_call
     pars$times <- times
 
-    p_idx <- pars_indices(pars)
-
     # Call up ODE solver
-    #cat(t_rem, '\n')
-
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, p_idx = p_idx,
+    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
                           temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp,
-                          H2SO4_titrat = H2SO4_titrat)
-    #out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
-    #                      temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-    #                      conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
 
     # Get number of microbial groups
     n_mic <- length(pars$n_mic)

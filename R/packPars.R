@@ -1,8 +1,6 @@
-# Packages parameters together and extends or revises using add_pars values
+# Sorts out parameters and packages them all together in the output list
 
-packPars <- function(wthr_pars,
-                     evap_pars,
-                     mng_pars,
+packPars <- function(mng_pars,
                      man_pars,
                      init_pars,
                      grp_pars,
@@ -25,7 +23,8 @@ packPars <- function(wthr_pars,
   
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) { 
-    pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
+    #pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, list(days = days), ctrl_pars)
+    pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, ctrl_pars)
   }
 
   ## if variable conc fresh, we need to modify the conc_init a little

@@ -25,7 +25,11 @@ grp_parsx <- list(grps = c('m0', 'm1', 'm2','sr1'),
 
 mic_parsx <- list(ks_SO4 = 0.00694, 
                   km_urea = 0.913,
-                  dd_rate_xa = 0.02)
+                  dd_rate_xa = 0.02,
+                  T_opt_hyd = 60,
+                  T_min_hyd = 0,
+                  T_max_hyd = 90,
+                  hydrol_opt = 0.1)
 
 man_parsx <- list(conc_fresh = c(sulfide = 0.01, 
 				                         sulfate = 0.2, 
@@ -37,7 +41,7 @@ man_parsx <- list(conc_fresh = c(sulfide = 0.01,
 
 chem_parsx <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                 VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
-				CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
+                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                 C_xa = 1/0.3753125))
 
 

@@ -13,7 +13,7 @@ rates <- function(t,
   temp_K <- temp_C + 273.15
 
   # Hydrolysis rate for now
-  alpha <- 0.1    
+  alpha <- CTM_cpp(temp_K, p$T_opt_hyd, p$T_min_hyd, p$T_max_hyd, p$hydrol_opt)
 
   # Create vectors with derivative components, all with order of y elements
   qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- emis <- 0 * y

@@ -111,6 +111,13 @@ packPars <- function(mng_pars,
   # Check grp arguments, including order of element names in some pars
   # After above block, this should be redundant
   checkGrpNames(pars)
+
+  # Add number of groups and indices of different groups
+  pars$n_mic <- length(pars$grps)
+  pars$i_meth <- grepl('^[mp]', pars$grps)
+  pars$i_sr <- grepl('^sr', pars$grps)
+  pars$i_hyd <- grepl('^hyd', pars$grps)
+  pars$i_aer <- grepl('^aer', pars$grps)
   
   # Convert temperature constants to K if needed
   pars <- tempsC2K(pars, ll = 200)
@@ -121,8 +128,7 @@ packPars <- function(mng_pars,
   pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
 
   # Cover effect on NH3 emission rate and N2O
-  # reduction from cover 
-
+  # Reduction from cover 
   pars$EF_NH3 <- coverfun(pars$cover, pars$scale_EF_NH3)
   pars$EF_N2O <- ifelse(pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
  

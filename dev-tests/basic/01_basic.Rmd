@@ -1,0 +1,45 @@
+---
+title: 'Basic tests using `abm_regular()` and `abm_variable()`'
+output: pdf_document
+author: Sasha D. Hafner
+date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
+---
+
+# Overview
+Point of these tests is to test the functions during simplification.
+
+# Prep
+
+```{r}
+devtools::load_all()
+```
+
+# Case 1, defaults
+
+```{r}
+out0 <- abm(365)
+```
+
+```{r}
+line_colors <- c('red', 'blue', 'green','orange')
+matplot(out0$time, out0[, nn <- c('m0','m1','m2','sr1')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, xlab = 'Time (days from 1. Jan)', 
+        ylab = 'Microbial biomass (kg)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1,
+       title = "Microbial biomass", cex = 0.8)
+```
+
+
+
+```{r}
+plot(CH4_emis_rate ~ time, data = out0, type = 'l')
+plot(slurry_mass ~ time, data = out0, type = 'l')
+plot(temp_C ~ time, data = out0, type = 'l')
+plot(VSd ~ time, data = out0, type = 'l')
+plot(VFA ~ time, data = out0, type = 'l')
+out0
+```
+
+
+
+

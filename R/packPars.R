@@ -114,10 +114,11 @@ packPars <- function(mng_pars,
 
   # Add number of groups and indices of different groups
   pars$n_mic <- length(pars$grps)
-  pars$i_meth <- grepl('^[mp]', pars$grps)
-  pars$i_sr <- grepl('^sr', pars$grps)
-  pars$i_hyd <- grepl('^hyd', pars$grps)
-  pars$i_aer <- grepl('^aer', pars$grps)
+  pars$i_meth <- grep('^[mp]', pars$grps)
+  pars$i_sr <- grep('^sr', pars$grps)
+  pars$i_mic <- grep('^sr|^p|^m', pars$grps)
+  pars$i_hyd <- grep('^hyd', pars$grps)
+  pars$i_aer <- grep('^aer', pars$grps)
   
   # Convert temperature constants to K if needed
   pars <- tempsC2K(pars, ll = 200)

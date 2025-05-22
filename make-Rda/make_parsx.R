@@ -27,12 +27,12 @@ mic_parsx <- list(ks_SO4 = 0.00694,
                   km_urea = 0.913,
                   dd_rate_xa = 0.02)
 
-man_parsx <- list(conc_fresh = list(sulfide = 0.01, 
-				                            sulfate = 0.2, 
-				                            TAN = 0.0, 
-                                    VFA = 2, 
-				                            VSd = 50, 
-				                            ash = 15), 
+man_parsx <- list(conc_fresh = c(sulfide = 0.01, 
+				                         sulfate = 0.2, 
+				                         TAN = 0.0, 
+                                 VFA = 2, 
+				                         VSd = 50, 
+				                         ash = 15), 
                   pH = 7, dens = 1000)
 
 chem_parsx <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,

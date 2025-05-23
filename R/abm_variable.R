@@ -16,20 +16,20 @@ abm_variable <-
     warning('Fixed wash_water value of ', pars$wash_water, '\nwill be ignored because variable slurry input is used.')
   }
 
-  pars <- fixParsVar(pars, days, slurry_mass_approx)
+  pars <- fixSlurryMass(pars, days, slurry_mass_approx)
   removals <- pars$removals
 
   # Extract washing mass
   wash_water <- getWashWater(pars)
   
-  # Extract slurry_mass for use in emptying calculations
+  # Extract slurry_mass vector for use in emptying calculations
   slurry_mass <- pars$slurry_mass[, 'slurry_mass']
 
   # Determine variable slurry production rate for each time interval
   slurry_prod_rate_t <- getSlurryProd(pars)
 
   # Get timing of intervals
-  timelist <- getTimeList(pars, times, days, delta_t)
+  timelist <- makeTimeList(pars, times, days, delta_t)
   n_int <- length(timelist)
   
   # Empty data frame for holding results
@@ -53,10 +53,6 @@ abm_variable <-
     # Fill in slurry_prod_rate
     pars$slurry_prod_rate <- slurry_prod_rate_t[i]
 
-    # With no removal
-    # Call lsoda and advance if time changes (i.e., if there is not a removal)
-    # Note that t_call should always by 0 when there is a removal, so skipping this code is correct
-
     # If there is a removal event, remove slurry before calling up ODE solver
     if (removals[i]) {
       if (slurry_mass_approx == 'late') {
@@ -69,8 +65,7 @@ abm_variable <-
       y <- y[!grepl('_eff$', names(y))]
 
       # Washing, increase slurry mass
-      # Typically occurs after emptying here (wash_int ignored)
-      # But could take place at the *end* of *any* interval
+      # Occurs after emptying here 
       if (wash_water[i] > 0) {
         y['slurry_mass'] <- y['slurry_mass'] + wash_water[i]
 
@@ -78,12 +73,11 @@ abm_variable <-
         y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
         y.eff <- y.eff + y[grepl('_eff$', names(y))]
         y <- y[!grepl('_eff$', names(y))]
-        out[nrow(out), names(y)] <- y
       }
     }
 
     # This might not be possible with above code
-    if (t_call <= 0) stop('t_call < 0. slkj4098sh, check if "time" is duplicated in slurry mass data frame')
+    if (t_call <= 0) stop('t_call < 0. slk409.')
 
     # Get times for lsoda() call
     # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t

@@ -1,5 +1,6 @@
+# Creates list of interval times for simulation
 
-getTimeList <- function(pars, times, days, delta_t) {
+makeTimeList <- function(pars, times, days, delta_t) {
   
   # Sort out times returned by ODE solver
   if (is.null(times)) {
@@ -23,8 +24,8 @@ getTimeList <- function(pars, times, days, delta_t) {
     # Simulation intervals should end exactly at emptying time, so it is added here through st[i] for cases where there is not alignment
     tt <- unique(c(tt, st[i]))
     if (length(tt) == 0) { 
-      # Not clear when this might happen, but it isn't good
-      stop('No times for interval (row) ', i, ' in time list for some reason. hatty917')
+      # Not clear when this might happen, but it would be bad
+      stop('No times for interval (row) ', i, ' in time list for some reason. xyn917')
     } else {
       cumtime[[i]] <- max(tt)
       tt <- tt - cumtime[[i - 1]]

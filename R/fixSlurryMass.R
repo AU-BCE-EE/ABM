@@ -1,5 +1,6 @@
+# Prepares slurry mass data for 
 
-fixParsVar <- function(pars, days, slurry_mass_approx) {
+fixSlurryMass <- function(pars, days, slurry_mass_approx) {
 
   # Cannot have no slurry present because is used in all concentration calculations
   pars$slurry_mass[pars$slurry_mass[, 'slurry_mass'] == 0, 'slurry_mass'] <- 1E-10

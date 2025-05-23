@@ -1,3 +1,4 @@
+# Extracts slurry production rate over time
 
 getSlurryProd <- function(pars) {
   

@@ -18,6 +18,7 @@ devtools::load_all()
 
 ```{r}
 out0 <- abm(365)
+head(out0)
 ```
 
 ```{r}
@@ -39,6 +40,7 @@ plot(slurry_mass ~ time, data = out0, type = 'l')
 plot(temp_C ~ time, data = out0, type = 'l')
 plot(VSd ~ time, data = out0, type = 'l')
 plot(VFA ~ time, data = out0, type = 'l')
+plot(VFA_conc ~ time, data = out0, type = 'l')
 ```
 
 Slurry mass data.

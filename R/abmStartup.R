@@ -1,30 +1,14 @@
 # Internal function for repeated abm() calls
 # Argument list should exactly match abm()
 
-abmRepeat <- function(
-  days,
-  delta_t,
-  times,
-  mng_pars,
-  man_pars,
-  init_pars,
-  grp_pars,
-  mic_pars,
-  chem_pars,
-  ctrl_pars,
-  add_pars,
-  pars,
-  startup,
-  starting,
-  value,
-  warn
-  ) {
-
-  # Check for conc_init pars in add_pars--this is not compatible with startup
-  if (any(grepl('conc_init', names(add_pars)))) {
-    stop('Simulation includes startup replications (startup > 0) and initial concentrations in add_pars.\n  
-	 These two options do not work together--see issue #57')
-  }
+abmStartup <- function(days,
+                      delta_t,
+                      times,
+                      pars,
+                      startup,
+                      starting,
+                      value,
+                      warn) {
 
   value.orig <- value
   value <- 'ts'
@@ -41,25 +25,20 @@ abmRepeat <- function(
       value <- value.orig
     }
 
+    if (i > 1) {
+      starting <- out
+    } 
+    
     # Call abm() with arguments given in outside call except for startup and value
-    out <- abm(
-  days,
-  delta_t,
-  times,
-  mng_pars,
-  man_pars,
-  init_pars,
-  grp_pars,
-  mic_pars,
-  chem_pars,
-  ctrl_pars,
-  add_pars,
-  pars,
-  startup,
-  starting,
-  value,
-  warn)
-  
+    out <- abm(days = days,
+               delta_t = delta_t,
+               times = times,
+               pars = pars,
+               startup = 0,
+               starting = starting,
+               value = 'ts',
+               warn = warn)
+   
     if (i <= startup) {
       # Pull starting *concentrations* (inlcuding xa) from previous sim
       tso <- out

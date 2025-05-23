@@ -33,14 +33,6 @@ abm <- function(
   value = 'ts',                               # Type of output
   warn = TRUE) {
 
-  # If startup repetitions are requested, repeat some number of times before returning results
-  # This is done in a for loop in abm_repeat()
-  #if (startup > 0) {
-  #  cat('\nStartup run ')
-  #  out <- do.call(abm_repeat, as.list(environment()))
-  #  return(out)
-  #} 
-
   # Sort out parameters, packaging all parameters into a single list pars, adding some others
   pars <- packPars(mng_pars = mng_pars,
                    man_pars = man_pars,
@@ -52,6 +44,22 @@ abm <- function(
                    add_pars = add_pars,
                    pars = pars,
                    starting = starting)
+  
+  # If startup repetitions are requested, repeat some number of times before returning results
+  # This is done in a for loop in abm_repeat()
+  if (startup > 0) {
+    cat('\nStartup run ')
+    out <- abmStartup(days = days,
+                      delta_t = delta_t,
+                      times = times,
+                      pars = pars,
+                      startup = startup,
+                      starting = starting,
+                      value = value,
+                      warn = warn)
+    return(out)
+  } 
+
 
   # Create time-variable functions
   # The element pars$x must either be a numeric constant for constant temperature or pH, or a data frame with time (column 1) and variable value (column 2)
@@ -85,7 +93,7 @@ abm <- function(
   } 
 
   # Clean up and possibly extend output
-  dat <- cleanOutput(dat, pars, addcols = TRUE)
+  dat <- cleanOutput(dat, pars, addcols = TRUE, addconcs = TRUE)
 
   # Return results
   # Average only

@@ -84,11 +84,8 @@ abm <- function(
                         slurry_mass_approx = pars$approx_method['slurry_mass'])
   } 
 
-  # NTS: Put below stuff and more into cleanOut() function
-  # Replace . in names with _
-  names(dat) <- gsub('\\.', '_', names(dat))
-  # Add slurry depth
-  dat$slurry_depth <- dat$slurry_mass / pars$area / pars$dens
+  # Clean up and possibly extend output
+  dat <- cleanOutput(dat, pars, addcols = TRUE)
 
   # Return results
   # Average only

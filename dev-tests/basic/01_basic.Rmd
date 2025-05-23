@@ -30,7 +30,6 @@ legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 
 ```
 
 
-
 ```{r}
 plot(CH4_emis_rate ~ time, data = out0, type = 'l')
 plot(CH4_emis_cum ~ time, data = out0, type = 'l')

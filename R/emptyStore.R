@@ -1,5 +1,4 @@
 # Function for emptying storage struction
-# Not exported, only called by abm_*
 
 # Note: enrich_names could also be length 1 vector: '^xa|^RFd$|^iNDF$' etc.
 
@@ -25,15 +24,13 @@ emptyStore <- function(y, resid_mass, resid_enrich,
     y.eff <- y.before - y
     y.eff <- y.eff[!which.ignore]
     names(y.eff) <- paste0(names(y.eff), '_eff')
-    y <- c(y, y.eff)
   } else {
     warning('Emptying skipped because of low slurry level.')
     y.eff <- 0 * y
     y.eff <- y.eff[!which.ignore]
     names(y.eff) <- paste0(names(y.eff), '_eff')
-    y <- c(y, y.eff)
   }
 
-  return(y)
+  return(list(store = y, eff = y.eff))
 
 }

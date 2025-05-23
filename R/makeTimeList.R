@@ -8,10 +8,7 @@ makeTimeList <- function(pars, times, days, delta_t) {
   }
 
   # Include days argument in times vector
-  times <- sort(unique(c(times, days)))
-  times.orig <- times
   times <- sort(unique(c(times, pars$slurry_mass$time)))
-  droptimes <- times[!times %in% times.orig]
     
   # Note about time: 1) All simulations start at 0, 2) days must be at least as long as mass data
   # Note that this works even with t_end = NULL (is ignored)

@@ -47,8 +47,8 @@ abm_regular <- function(
     
     # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
     y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
-    y.eff <- y[grepl('_eff$', names(y))]
-    y <- y[!grepl('_eff$', names(y))]
+    y.eff <- y$eff
+    y <- y$store
    
     # Washing, increase slurry mass
     if (intervals$wash[i]) {
@@ -56,15 +56,15 @@ abm_regular <- function(
 
       # And empty again, leaving same residual mass as always, and enriching for particles
       y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
-      y.eff <- y.eff + y[grepl('_eff$', names(y))]
-      y <- y[!grepl('_eff$', names(y))]
+      y.eff <- y$eff
+      y <- y$store
 
       # Run for rest period with no influent 
       if (pars$rest_d > 0) {
         times <- seq(0, pars$rest_d, delta_t)
         parsr <- pars
         parsr$slurry_prod_rate <- 0
-        out <- deSolve::lsoda(y = y, 
+        outr <- deSolve::lsoda(y = y, 
                               times = times, 
                               rates, 
                               parms = parsr, 
@@ -74,7 +74,6 @@ abm_regular <- function(
         y <- getLastState(outr, y)
         
         # Correct time in outr and combine with main output
-        outr[, 'time'] <- outr[, 'time'] + 
         out <- addOut(main = out, new = outr, t_add = out[nrow(out), 'time'])
       }
     }

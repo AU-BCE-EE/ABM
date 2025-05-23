@@ -61,8 +61,8 @@ abm_variable <-
         j <- i
       }
       y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
-      y.eff <- y[grepl('_eff$', names(y))]
-      y <- y[!grepl('_eff$', names(y))]
+      y.eff <- y$eff
+      y <- y$store
 
       # Washing, increase slurry mass
       # Occurs after emptying here 
@@ -71,8 +71,8 @@ abm_variable <-
 
         # And empty again, leaving same residual mass as always, and enriching for particles
         y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
-        y.eff <- y.eff + y[grepl('_eff$', names(y))]
-        y <- y[!grepl('_eff$', names(y))]
+        y.eff <- y$eff
+        y <- y$store
       }
     }
 
@@ -81,14 +81,14 @@ abm_variable <-
 
     # Get times for lsoda() call
     # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
-    times <- timelist[[i]]
+    tt <- timelist[[i]]
 
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
     
     # Call up ODE solver
     out <- deSolve::lsoda(y = y, 
-                       times = times, 
+                       times = tt, 
                        rates, 
                        parms = pars, 
                        temp_C_fun = temp_C_fun, 
@@ -106,7 +106,7 @@ abm_variable <-
 
     # Create empty (0) y.eff vector because washing could occur, and dat needs columns
     yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
-    y.eff <- 0 * yy[grepl('_eff$', names(yy))]
+    y.eff <- 0 * yy$eff
 
     # Add effluent results
     out[, names(y.eff)] <- 0
@@ -122,9 +122,9 @@ abm_variable <-
   }
 
   # Drop times from slurry mass data that were not requested in output
-
-  # Fix!
-  ###dat <- dat[!dat$time %in% droptimes, ]
+  if (!is.null(times)) {
+    dat <- dat[dat$time %in% c(times, days), ]
+  }
 
   return(dat)
 }

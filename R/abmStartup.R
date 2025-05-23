@@ -36,24 +36,9 @@ abmStartup <- function(days,
                pars = pars,
                startup = 0,
                starting = starting,
-               value = 'ts',
+               value = value,
                warn = warn)
-   
-    if (i <= startup) {
-      # Pull starting *concentrations* (inlcuding xa) from previous sim
-      tso <- out
 
-      # Names need to deal with possible data frame for conc_fresh
-      cf_names <- names(man_pars$conc_fresh)
-      cf_names <- cf_names[!grepl('^time', paste0(cf_names, '_conc'))]
-
-      init_pars$conc_init <- unlist(tso[nrow(tso), paste0(cf_names, '_conc')])
-      names(init_pars$conc_init) <- cf_names
-
-      grp_pars$xa_init <- unlist(tso[nrow(tso), paste0(grp_pars$grps, '_conc')])
-      names(grp_pars$xa_init) <- grp_pars$grps
-    }
- 
   }
 
   return(out)

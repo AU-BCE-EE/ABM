@@ -4,7 +4,6 @@ abm_regular <- function(
 			times_regular, 
 			y, 
 			pars, 
-			starting = NULL, 
 			temp_C_fun = temp_C_fun, 
 			pH_fun = pH_fun) { 
 

@@ -67,7 +67,7 @@ abm <- function(
   pH_fun <- makeTimeFunc(pars$pH, approx_method = pars$approx_method['pH'])
 
   # Create initial state variable vector
-  y <- makeInitState(pars, starting) 
+  y <- makeInitState(pars) 
 
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
@@ -76,7 +76,6 @@ abm <- function(
                        times_regular = times, 
                        y = y, 
                        pars = pars, 
-                       starting = starting, 
                        temp_C_fun = temp_C_fun, 
                        pH_fun = pH_fun)
   } else if (is.data.frame(pars$slurry_mass)) {

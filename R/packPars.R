@@ -11,26 +11,12 @@ packPars <- function(mng_pars,
                      pars,
                      starting) {
 
-  # If starting conditions are provided from a previous simulation, move them to pars
-  # Note that additional state variables are extracted from `starting` in abm_*.R
-  if (!is.null(starting) & is.data.frame(starting)) {
-    message('Using starting conditions from `starting` argument')
-    grp_pars[['xa_init']] <- as.numeric(starting[nrow(starting), paste0(names(grp_pars[['qhat_opt']]), '_conc')])
-    names(grp_pars[['xa_init']]) <- names(grp_pars[['qhat_opt']])
-    mng_pars['slurry_mass'] <- starting[nrow(starting), 'slurry_mass']
-  }
-  
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) { 
     pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, ctrl_pars)
   }
-
-  ## if variable conc fresh, we need to modify the conc_init a little
-  #if (is.data.frame(pars$conc_fresh) & (length(pars$conc_init) == length(pars$conc_fresh))) {
-  #  pars$conc_init <- pars$conc_fresh[1, -which(names(pars$conc_fresh) == "time")]
-  #} 
   
-  # Combine pars to make extraction and pass to rates() easier
+ 
   # Sort out parameter inputs
   # Note: pe.pars = add_pars that use par.element approach, these are converted to normal (simple) add_par elements here
   # Note: sa.pars = normal (simple) add_pars that do not need to be converted
@@ -77,12 +63,7 @@ packPars <- function(mng_pars,
     pars$grps <- add_pars$grps
   }
   
-  ## NTS: Add comment on this (FD?)
-  ## Below code is used only when we have variable concentration of methanogens in the fresh slurry.
-  ## In that case xa_fresh['time'] will need to be defined in a data.frame, but the block starting below this one 
-  ## will remove xa_fresh["time"], so we save it as xa_fresh_time before this happens. xa_fresh_time is used in L189 
-  #if(is.data.frame(pars$xa_fresh)) xa_fresh_time <- pars$xa_fresh["time"]
-  
+
   # Fill in default values for grp_pars if keyword name `default` or `all` is used
   # Note: Microbial groups are defined by grps element
   # Note: `default` does *not* work with add_pars argument because grps are already defined in defaults
@@ -131,7 +112,16 @@ packPars <- function(mng_pars,
   # Maximum slurry mass in kg
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
   pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
- 
+  
+  # If starting conditions are provided from a previous simulation, move them to pars
+  # Note that additional state variables are extracted from `starting` in abm_*.R
+  if (!is.null(starting) & is.data.frame(starting)) {
+    message('Using starting conditions from `starting` argument')
+    pars$xa_init[pars$grps] <- as.numeric(starting[nrow(starting), paste0(pars$grps, '_conc')])
+    pars$conc_init[c('VSd', 'VFA')] <- as.numeric(starting[nrow(starting), c('VSd_conc', 'VFA_conc')])
+    # Set slurry_mass as well?
+  }
+  
   return(pars)
  
 }

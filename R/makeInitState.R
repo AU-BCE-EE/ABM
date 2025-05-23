@@ -1,5 +1,4 @@
-makeInitState <- function(pars, 
-                          starting) {
+makeInitState <- function(pars) {
  
   if(is.data.frame(pars$slurry_mass)){
     # If missing slurry mass at time 0, set to earliest slurry mass value
@@ -23,12 +22,7 @@ makeInitState <- function(pars,
          CO2_emis_cum = 0, 
          slurry_load = 0,
          COD_load = 0)
-  
-  if (!is.null(starting) & is.data.frame(starting)) {
-    start.vars <- c('slurry_mass', 'VSd', 'VFA')
-    y[start.vars]  <- starting[nrow(starting), start.vars]
-  }  
-
+ 
   return(y)
 
 }

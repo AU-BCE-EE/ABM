@@ -1,3 +1,4 @@
+# Get vector of removals
 
 getRemVar <- function(pars, slurry_mass_approx) {
   # Determine slurry removal quantity in each time interval

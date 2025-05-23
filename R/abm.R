@@ -41,7 +41,7 @@ abm <- function(
   #  return(out)
   #} 
 
-  # Sort out parameters, ultimately packaging all parameters into a single list pars
+  # Sort out parameters, packaging all parameters into a single list pars, adding some others
   pars <- packPars(mng_pars = mng_pars,
                    man_pars = man_pars,
                    init_pars = init_pars,
@@ -51,28 +51,15 @@ abm <- function(
                    ctrl_pars = ctrl_pars,
                    add_pars = add_pars,
                    pars = pars,
-                   starting = starting,
-                   days = days)
+                   starting = starting)
 
   # Create time-variable functions
   # The element pars$x must either be a numeric constant for constant temperature or pH, or a data frame with time (column 1) and variable value (column 2)
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = pars$approx_method['temp'])
   pH_fun <- makeTimeFunc(pars$pH, approx_method = pars$approx_method['pH'])
 
-  ## Inhibition function
-  #SO4_inhib_fun <- approxfun(c(0, 0.09, 0.392251223, 0.686439641, 1.046003263, 1.470942088, 1.961256117, 4), 
-  #                           c(1, 1, 0.85, 0.3172, 0.29, 0.1192, 0.05, 0.001), rule = 2)
-
   # Create initial state variable vector
   y <- makeInitState(pars, starting) 
-
-  if (any(pars$conc_fresh[['VSd']] > 2e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$A)[!names(pars$A) %in% c('VSd','urea')]] > 2)) {
-    stop('Cannot have both VSd and other organic matter components being above 0')
-  }
-  
-  # hard wired parameters, that will not change during a rates call
-  # and was moved from rates to here to speed up model. These parameters are added in the hard_pars().
-  pars <- hard_pars(pars)
 
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
@@ -97,24 +84,6 @@ abm <- function(
                         slurry_mass_approx = pars$approx_method['slurry_mass'])
   } 
 
-  #colnames(dat) <- gsub("conc_fresh.","conc_fresh_", colnames(dat))
-  
-  ## Calculate rates etc. for output, from state variables
-  ## NTS: check units, use dens???
-  #if(rates_calc != 'instant'){
-  #  dat$rNH3 <- c(0, diff(dat$NH3_emis_cum))/c(1, diff(dat$time))
-  #  dat$NH3_emis_rate <- c(0, diff(dat$NH3_emis_cum))/c(1, diff(dat$time))
-
-  #  dat$rN2O <- c(0, diff(dat$N2O_emis_cum))/c(1, diff(dat$time))
-  #  dat$N2O_emis_rate <- c(0, diff(dat$N2O_emis_cum))/c(1, diff(dat$time))
-  #  
-  #  dat$rCH4 <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
-  #  dat$CH4_emis_rate <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
- 
-  #  dat$rCO2 <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
-  #  dat$CO2_emis_rate <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
-  #}
-  
   # NTS: Put below stuff and more into cleanOut() function
   # Replace . in names with _
   names(dat) <- gsub('\\.', '_', names(dat))
@@ -136,7 +105,6 @@ abm <- function(
     return(eff)
   }
 
-  # NTS: can include in everything below too
   # Or everything
   return(list(pars = pars, ts = dat, summ = summ))
 

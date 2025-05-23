@@ -7,7 +7,9 @@ checkGrpNames <- function(pars) {
                  names(pars$ki_NH3_min), names(pars$ki_NH3_max), 
                  names(pars$ki_NH4_min), names(pars$ki_NH4_max), 
                  names(pars$pH_lwr), names(pars$upr))) {
-    stop('Microbial groups, i.e., element names in `grp_pars`, must match.')
+    
+    stop('Microbial groups, i.e., element names in `grp_pars`, must match but do not.')
+    
   }
 
  }

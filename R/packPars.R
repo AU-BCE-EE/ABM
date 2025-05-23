@@ -9,8 +9,7 @@ packPars <- function(mng_pars,
                      ctrl_pars,
                      add_pars,
                      pars,
-                     starting,
-                     days) {
+                     starting) {
 
   # If starting conditions are provided from a previous simulation, move them to pars
   # Note that additional state variables are extracted from `starting` in abm_*.R
@@ -23,7 +22,6 @@ packPars <- function(mng_pars,
   
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) { 
-    #pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, list(days = days), ctrl_pars)
     pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, ctrl_pars)
   }
 
@@ -120,18 +118,19 @@ packPars <- function(mng_pars,
   pars$i_hyd <- grep('^hyd', pars$grps)
   pars$i_aer <- grep('^aer', pars$grps)
   
+  # Other constants
+  pars$g_NH4 <- 0.7
+  pars$temp_standard <- 298
+  pars$temp_zero <- 273
+  pars$pH_floor <- 7
+
   # Convert temperature constants to K if needed
-  pars <- tempsC2K(pars, ll = 200)
+  pars <- tempsC2K(pars, cutoff = 200)
   
   # Convert some supplied parameters
   # Maximum slurry mass in kg
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
   pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
-
-  # Cover effect on NH3 emission rate and N2O
-  # Reduction from cover 
-  pars$EF_NH3 <- coverfun(pars$cover, pars$scale_EF_NH3)
-  pars$EF_N2O <- ifelse(pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
  
   return(pars)
  

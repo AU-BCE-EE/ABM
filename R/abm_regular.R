@@ -43,7 +43,7 @@ abm_regular <- function(
                           pH_fun = pH_fun)
 
     # Extract new state variable vector from last row
-    y <- out[nrow(out), 1:(pars$n_mic + 7) + 1]
+    y <- getLastState(out, y)
     
     # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
     y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
@@ -71,15 +71,16 @@ abm_regular <- function(
                               temp_C_fun = temp_C_fun, 
                               pH_fun = pH_fun)
         # Extract new state variable vector from last row
-        y <- outr[nrow(outr), 1:(pars$n_mic + 7) + 1]
+        y <- getLastState(outr, y)
+        
         # Correct time in outr and combine with main output
-        outr[, 'time'] <- outr[, 'time'] + out[nrow(out), 'time']
-        out <- rbind(out, outr)
+        outr[, 'time'] <- outr[, 'time'] + 
+        out <- addOut(main = out, new = outr, t_add = out[nrow(out), 'time'])
       }
     }
     
     # Clean up and stack output with earlier results
-    dat <- addOut(dat, out, y.eff = y.eff, grps = pars$grps, n_mic = pars$n_mic, t_run = t_run)
+    dat <- addOut(main = dat, new = out, t_add = t_run, y.eff = y.eff)
     
     # Update time remaining and time run so far
     t_rem <- t_rem - t_call - intervals$wash[i] * pars$rest_d

@@ -133,17 +133,31 @@ sub_pars <- list(subs = c('VSd', 'pr'),
                  sub_init = c(VSd = 30, pr = 0))
 ```
 
-```{r, error=TRUE}
-out2 <- abm(365, 
+```{r}
+out2a <- abm(365, 
             grp_pars = grp_pars,
             man_pars = man_pars,
             mic_pars = mic_pars,
             sub_pars = sub_pars,
-            add_pars = list(sub_init.pr = 10))
+            add_pars = list(sub_init.pr = 100))
 ```
 
 ```{r}
-plot(pr_conc ~ time, data = out2, type = 'l')
+plot(pr_conc ~ time, data = out2a, type = 'l')
 ```
+
+Will get error if `subs` has substrates not present in `sub_pars` elements.
+
+```{r, error=TRUE}
+out2b <- abm(365, 
+            grp_pars = grp_pars,
+            man_pars = man_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars,
+            add_pars = list(subs = c('VSd', 'pr', 'fat'), sub_init.pr = 100))
+```
+
+
+
 
 

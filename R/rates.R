@@ -20,26 +20,24 @@ rates <- function(t,
   qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- emis <- 0 * y
 
   # Microbial substrate utilization rate (vectorized calculation)
-  qhat[p$i_mic] <- CTM_cpp(temp_K, p$T_opt, p$T_min, p$T_max, p$qhat_opt)
+  qhat[p$grps] <- CTM_cpp(temp_K, p$T_opt, p$T_min, p$T_max, p$qhat_opt)
 
   # VFA consumption rates (g/d) and growth
-  rut[p$i_meth] <- (qhat[p$i_meth] * y['VFA'] * y[p$i_meth]) / (p$ks[p$i_meth] * y['slurry_mass'] + y['VFA'])
-  rut[p$i_sr] <- qhat[p$i_sr] * 0
-  growth[p$i_mic] <- p$yield * rut[p$i_mic]
-  consump['VFA'] <- - sum(rut[p$i_meth])
+  rut[p$meths] <- (qhat[p$meths] * y['VFA'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['VFA'])
+  rut[p$srs] <- qhat[p$srs] * 0
+  growth[p$grps] <- p$yield * rut[p$grps]
+  consump['VFA'] <- - sum(rut[p$meths])
 
   # Inflow from slurry addition
-  # NTS: use a mix of position (grps) and names (subs)
-  # NTS: why not go to names for both?
-  inflow[p$i_mic] <- p$xa_fresh * p$slurry_prod_rate
+  inflow[p$grps] <- p$xa_fresh * p$slurry_prod_rate
   inflow[p$subs] <- p$conc_fresh[p$subs] * p$slurry_prod_rate
   inflow['VFA'] <- p$conc_fresh['VFA'] * p$slurry_prod_rate
   inflow[c('slurry_mass', 'slurry_load')] <- p$slurry_prod_rate
   inflow['COD_load'] <- sum(p$conc_fresh[c('VSd', 'VFA')], p$xa_fresh) * p$slurry_prod_rate
 
   # Death of microbes
-  death[p$i_mic] <- - p$dd_rate * y[p$i_mic]
-  death['VSd'] <- sum(death[p$i_mic])
+  death[p$grps] <- - p$dd_rate * y[p$grps]
+  death['VSd'] <- sum(death[p$grps])
 
   # Hydrolysis
   hydrol[p$subs] <- -alpha * y[p$subs]
@@ -47,7 +45,7 @@ rates <- function(t,
 
   # Emission
   p$COD_conv['CO2_meth'] <- 5
-  emis[c('CH4_emis_cum', 'CO2_emis_cum')] <- sum(rut[p$i_meth]) / p$COD_conv[c('CH4', 'CO2_meth')]
+  emis[c('CH4_emis_cum', 'CO2_emis_cum')] <- sum(rut[p$meths]) / p$COD_conv[c('CH4', 'CO2_meth')]
 
   # Add vectors to get derivatives
   # All elements in g/d as COD except slurry_mass (kg/d as fresh slurry mass)

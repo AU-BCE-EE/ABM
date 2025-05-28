@@ -72,6 +72,7 @@ packPars <- function(mng_pars,
   # Note: Microbial groups are defined by grps element
   # Note: `default` does *not* work with add_pars argument because grps are already defined in defaults
   # Note: But `all` *does* work
+  # expandPars() will also sort out element order and drop excluded elements
   pars <- expandPars(pars = pars, elnms = pars$grps, parnms = grp_par_nms)
   pars <- expandPars(pars = pars, elnms = pars$subs, parnms = sub_par_nms)
  
@@ -83,11 +84,18 @@ packPars <- function(mng_pars,
   
   # For size-variable parameters, get number of elements and indices
   pars$n_mic <- length(pars$grps)
+  pars$i_mic <- grep('^sr|^p|^m', pars$grps)
   pars$i_meth <- grep('^[mp]', pars$grps)
   pars$i_sr <- grep('^sr', pars$grps)
-  pars$i_mic <- grep('^sr|^p|^m', pars$grps)
-  pars$i_hyd <- grep('^hyd', pars$grps)
   pars$i_aer <- grep('^aer', pars$grps)
+  pars$i_hyd <- grep('^hyd', pars$grps)
+
+  # Get names of variable elements
+  # Remember pars$grps/pars$mics and pars$subs already exist
+  pars$meths <- pars$grps[pars$i_meth]
+  pars$srs <- pars$grps[pars$i_sr]
+  pars$aers <- pars$grps[pars$i_aer]
+  pars$hyds <- pars$grps[pars$i_hyd]
   
   pars$n_subs <- length(pars$subs)
   pars$i_subs <- length(pars$grps) + 1:length(pars$subs)

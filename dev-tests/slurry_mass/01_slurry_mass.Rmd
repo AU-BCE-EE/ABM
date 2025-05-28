@@ -27,27 +27,24 @@ plot(slurry_mass ~ time, data = slurry_mass_dat, type = 'o')
 Default, with "early" behavior.
 
 ```{r}
-out1 <- abm(30, delta_t = 0.1, man_pars = man_pars1.0, grp_pars = grp_pars1.0, 
-            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0, 
-                            slurry_mass = slurry_mass_dat, evap = 0, rain = 0))
+out1 <- abm(30, delta_t = 0.1, add_pars = list(storage_depth = 4, area = 1000, 
+                                               slurry_mass = slurry_mass_dat))
 ```
 
 Late
 
 ```{r}
-out2 <- abm(30, delta_t = 0.1, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
-            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0,
-                            slurry_mass = slurry_mass_dat, evap = 0, rain = 0), 
-            approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'late'))
+out2 <- abm(30, delta_t = 0.1, add_pars = list(storage_depth = 4, area = 1000, 
+                                               slurry_mass = slurry_mass_dat, 
+                                               approx_method.slurry_mass = 'late'))
 ```
 
 And mid
 
 ```{r}
-out3 <- abm(30, delta_t = 0.1, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
-            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0,
-                            slurry_mass = slurry_mass_dat, evap = 0, rain = 0), 
-            approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'mid'))
+out3 <- abm(30, delta_t = 0.1, add_pars = list(storage_depth = 4, area = 1000, 
+                                               slurry_mass = slurry_mass_dat, 
+                                               approx_method.slurry_mass = 'mid'))
 ```
 
 ```{r}
@@ -62,7 +59,7 @@ Expect that all three approaches hit the red points (input level) exactly.
 Methane production rate:
 
 ```{r}
-plot(out1$time, out1$CH4_emis_rate, type = 'l', ylim = c(0, 400))
+plot(out1$time, out1$CH4_emis_rate, type = 'l', ylim = c(0, 1000))
 lines(out2$time, out2$CH4_emis_rate, type = 'l', col = 'blue')
 lines(out3$time, out3$CH4_emis_rate, type = 'l', col = 'orange')
 ```
@@ -73,18 +70,18 @@ lines(out3$time, out3$CH4_emis_rate, type = 'l', col = 'orange')
 slurry_mass_dat <- data.frame(time = c(0, 1, 10, 15, 30), 
                               slurry_mass = c(1000, 500, 2000, 1500, 3000))
 
-out4 <- abm(30, delta_t = 0.1, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
-            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0,
-                            slurry_mass = slurry_mass_dat, evap = 0, rain = 0))
-out5 <- abm(30, delta_t = 0.1, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
-            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0,
-                            slurry_mass = slurry_mass_dat, evap = 0, rain = 0), 
-            approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'late'))
+out4 <- abm(30, delta_t = 0.1, add_pars = list(storage_depth = 4, area = 1000, 
+                                               slurry_mass = slurry_mass_dat, 
+                                               approx_method.slurry_mass = 'early'))
 
-out6 <- abm(30, delta_t = 0.1, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
-            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0,
-                            slurry_mass = slurry_mass_dat, evap = 0, rain = 0),
-            approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'mid'))
+out5 <- abm(30, delta_t = 0.1, add_pars = list(storage_depth = 4, area = 1000, 
+                                               slurry_mass = slurry_mass_dat, 
+                                               approx_method.slurry_mass = 'late'))
+
+out6 <- abm(30, delta_t = 0.1, add_pars = list(storage_depth = 4, area = 1000, 
+                                               slurry_mass = slurry_mass_dat, 
+                                               approx_method.slurry_mass = 'mid'))
+
 ```
 
 ```{r}
@@ -100,19 +97,19 @@ points(slurry_mass_dat$time, slurry_mass_dat$slurry_mass, col = 'red', pch = 19)
 slurry_mass_dat <- data.frame(time = c(0, 1, 10, 15, 30), 
                               slurry_mass = c(1000, 2000, 4000, 4500, 1000))
 
-out7 <- abm(30, delta_t = 0.1, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
-            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0,
-                            slurry_mass = slurry_mass_dat, evap = 0, rain = 0))
+out7 <- abm(30, delta_t = 0.1, add_pars = list(storage_depth = 4, area = 1000, 
+                                               slurry_mass = slurry_mass_dat, 
+                                               approx_method.slurry_mass = 'early'))
 
-out8 <- abm(30, delta_t = 0.1, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
-            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0,
-                            slurry_mass = slurry_mass_dat, evap = 0, rain = 0),
-            approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'late'))
+out8 <- abm(30, delta_t = 0.1, add_pars = list(storage_depth = 4, area = 1000, 
+                                               slurry_mass = slurry_mass_dat, 
+                                               approx_method.slurry_mass = 'late'))
 
-out9 <- abm(30, delta_t = 0.1, man_pars = man_pars1.0, grp_pars = grp_pars1.0,
-            add_pars = list(storage_depth = 4, area = 1000, floor_area = 0,
-                            slurry_mass = slurry_mass_dat, evap = 0, rain = 0),
-            approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'mid'))
+out9 <- abm(30, delta_t = 0.1, add_pars = list(storage_depth = 4, area = 1000, 
+                                               slurry_mass = slurry_mass_dat, 
+                                               approx_method.slurry_mass = 'mid'))
+
+
 ```
 
 ```{r}
@@ -128,63 +125,6 @@ Note that last input point is ignored for 'late' method.
 plot(out7$time, out7$CH4_emis_rate, type = 'l')
 lines(out8$time, out8$CH4_emis_rate, type = 'l', col = 'blue')
 lines(out9$time, out9$CH4_emis_rate, type = 'l', col = 'orange')
-```
-
-# Case 4, rain/evaporation correction
-
-```{r}
-slurry_mass_dat <- read.csv('slurry_mass.csv')
-```
-
-Should get an error if adjusted slurry level is negative
-
-```{r, error = TRUE}
-out_a0 <- abm(days = 4*365, add_pars = list(slurry_mass = slurry_mass_dat))
-```
-
-```{r}
-out_a1 <- abm(days = 4*365, add_pars = list(slurry_mass = slurry_mass_dat, area = 100))
-```
-Does it also work with different emptying alignment?
-
-```{r}
-out_a2 <- abm(days = 4*365, add_pars = list(slurry_mass = slurry_mass_dat, area = 100), 
-              approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'mid')) 
-```
-
-```{r}
-out_a3 <- abm(days = 4*365, add_pars = list(slurry_mass = slurry_mass_dat, area = 100), 
-              approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'late')) 
-```
-
-```{r}
-out_b <- abm(days = 4*365, add_pars = list(slurry_mass = slurry_mass_dat, rain = 0, evap = 0))
-```
-
-Check for mismatch between input slurry_mass and output slurry_mass
-
-```{r}
-plot(out_a1$time, out_a1$slurry_mass, col = 'red', type = 'l')
-lines(out_a2$time, out_a2$slurry_mass, col = 'orange', lty = 2)
-lines(out_a3$time, out_a3$slurry_mass, col = 'purple', lty = 3)
-lines(out_b$time, out_b$slurry_mass, col = 'blue', lty = '3131')
-```
-
-These different simulations should have different CH4 production.
-With no net rain, `abm()` interprets input as having more loading, so more methane.
-
-```{r}
-plot(out_a1$time, out_a1$CH4_emis_rate, col = 'red', type = 'l')
-lines(out_a2$time, out_a2$CH4_emis_rate, col = 'orange', lty = 2)
-lines(out_a3$time, out_a3$CH4_emis_rate, col = 'purple', lty = 3)
-lines(out_b$time, out_b$CH4_emis_rate, col = 'blue', lty = '3131')
-```
-
-```{r}
-plot(out_a1$time, out_a1$CH4_emis_cum, col = 'red', type = 'l', ylim = c(0, 2E7))
-lines(out_a2$time, out_a2$CH4_emis_cum, col = 'orange', lty = 2, lwd = 3)
-lines(out_a3$time, out_a3$CH4_emis_cum, col = 'purple', lty = 3, lwd = 3)
-lines(out_b$time, out_b$CH4_emis_cum, col = 'blue', lty = '3131')
 ```
 
 

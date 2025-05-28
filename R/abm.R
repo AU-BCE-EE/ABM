@@ -20,6 +20,7 @@ abm <- function(
   init_pars = list(conc_init = man_pars$conc_fresh),
   grp_pars = grp_parsx,
   mic_pars = mic_parsx,
+  sub_pars = sub_parsx,
   chem_pars = chem_parsx,
   ctrl_pars = list(respir = TRUE,
                    pH_inhib = FALSE, 
@@ -39,12 +40,13 @@ abm <- function(
                    init_pars = init_pars,
                    grp_pars = grp_pars,
                    mic_pars = mic_pars,
+                   sub_pars = sub_pars,
                    chem_pars = chem_pars,
                    ctrl_pars = ctrl_pars,
                    add_pars = add_pars,
                    pars = pars,
                    starting = starting)
-  
+
   # If startup repetitions are requested, repeat some number of times before returning results
   # This is done in a for loop in abm_repeat()
   if (startup > 0) {

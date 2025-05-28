@@ -5,6 +5,7 @@ packPars <- function(mng_pars,
                      init_pars,
                      grp_pars,
                      mic_pars,
+                     sub_pars,
                      chem_pars,
                      ctrl_pars,
                      add_pars,
@@ -13,7 +14,7 @@ packPars <- function(mng_pars,
 
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) { 
-    pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, ctrl_pars)
+    pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, sub_pars, chem_pars, ctrl_pars)
   }
   
  
@@ -37,9 +38,10 @@ packPars <- function(mng_pars,
   }
 
   # If any additional parameters were added (or modified) using add_pars, update them in pars list here
+  # But grp_pars and sub_pars work differently than the others because of the all = and default = keywords
   # Needs to work in a case where default is all but e.g., m1 is given in add_pars (see def stuff below)
-  grp_par_nms <- names(grp_pars)
-  grp_par_nms <- grp_par_nms[grp_par_nms != 'grps']
+  grp_par_nms <- names(grp_pars)[names(grp_pars) != 'grps']
+  sub_par_nms <- names(sub_pars)[names(sub_pars) != 'subs']
   if (!is.null(add_pars) && length(add_pars) > 0) {
     if (any(bad.names <- !names(add_pars) %in% names(pars))) {
       stop ('Some `add_pars` names not recognized as valid parameters: ', names(add_pars)[bad.names]) 
@@ -51,53 +53,44 @@ packPars <- function(mng_pars,
       } else {
         def <- pars[[i]]['all']
         pars[[i]] <- add_pars[[i]]
-        if (i %in% grp_par_nms) {
+        if (i %in% c(grp_par_nms, sub_par_nms)) {
           pars[[i]]['default'] <- def
         }
       }
     }
   }
   
-  # Unlike others, grps in add_pars *will* override default vector (i.e., can be used to remove groups)
+  # Unlike others, grps and subs in add_pars *will* override default vector (i.e., can be used to remove groups)
   if ('grps' %in% names(add_pars)) {
     pars$grps <- add_pars$grps
   }
-  
+  if ('subs' %in% names(add_pars)) {
+    pars$subs <- add_pars$subs
+  }
 
   # Fill in default values for grp_pars if keyword name `default` or `all` is used
   # Note: Microbial groups are defined by grps element
   # Note: `default` does *not* work with add_pars argument because grps are already defined in defaults
   # Note: But `all` *does* work
-  grp_nms <- pars$grps
-  for (i in grp_par_nms) {
-    ppo <- pars[[i]]
-    p_nms <- names(pars[[i]])
-    if (any(p_nms == 'default')) {
-      pars[[i]][grp_nms] <- pars[[i]]['default']
-      if (any(p_nms != 'default')) {
-        pars[[i]][p_nms[p_nms != 'default']] <- ppo[p_nms[p_nms != 'default']]
-      }
-    }
-    if (any(p_nms == 'all')) {
-      pars[[i]][grp_nms] <- pars[[i]]['all']
-    }
-    # Fix order, drop default element if present, drop unused names
-    pars[[i]] <- pars[[i]][grp_nms]
-    # Check for missing values
-    if (any(is.na(pars[[i]]))) stop('Missing grp_pars elements in ', i, '.')
-  }
-  
+  pars <- expandPars(pars = pars, elnms = pars$grps, parnms = grp_par_nms)
+  pars <- expandPars(pars = pars, elnms = pars$subs, parnms = sub_par_nms)
+ 
   # Check grp arguments, including order of element names in some pars
   # After above block, this should be redundant
   checkGrpNames(pars)
 
-  # Add number of groups and indices of different groups
+  # Repeat for substrates (code is copied--this could be a helper function)
+  
+  # For size-variable parameters, get number of elements and indices
   pars$n_mic <- length(pars$grps)
   pars$i_meth <- grep('^[mp]', pars$grps)
   pars$i_sr <- grep('^sr', pars$grps)
   pars$i_mic <- grep('^sr|^p|^m', pars$grps)
   pars$i_hyd <- grep('^hyd', pars$grps)
   pars$i_aer <- grep('^aer', pars$grps)
+  
+  pars$n_subs <- length(pars$subs)
+  pars$i_subs <- length(pars$grps) + 1:length(pars$subs)
   
   # Other constants
   pars$g_NH4 <- 0.7

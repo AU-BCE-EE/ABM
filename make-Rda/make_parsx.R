@@ -25,17 +25,20 @@ grp_parsx <- list(grps = c('m0', 'm1', 'm2','sr1'),
 
 mic_parsx <- list(ks_SO4 = 0.00694, 
                   km_urea = 0.913,
-                  dd_rate_xa = 0.02,
-                  T_opt_hyd = 60,
-                  T_min_hyd = 0,
-                  T_max_hyd = 90,
-                  hydrol_opt = 0.1)
+                  dd_rate_xa = 0.02)
+
+sub_parsx <- list(subs = c('VSd', 'Pr'),
+                  T_opt_hyd = c(VSd = 60, Pr = 80),
+                  T_min_hyd = c(all = 0),
+                  T_max_hyd = c(all = 90),
+                  hydrol_opt = c(VSd = 0.1, Pr = 0.01))
 
 man_parsx <- list(conc_fresh = c(sulfide = 0.01, 
 				                         sulfate = 0.2, 
 				                         TAN = 0.0, 
                                  VFA = 2, 
 				                         VSd = 50, 
+                                 Pr = 10,
 				                         ash = 15), 
                   pH = 7, dens = 1000)
 
@@ -50,4 +53,5 @@ save(grp_parsx, file = '../data/grp_parsx.rda')
 save(mic_parsx, file = '../data/mic_parsx.rda')
 save(man_parsx, file = '../data/man_parsx.rda')
 save(chem_parsx, file = '../data/chem_parsx.rda')
+save(sub_parsx, file = '../data/sub_parsx.rda')
 

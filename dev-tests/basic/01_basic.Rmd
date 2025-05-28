@@ -37,7 +37,10 @@ plot(COD_load ~ time, data = out0, type = 'l')
 plot(slurry_mass ~ time, data = out0, type = 'l')
 plot(temp_C ~ time, data = out0, type = 'l')
 plot(VSd ~ time, data = out0, type = 'l')
+plot(Pr ~ time, data = out0, type = 'l')
 plot(VFA ~ time, data = out0, type = 'l')
+plot(VSd_conc ~ time, data = out0, type = 'l')
+plot(Pr_conc ~ time, data = out0, type = 'l')
 plot(VFA_conc ~ time, data = out0, type = 'l')
 ```
 

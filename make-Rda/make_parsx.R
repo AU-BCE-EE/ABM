@@ -27,18 +27,18 @@ mic_parsx <- list(ks_SO4 = 0.00694,
                   km_urea = 0.913,
                   dd_rate_xa = 0.02)
 
-sub_parsx <- list(subs = c('VSd', 'Pr'),
-                  T_opt_hyd = c(VSd = 60, Pr = 80),
-                  T_min_hyd = c(all = 0),
-                  T_max_hyd = c(all = 90),
-                  hydrol_opt = c(VSd = 0.1, Pr = 0.01))
+sub_parsx <- list(subs = c('VSd'),
+                  T_opt_hyd = c(VSd = 60),
+                  T_min_hyd = c(VSd = 0),
+                  T_max_hyd = c(VSd = 90),
+                  hydrol_opt = c(VSd = 0.1),
+                  sub_fresh = c(VSd = 50),
+                  sub_init = c(VSd = 50))
 
 man_parsx <- list(conc_fresh = c(sulfide = 0.01, 
 				                         sulfate = 0.2, 
 				                         TAN = 0.0, 
                                  VFA = 2, 
-				                         VSd = 50, 
-                                 Pr = 10,
 				                         ash = 15), 
                   pH = 7, dens = 1000)
 

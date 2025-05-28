@@ -12,12 +12,11 @@ rates <- function(t,
   temp_C <- temp_C_fun(t + p$t_run)
   temp_K <- temp_C + 273.15
 
-  # Hydrolysis rate for now
-  alpha <- CTM_cpp(temp_K, p$T_opt_hyd, p$T_min_hyd, p$T_max_hyd, p$hydrol_opt)
-  names(alpha) <- p$subs
+  # Create 0 vectors with derivative components, all with same order of y elements
+  alpha <- qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- emis <- 0 * y
 
-  # Create vectors with derivative components, all with order of y elements
-  qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- emis <- 0 * y
+  # Hydrolysis rate
+  alpha[p$subs] <- CTM_cpp(temp_K, p$T_opt_hyd, p$T_min_hyd, p$T_max_hyd, p$hydrol_opt)
 
   # Microbial substrate utilization rate (vectorized calculation)
   qhat[p$grps] <- CTM_cpp(temp_K, p$T_opt, p$T_min, p$T_max, p$qhat_opt)
@@ -29,18 +28,20 @@ rates <- function(t,
   consump['VFA'] <- - sum(rut[p$meths])
 
   # Inflow from slurry addition
-  inflow[p$grps] <- p$xa_fresh * p$slurry_prod_rate
-  inflow[p$subs] <- p$conc_fresh[p$subs] * p$slurry_prod_rate
-  inflow['VFA'] <- p$conc_fresh['VFA'] * p$slurry_prod_rate
-  inflow[c('slurry_mass', 'slurry_load')] <- p$slurry_prod_rate
-  inflow['COD_load'] <- sum(p$conc_fresh[c('VSd', 'VFA')], p$xa_fresh) * p$slurry_prod_rate
+  # First only concentrations are set, and multiplied by inflow in last line
+  inflow[p$grps] <- p$xa_fresh
+  inflow[p$subs] <- p$conc_fresh[p$subs]
+  inflow['VFA'] <- p$conc_fresh['VFA']
+  inflow[c('slurry_mass', 'slurry_load')] <- 1
+  inflow['COD_load'] <- sum(p$conc_fresh[c(p$subs, 'VFA')], p$xa_fresh)
+  inflow <- inflow * p$slurry_prod_rate
 
   # Death of microbes
   death[p$grps] <- - p$dd_rate * y[p$grps]
   death['VSd'] <- sum(death[p$grps])
 
   # Hydrolysis
-  hydrol[p$subs] <- -alpha * y[p$subs]
+  hydrol[p$subs] <- -alpha[p$subs] * y[p$subs]
   hydrol['VFA'] <- - sum(hydrol[p$subs])
 
   # Emission

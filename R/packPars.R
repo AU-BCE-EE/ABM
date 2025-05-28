@@ -27,7 +27,7 @@ packPars <- function(mng_pars,
     pe.pars <- add_pars[ii]
     sa.pars <- add_pars[!ii]
     apnames <- names(pe.pars)
-    pe.pars <- as.numeric(pe.pars)
+    pe.pars[!grepl('[A-Za-z]', pe.pars)] <- as.numeric(pe.pars[!grepl('[A-Za-z]', pe.pars)])
     split.pars <- strsplit(apnames, par_key)
     pnames <- sapply(split.pars, '[[', 1)
     enames <- sapply(split.pars, '[[', 2)

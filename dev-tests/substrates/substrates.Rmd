@@ -46,7 +46,7 @@ man_pars <- list(conc_fresh = c(VFA = 2),
 ```
 
 
-# 1. Single substrate
+# 0. Single substrate
 
 ```{r}
 

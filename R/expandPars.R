@@ -16,7 +16,9 @@ expandPars <- function(pars, elnms, parnms) {
     # Fix order, drop default element if present, drop unused names
     pars[[i]] <- pars[[i]][elnms]
     # Check for missing values
-    if (any(is.na(pars[[i]]))) stop('Missing grp_pars elements in ', i, '.')
+    if (any(is.na(pars[[i]]))) {
+      stop('Size-variable parameter problem: Missing element(s) in ', i, '.')
+    }
   }
 
   return(pars)

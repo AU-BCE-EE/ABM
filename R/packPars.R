@@ -80,8 +80,6 @@ packPars <- function(mng_pars,
   # After above block, this should be redundant
   checkGrpNames(pars)
 
-  # Repeat for substrates (code is copied--this could be a helper function)
-  
   # For size-variable parameters, get number of elements and indices
   pars$n_mic <- length(pars$grps)
   pars$i_mic <- grep('^sr|^p|^m', pars$grps)

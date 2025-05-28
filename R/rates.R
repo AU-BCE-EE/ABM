@@ -30,10 +30,10 @@ rates <- function(t,
   # Inflow from slurry addition
   # First only concentrations are set, and multiplied by inflow in last line
   inflow[p$grps] <- p$xa_fresh
-  inflow[p$subs] <- p$conc_fresh[p$subs]
+  inflow[p$subs] <- p$sub_fresh[p$subs]
   inflow['VFA'] <- p$conc_fresh['VFA']
   inflow[c('slurry_mass', 'slurry_load')] <- 1
-  inflow['COD_load'] <- sum(p$conc_fresh[c(p$subs, 'VFA')], p$xa_fresh)
+  inflow['COD_load'] <- sum(p$conc_fresh['VFA'], p$sub_fresh, p$xa_fresh)
   inflow <- inflow * p$slurry_prod_rate
 
   # Death of microbes
@@ -51,7 +51,7 @@ rates <- function(t,
   # Add vectors to get derivatives
   # All elements in g/d as COD except slurry_mass (kg/d as fresh slurry mass)
   ders <- inflow + growth + consump + death + hydrol + emis
- 
+  
   return(list(ders, c(CH4_emis_rate = emis[['CH4_emis_cum']], temp_C = temp_C, pH = pH)))
 
 }

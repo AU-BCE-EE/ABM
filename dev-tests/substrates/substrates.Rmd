@@ -119,3 +119,31 @@ plot(VSd_conc ~ time, data = out1, type = 'l')
 plot(pr_conc ~ time, data = out1, type = 'l')
 plot(VFA_conc ~ time, data = out1, type = 'l')
 ```
+
+# 2. Adjustments with `add_pars`
+
+```{r}
+devtools::load_all()
+sub_pars <- list(subs = c('VSd', 'pr'),
+                 T_opt_hyd = c(VSd = 60, pr = 50),
+                 T_min_hyd = c(all = 0),
+                 T_max_hyd = c(all = 90),
+                 hydrol_opt = c(VSd = 0.1, pr = 0.04),
+                 sub_fresh = c(VSd = 50, pr = 50),
+                 sub_init = c(VSd = 30, pr = 0))
+```
+
+```{r, error=TRUE}
+out2 <- abm(365, 
+            grp_pars = grp_pars,
+            man_pars = man_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars,
+            add_pars = list(sub_init.pr = 10))
+```
+
+```{r}
+plot(pr_conc ~ time, data = out2, type = 'l')
+```
+
+

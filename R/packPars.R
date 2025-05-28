@@ -37,6 +37,7 @@ packPars <- function(mng_pars,
     add_pars <- c(sa.pars, pe.pars)
   }
 
+
   # If any additional parameters were added (or modified) using add_pars, update them in pars list here
   # But grp_pars and sub_pars work differently than the others because of the all = and default = keywords
   # Needs to work in a case where default is all but e.g., m1 is given in add_pars (see def stuff below)
@@ -49,7 +50,7 @@ packPars <- function(mng_pars,
     # Add in pars (or replace existing elements unless it is time series data added)
     for (i in names(add_pars)) {
       if (!is.data.frame(add_pars[[i]]) && length(pars[[i]]) > 1) {
-        pars[[i]][names(add_pars[[i]])] <- add_pars[[i]]
+        pars[[i]][names(add_pars[[i]])] <- unlist(add_pars[[i]])
       } else {
         def <- pars[[i]]['all']
         pars[[i]] <- add_pars[[i]]
@@ -75,7 +76,7 @@ packPars <- function(mng_pars,
   # expandPars() will also sort out element order and drop excluded elements
   pars <- expandPars(pars = pars, elnms = pars$grps, parnms = grp_par_nms)
   pars <- expandPars(pars = pars, elnms = pars$subs, parnms = sub_par_nms)
- 
+
   # Check grp arguments, including order of element names in some pars
   # After above block, this should be redundant
   checkGrpNames(pars)

@@ -1,0 +1,162 @@
+---
+title: 'New approach to time-variable inputs'
+output: pdf_document
+author: Sasha D. Hafner
+date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
+---
+
+# Overview
+Objective is to demonstrate new approach for variable inputs.
+
+# Prep
+
+```{r}
+devtools::load_all()
+```
+
+# Parameters
+
+```{r}
+grp_pars <- list(grps = c('m0', 'm1', 'm2','sr1'),
+                 yield = c(all = 0.05),
+                 xa_fresh = c(all = 1),
+                 xa_init = c(all = 0.5),
+                 dd_rate = c(all = 0.1),
+                 ks = c(default = 1.153337, sr1 = 0.461335),
+                 qhat_opt = c(m0 = 1, m1 = 1, m2 = 2, sr1 = 8.95),
+                 T_opt = c(m0 = 18, m1 = 18, m2 = 28, sr1 = 43.75),
+                 T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41, sr1 = 0),
+                 T_max = c(m0 = 25, m1 = 25, m2 = 38, sr1 = 51.25))
+
+mic_pars <- list(ks_SO4 = 0.00694, 
+                 km_urea = 0.913)
+
+sub_pars <- list(subs = c('VSd'),
+                 T_opt_hyd = c(VSd = 60),
+                 T_min_hyd = c(all = 0),
+                 T_max_hyd = c(all = 90),
+                 hydrol_opt = c(VSd = 0.1),
+                 sub_fresh = c(VSd = 50),
+                 sub_init = c(VSd = 0))
+
+man_pars <- list(conc_fresh = c(VFA = 0), 
+                  pH = 7, dens = 1000)
+
+```
+
+
+# 0. Single substrate
+
+```{r}
+out0 <- abm(365, 
+            grp_pars = grp_pars,
+            man_pars = man_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars)
+```
+
+```{r}
+plot(CH4_emis_rate ~ time, data = out0, type = 'l')
+plot(CH4_emis_cum ~ time, data = out0, type = 'l')
+plot(COD_load ~ time, data = out0, type = 'l')
+plot(VSd ~ time, data = out0, type = 'l')
+plot(VSd_eff ~ time, data = out0, type = 'l')
+plot(VFA ~ time, data = out0, type = 'o')
+plot(VSd_conc ~ time, data = out0, type = 'l')
+plot(VFA_conc ~ time, data = out0, type = 'o')
+```
+
+# 1. Two substrates through `sub_pars`
+
+Add `pr` for protein.
+
+```{r}
+sub_pars <- list(subs = c('VSd', 'pr'),
+                 T_opt_hyd = c(VSd = 60),
+                 T_min_hyd = c(all = 0),
+                 T_max_hyd = c(all = 90),
+                 hydrol_opt = c(VSd = 0.1),
+                 sub_fresh = c(VSd = 50),
+                 sub_init = c(VSd = 30))
+```
+
+```{r, error=TRUE}
+out1 <- abm(365, 
+            grp_pars = grp_pars,
+            man_pars = man_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars)
+```
+
+Add missing elements.
+
+```{r}
+sub_pars <- list(subs = c('VSd', 'pr'),
+                 T_opt_hyd = c(VSd = 60, pr = 50),
+                 T_min_hyd = c(all = 0),
+                 T_max_hyd = c(all = 90),
+                 hydrol_opt = c(VSd = 0.1, pr = 0.04),
+                 sub_fresh = c(VSd = 50, pr = 50),
+                 sub_init = c(VSd = 30, pr = 0))
+```
+
+```{r, error=TRUE}
+out1 <- abm(365, 
+            grp_pars = grp_pars,
+            man_pars = man_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars)
+```
+
+
+```{r}
+plot(CH4_emis_rate ~ time, data = out1, type = 'l')
+plot(CH4_emis_cum ~ time, data = out1, type = 'l')
+plot(COD_load ~ time, data = out1, type = 'l')
+lines(COD_load ~ time, data = out0, col = 'red')
+plot(VSd_conc ~ time, data = out1, type = 'l')
+plot(pr_conc ~ time, data = out1, type = 'l')
+plot(VFA_conc ~ time, data = out1, type = 'l')
+```
+
+# 2. Adjustments with `add_pars`
+
+```{r}
+devtools::load_all()
+sub_pars <- list(subs = c('VSd', 'pr'),
+                 T_opt_hyd = c(VSd = 60, pr = 50),
+                 T_min_hyd = c(all = 0),
+                 T_max_hyd = c(all = 90),
+                 hydrol_opt = c(VSd = 0.1, pr = 0.04),
+                 sub_fresh = c(VSd = 50, pr = 50),
+                 sub_init = c(VSd = 30, pr = 0))
+```
+
+```{r}
+out2a <- abm(365, 
+            grp_pars = grp_pars,
+            man_pars = man_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars,
+            add_pars = list(sub_init.pr = 100))
+```
+
+```{r}
+plot(pr_conc ~ time, data = out2a, type = 'l')
+```
+
+Will get error if `subs` has substrates not present in `sub_pars` elements.
+
+```{r, error=TRUE}
+out2b <- abm(365, 
+            grp_pars = grp_pars,
+            man_pars = man_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars,
+            add_pars = list(subs = c('VSd', 'pr', 'fat'), sub_init.pr = 100))
+```
+
+
+
+
+

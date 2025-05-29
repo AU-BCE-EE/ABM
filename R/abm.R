@@ -27,6 +27,7 @@ abm <- function(
                    approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'early'), 
                    par_key = '\\.',
                    rates_calc = 'instant'),
+  variable_pars = data.frame(),
   add_pars = NULL,
   pars = NULL,
   startup = 0,                                # Number of times complete simulation should be run before returning results

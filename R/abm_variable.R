@@ -52,6 +52,10 @@ abm_variable <-
 
     # Fill in slurry_prod_rate
     pars$slurry_prod_rate <- slurry_prod_rate_t[i]
+    
+    # Create empty (0) y.eff vector because washing could occur, and dat needs columns
+    yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
+    y.eff <- 0 * yy$eff
 
     # If there is a removal event, remove slurry before calling up ODE solver
     if (removals[i]) {
@@ -103,10 +107,6 @@ abm_variable <-
 
     # Extract new state variable vector from last row of lsoda output
     y <- getLastState(out, y)
-
-    # Create empty (0) y.eff vector because washing could occur, and dat needs columns
-    yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
-    y.eff <- 0 * yy$eff
 
     # Add effluent results
     out[, names(y.eff)] <- 0

@@ -50,7 +50,7 @@ man_pars <- list(conc_fresh = c(VFA = 2),
 
 ```{r}
 
-out0 <- abm(365, 
+out0 <- abm(5, 
             grp_pars = grp_pars,
             man_pars = man_pars,
             mic_pars = mic_pars,

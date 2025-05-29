@@ -45,40 +45,46 @@ abm_regular <- function(
     y <- getLastState(out, y)
     
     # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
-    y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
-    y.eff <- y$eff
-    y <- y$store
-   
-    # Washing, increase slurry mass
-    if (intervals$wash[i]) {
-      y['slurry_mass'] <- y['slurry_mass'] + pars$wash_water
-
-      # And empty again, leaving same residual mass as always, and enriching for particles
+    if (i < intervals$n_int) {
       y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
       y.eff <- y$eff
       y <- y$store
+   
+      # Washing, increase slurry mass
+      if (intervals$wash[i]) {
+        y['slurry_mass'] <- y['slurry_mass'] + pars$wash_water
 
-      # Run for rest period with no influent 
-      if (pars$rest_d > 0) {
-        times <- seq(0, pars$rest_d, delta_t)
-        parsr <- pars
-        parsr$slurry_prod_rate <- 0
-        outr <- deSolve::lsoda(y = y, 
-                              times = times, 
-                              rates, 
-                              parms = parsr, 
-                              temp_C_fun = temp_C_fun, 
-                              pH_fun = pH_fun)
-        # Extract new state variable vector from last row
-        y <- getLastState(outr, y)
-        
-        # Correct time in outr and combine with main output
-        out <- addOut(main = out, new = outr, t_add = out[nrow(out), 'time'])
+        # And empty again, leaving same residual mass as always, and enriching for particles
+        y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
+        y.eff <- y$eff
+        y <- y$store
+
+        # Run for rest period with no influent 
+        if (pars$rest_d > 0) {
+          times <- seq(0, pars$rest_d, delta_t)
+          parsr <- pars
+          parsr$slurry_prod_rate <- 0
+          outr <- deSolve::lsoda(y = y, 
+                                times = times, 
+                                rates, 
+                                parms = parsr, 
+                                temp_C_fun = temp_C_fun, 
+                                pH_fun = pH_fun)
+          # Extract new state variable vector from last row
+          y <- getLastState(outr, y)
+          
+          # Correct time in outr and combine with main output
+          out <- addOut(main = out, new = outr, t_add = out[nrow(out), 'time'])
+        }
       }
     }
     
     # Clean up and stack output with earlier results
-    dat <- addOut(main = dat, new = out, t_add = t_run, y.eff = y.eff)
+    if (is.null(y.eff)) {
+      dat <- addOut(main = dat, new = out, t_add = t_run)
+    } else {
+      dat <- addOut(main = dat, new = out, t_add = t_run, y.eff = y.eff)
+    }
     
     # Update time remaining and time run so far
     t_rem <- t_rem - t_call - intervals$wash[i] * pars$rest_d

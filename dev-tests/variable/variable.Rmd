@@ -45,28 +45,17 @@ man_pars <- list(conc_fresh = c(VFA = 0),
 ```
 
 
-# 0. Single substrate
+# 0. Default
 
 ```{r}
-out0 <- abm(365, 
-            grp_pars = grp_pars,
-            man_pars = man_pars,
-            mic_pars = mic_pars,
-            sub_pars = sub_pars)
+out0 <- abm(365)
 ```
 
 ```{r}
 plot(CH4_emis_rate ~ time, data = out0, type = 'l')
-plot(CH4_emis_cum ~ time, data = out0, type = 'l')
-plot(COD_load ~ time, data = out0, type = 'l')
-plot(VSd ~ time, data = out0, type = 'l')
-plot(VSd_eff ~ time, data = out0, type = 'l')
-plot(VFA ~ time, data = out0, type = 'o')
-plot(VSd_conc ~ time, data = out0, type = 'l')
-plot(VFA_conc ~ time, data = out0, type = 'o')
 ```
 
-# 1. Two substrates through `sub_pars`
+# 1. Variable pH
 
 Add `pr` for protein.
 

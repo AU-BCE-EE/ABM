@@ -22,9 +22,9 @@ checkCOD <- function(dat,
 
   if (abs(rbal) > rtol) {
     warning('COD balance is off by ', signif(100 * rbal, 2), '%')
-    return(invisible(FALSE))
+    return(invisible(rbal))
   } 
 
-  return(invisible(TRUE))
+  return(invisible(rbal))
 
 }

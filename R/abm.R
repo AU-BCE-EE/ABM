@@ -94,7 +94,10 @@ abm <- function(
   } 
 
   # Clean up and possibly extend output
-  dat <- cleanOutput(dat, pars, addcols = TRUE, addconcs = TRUE)
+  dat <- cleanOutput(dat, pars, addcols = TRUE, addconcs = TRUE, cumeff = TRUE)
+
+  # Check COD balance
+  checkCOD(dat = dat, grps = pars$grps, subs = pars$subs, COD_conv = pars$COD_conv, rtol = 0.01)
 
   # Return results
   # Average only

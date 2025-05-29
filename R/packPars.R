@@ -90,7 +90,7 @@ packPars <- function(mng_pars,
   pars$i_hyd <- grep('^hyd', pars$grps)
 
   # Get names of variable elements
-  # Remember pars$grps/pars$mics and pars$subs already exist
+  # Remember pars$grps/pars$mics and pars$subs already exist (set in pars input)
   pars$meths <- pars$grps[pars$i_meth]
   pars$srs <- pars$grps[pars$i_sr]
   pars$aers <- pars$grps[pars$i_aer]

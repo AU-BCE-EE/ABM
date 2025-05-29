@@ -1,8 +1,5 @@
 # Check COD balance
 
-dat <- out0
-head(dat)
-dat
 checkCOD <- function(dat, 
                      grps = c('m0', 'm1', 'm2', 'sr1'),
                      subs = c('VSd'),
@@ -13,16 +10,21 @@ checkCOD <- function(dat,
                      rtol = 0.001
                     ) {
 
-  first <- dat[1, ]
-  last <- dat[nrow(dat), ]
+  first <- unlist(dat[1, ])
+  last <- unlist(dat[nrow(dat), ])
 
-  CODin <- last$COD_load + first[[subs]] + first[['VFA']]
-  #CODeff <- last[[paste0(subs, '_eff')]] + last[['VFA']]
-  CODemis <- last[['CH4_emis_cum']] / COD_conv[['CH4']]
-  CODrem <- sum(last[[subs]], last[['VFA']])
-  bal <- CODin - CODemis - CODrem
+  CODin <- sum(last[['COD_load']], first[grps], first[subs], first[['VFA']])
+  CODeff <- sum(last[paste0(subs, '_eff')]) + last[['VFA_eff']]
+  CODemis <- last[['CH4_emis_cum']] * COD_conv[['CH4']]
+  CODrem <- sum(last[grps], last[subs], last[['VFA']])
+  bal <- CODin - CODeff - CODemis - CODrem
   rbal <- bal / CODin
-  #bal <- CODin - CODeff - CODemis - CODrem
 
+  if (abs(rbal) > rtol) {
+    warning('COD balance is off by ', signif(100 * rbal, 2), '%')
+    return(invisible(FALSE))
+  } 
+
+  return(invisible(TRUE))
 
 }

@@ -24,8 +24,8 @@ rates <- function(t,
   # VFA consumption rates (g/d) and growth
   rut[p$meths] <- (qhat[p$meths] * y['VFA'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['VFA'])
   rut[p$srs] <- qhat[p$srs] * 0
-  growth[p$grps] <- p$yield * rut[p$grps]
-  consump['VFA'] <- - sum(rut[p$meths])
+  growth[p$grps] <- p$yield[p$grps] * rut[p$grps]
+  consump['VFA'] <- - sum(rut)
 
   # Inflow from slurry addition
   # First only concentrations are set, and multiplied by inflow in last line
@@ -33,23 +33,26 @@ rates <- function(t,
   inflow[p$subs] <- p$sub_fresh[p$subs]
   inflow['VFA'] <- p$conc_fresh['VFA']
   inflow[c('slurry_mass', 'slurry_load')] <- 1
-  inflow['COD_load'] <- sum(p$conc_fresh['VFA'], p$sub_fresh, p$xa_fresh)
+  inflow['COD_load'] <- sum(inflow[c(p$grps, p$subs, 'VFA')])
   inflow <- inflow * p$slurry_prod_rate
 
   # Death of microbes
   death[p$grps] <- - p$dd_rate * y[p$grps]
-  death['VSd'] <- sum(death[p$grps])
+  death['VSd'] <- - sum(death[p$grps])
 
   # Hydrolysis
-  hydrol[p$subs] <- -alpha[p$subs] * y[p$subs]
+  hydrol[p$subs] <- - alpha[p$subs] * y[p$subs]
   hydrol['VFA'] <- - sum(hydrol[p$subs])
 
   # Emission
   p$COD_conv['CO2_meth'] <- 5
-  emis[c('CH4_emis_cum', 'CO2_emis_cum')] <- sum(rut[p$meths]) / p$COD_conv[c('CH4', 'CO2_meth')]
+  emis[c('CH4_emis_cum', 'CO2_emis_cum')] <- (sum(rut[p$meths]) - sum(growth[p$meths])) / 
+                                             p$COD_conv[c('CH4', 'CO2_meth')]
 
   # Add vectors to get derivatives
-  # All elements in g/d as COD except slurry_mass (kg/d as fresh slurry mass)
+  # All elements in g/d as COD except 
+  #   * slurry_mass (kg/d as fresh slurry mass)
+  #   * CH4 (g/d as CH4 or C?)
   ders <- inflow + growth + consump + death + hydrol + emis
   
   return(list(ders, c(CH4_emis_rate = emis[['CH4_emis_cum']], temp_C = temp_C, pH = pH)))

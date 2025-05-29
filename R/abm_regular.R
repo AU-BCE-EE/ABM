@@ -20,6 +20,7 @@ abm_regular <- function(
   t_run <- 0
 
   # Start the time (emptying) loop
+  t_add <- 0
   for (i in 1:intervals$n_int) {
 
     # Sort out call duration
@@ -40,12 +41,17 @@ abm_regular <- function(
                           parms = pars, 
                           temp_C_fun = temp_C_fun, 
                           pH_fun = pH_fun)
+    
+    # Update time remaining and time run so far
+    t_run <- t_run + t_call
 
     # Extract new state variable vector from last row
     y <- getLastState(out, y)
-    
-    # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
-    if (i < intervals$n_int) {
+      
+    # See if emptying is needed
+    if (t_run < days) {
+
+      # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
       y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
       y.eff <- y$eff
       y <- y$store
@@ -76,20 +82,25 @@ abm_regular <- function(
           # Correct time in outr and combine with main output
           out <- addOut(main = out, new = outr, t_add = out[nrow(out), 'time'])
         }
+        
+        # Add rest time to t_run
+        t_run <- t_run + intervals$wash[i] * pars$rest_d
       }
+      
+    } else {
+      
+      y2 <- emptyStore(y, skip = TRUE, warn = FALSE)
+      y.eff <- y2$eff
+      
     }
     
     # Clean up and stack output with earlier results
-    if (is.null(y.eff)) {
-      dat <- addOut(main = dat, new = out, t_add = t_run)
-    } else {
-      dat <- addOut(main = dat, new = out, t_add = t_run, y.eff = y.eff)
-    }
+    dat <- addOut(main = dat, new = out, t_add = t_add, y.eff = y.eff)
     
-    # Update time remaining and time run so far
+    # Update time
     t_rem <- t_rem - t_call - intervals$wash[i] * pars$rest_d
-    t_run <- t_run + t_call + intervals$wash[i] * pars$rest_d
-
+    t_add <- t_run
+    
   }
 
   if (!is.null(times_regular)) {

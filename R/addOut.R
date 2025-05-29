@@ -14,7 +14,7 @@ addOut <- function(main, new, t_add, y.eff = NULL) {
 
     # Change time in output to cumulative time for complete simulation
     new$time <- new$time + t_add
-  
+
     # Add results to earlier ones
     main <- rbind(main, new)
     

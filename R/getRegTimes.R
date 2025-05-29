@@ -25,7 +25,8 @@ getRegTimes <- function(pars, days) {
   wash <- FALSE
 
   # Continute . . .
-  # Each interval is either 1) the fixed empty_int or if time between washings would be exceeded, 2) time to get to a washing event
+  # Each interval is either 1) the fixed empty_int or if time between washings would be exceeded, 
+  # 2) time to get to a washing event, or 3) time until end of simulation
   while (sum(t_int, wash * rest_d) < days) {
     i <- i + 1
     t_int[i] <- min(wash_int - t_nowash, empty_int, days - sum(t_int, wash * rest_d))

@@ -3,25 +3,13 @@ abm <- function(
   days = 365,                                # Number of days to run
   delta_t = 1,                               # Time step for output
   times = NULL,                              # Optional vector of times for output
-  mng_pars = list(slurry_prod_rate = 5700,   # kg/d
-                  slurry_mass = 39000,       # Initial slurry mass (kg) 
-                  storage_depth = 0.6,       # Storge structure depth, assued to be maximum slurry depth (m)
-                  resid_depth = 0.05,        # Residual slurry depth after emptying (m)
-                  area = 715,                # Tank/pit slurry surface area (assume vertical sides, includes slurry underneath walking path) (m2)
-                  empty_int = 42,            # Fixed emptying interval (days)
-                  temp_C = 20,
-                  wash_water = 0,            
-                  wash_int = NA,
-                  rest_d = 0,
-                  cover = 'none',
-                  resid_enrich = 1,
-                  scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
-  man_pars = man_parsx,
+  mng_pars,
+  man_pars,
   init_pars = list(conc_init = man_pars$conc_fresh),
-  grp_pars = grp_parsx,
-  mic_pars = mic_parsx,
-  sub_pars = sub_parsx,
-  chem_pars = chem_parsx,
+  grp_pars,
+  mic_pars,
+  sub_pars,
+  chem_pars,
   ctrl_pars = list(respir = TRUE,
                    pH_inhib = FALSE, 
                    approx_method = 'early',

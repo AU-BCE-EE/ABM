@@ -34,7 +34,9 @@ rates <- function(t,
 
   # Death of microbes
   death[p$grps] <- - p$dd_rate * y[p$grps]
-  death['VSd'] <- - sum(death[p$grps])
+  # NTS: we need an input parameter setting the sink for dd to a certain substrate
+  # NTS: could be one just for the purpose, like xa_dead
+  death[p$subs[1]] <- - sum(death[p$grps])
 
   # Hydrolysis
   hydrol[p$subs] <- - alpha[p$subs] * y[p$subs]

@@ -19,9 +19,7 @@ fixVarDat <- function(pars, days) {
          head(pars$var$time))
   }
   
-  # If simulation continues past slurry_mass data frame time, set following slurry production (addition) to zero
-  # Extend last slurry mass all the way 
-  # NTS: needs extension for other parameters
+  # If simulation continues past var_pars data frame time, extend last row all the way
   if (pars$var[nrow(pars$var), 'time'] < days) {
     t_end <- days
     pars$var <- rbind(pars$var, pars$var[nrow(pars$var), ])
@@ -32,13 +30,14 @@ fixVarDat <- function(pars, days) {
     }
   }
 
+  # For 'mid' option, other variables are copied from previous time
   if (pars$approx_method == 'mid') {
     # Get midpoint time
     ir <- which(- c(0, diff(pars$var[, 'slurry_mass'])) > 0)
     tt <- (pars$var[ir, 'time']  + pars$var[ir - 1, 'time']) / 2
-    # And copy slurry mass
-    mm <- pars$var[ir, 'slurry_mass']
-    pars$var <- rbind(pars$var, data.frame(time = tt, slurry_mass = mm))
+    nr <- pars$var[ir, ]
+    nr$time <- tt
+    pars$var <- rbind(pars$var, nr)
     pars$var <- pars$var[order(pars$var$time), ]
   } 
   

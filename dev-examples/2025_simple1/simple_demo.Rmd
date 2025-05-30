@@ -1,0 +1,390 @@
+---
+title: 'Demo of new simple1 version'
+output: pdf_document
+author: Sasha D. Hafner
+date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
+---
+
+# Overview
+This demo shows:
+
+1. basic usage,
+2. variable substrates,
+3. time-variable parameters
+4. COD balance,
+
+# Prep
+
+```{r}
+devtools::load_all()
+```
+
+# Function arguments
+The argument list currently looks like this:
+
+```
+abm <- function(
+  days = 365,                                # Number of days to run
+  delta_t = 1,                               # Time step for output
+  times = NULL,                              # Optional vector of times for output
+  mng_pars,
+  man_pars,
+  init_pars = list(conc_init = man_pars$conc_fresh),
+  grp_pars,
+  mic_pars,
+  sub_pars,
+  chem_pars,
+  ctrl_pars = list(respir = TRUE,
+                   pH_inhib = FALSE, 
+                   approx_method = 'early',
+                   par_key = '\\.',
+                   rates_calc = 'instant'),
+  var_pars = list(var = NULL),
+  add_pars = NULL,
+  pars = NULL,
+  startup = 0,                                # Number of times complete simulation should be run before returning results
+  starting = NULL,                            # Output from previous simulation to be starting condition for new one
+  value = 'ts',                               # Type of output
+  warn = TRUE) {
+```
+
+The main changes are:
+
+* `sub_pars` for defining substrates
+* `ctrl_pars` for some "control" parameters
+* `var_pars` for any parameters that change over time
+
+I have removed the default `*_pars` objects for now.
+
+# 1. Basic behavior
+The simplest usage is with constant slurry production rate and a fixed schedule.
+We need to set some parameters, first management parameters.
+
+```{r}
+mng_pars = list(slurry_prod_rate = 10000, 
+                slurry_mass = 1000,     
+                storage_depth = 2,     
+                resid_depth = 0.1,      
+                area = 100,              
+                empty_int = 100,          
+                temp_C = 20,
+                wash_water = 0,            
+                wash_int = NA,
+                rest_d = 0,
+                resid_enrich = 1)
+```
+
+Next substrate parameters, a new argument.
+This defines substrates.
+We could have any number with any names.
+Note that hydrolysis uses CTM now (like anything here, it could change).
+
+```{r}
+sub_pars <- list(subs = c('VSd'),
+                 T_opt_hyd = c(VSd = 60),
+                 T_min_hyd = c(VSd = 0),
+                 T_max_hyd = c(VSd = 90),
+                 hydrol_opt = c(VSd = 0.1),
+                 sub_fresh = c(VSd = 50),
+                 sub_init = c(VSd = 50))
+```
+
+Microbial parameters are similar to other ABM versions, but there is no inhibition for now.
+
+```{r}
+grp_pars <- list(grps = c('m0', 'm1', 'm2','sr1'),
+                 yield = c(default = 0.05, sr1 = 0.065),
+                 xa_fresh = c(all = 0.05),
+                 xa_init = c(all = 0.05),
+                 dd_rate = c(all = 0.02),
+                 ks = c(default = 1, sr1 = 0.5),
+                 qhat_opt = c(m0 = 1, m1 = 1, m2 = 2, sr1 = 9),
+                 T_opt = c(m0 = 18, m1 = 18, m2 = 28, sr1 = 44),
+                 T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41, sr1 = 0),
+                 T_max = c(m0 = 25, m1 = 25, m2 = 38, sr1 = 51))
+```
+
+The `dd_rate_xa` parameter is for "death and decay".
+
+
+```{r}
+mic_pars <- list(ks_SO4 = 0.00694, 
+                 km_urea = 0.913,
+                 dd_rate_xa = 0.02)
+```
+
+These last two are similar to other versions.
+
+```{r}
+man_pars <- list(conc_fresh = c(sulfide = 0.01, 
+				                        sulfate = 0.2, 
+				                        TAN = 0.0, 
+                                VFA = 2, 
+				                        ash = 15), 
+                 pH = 7, dens = 1000)
+
+chem_pars <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
+                               VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
+                               CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
+                               C_xa = 1/0.3753125))
+```
+
+```{r}
+out1 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars,
+            grp_pars = grp_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars,
+            chem_pars = chem_pars)
+```
+
+Output is similar to other versions.
+The `value` argument does not currently work.
+
+```{r}
+head(out1)
+tail(out1)
+```
+
+The effluent columns are cumulative.
+I did this for COD balance checking.
+We will have to discuss what is needed.
+
+Here are some results.
+
+```{r}
+plot(slurry_mass ~ time, data = out1, type = 'l')
+plot(CH4_emis_rate ~ time, data = out1, type = 'l')
+plot(VSd_conc ~ time, data = out1, type = 'l')
+plot(VFA_conc ~ time, data = out1, type = 'l')
+```
+
+And methanogens.
+
+
+```{r}
+line_colors <- c('red', 'blue', 'purple','orange')
+matplot(out1$time, out1[, nn <- c('m0','m1','m2','sr1')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, ylab = 'Microbial biomass (kg)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1, cex = 0.8)
+```
+
+# 2. Substrate flexibility
+
+Particulate substrates are defined in `sub_pars` now and there are no particular substrates hard-wired in the code.
+VFA is the only intermediate, and it is hard-wired.
+Here we will include two more substrates.
+The mix of names might not make much sense in this example.
+
+```{r}
+sub_pars2 <- list(subs = c('VSd', 'protein', 'cellulose'),
+                  T_opt_hyd = c(all = 60),
+                  T_min_hyd = c(all = 0),
+                  T_max_hyd = c(all = 90),
+                  hydrol_opt = c(VSd = 0.1, protein = 0.01, cellulose = 0.05),
+                  sub_fresh = c(VSd = 50, protein = 20, cellulose = 35),
+                  sub_init = c(VSd = 50, protein = 20, cellulose = 35))
+```
+
+```{r}
+out2 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars,
+            grp_pars = grp_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars2,
+            chem_pars = chem_pars)
+```
+
+
+```{r}
+plot(slurry_mass ~ time, data = out2, type = 'l')
+lines(slurry_mass ~ time, data = out1, col = 'red')
+
+plot(CH4_emis_rate ~ time, data = out2, type = 'l')
+lines(CH4_emis_rate ~ time, data = out1, col = 'red')
+
+plot(VSd_conc ~ time, data = out2, type = 'l')
+plot(protein_conc ~ time, data = out2, type = 'l')
+plot(cellulose_conc ~ time, data = out2, type = 'l')
+
+plot(VFA_conc ~ time, data = out2, type = 'l')
+lines(VFA_conc ~ time, data = out1, col = 'red')
+```
+
+This flexibility comes from an approach similar to what we used for microbial groups.
+
+# 3. Time-variable inputs part 1
+The `abm()` function can handle variability over time in any inputs now.
+Here slurry mass and temperature will vary.
+
+```{r}
+var_dat <- data.frame(time = c(0, 1, 10, 15, 30), 
+                      slurry_mass = c(1000, 7000, 2000, 1500, 3000),
+                      temp_C = c(10, 15, 15, 20, 20))
+
+plot(slurry_mass ~ time, data = var_dat, type = 'o')
+plot(temp_C ~ time, data = var_dat, type = 'o')
+```
+
+This data frame goes in the `var_pars` argument, which must be a list.
+The data frame must have a `slurry_mass` column if it is used--it is not possible to use an `abm_regular()`-like approach with variable temperature etc.
+
+```{r}
+var_pars <- list(var = var_dat)
+```
+
+```{r}
+out3a <- abm(50,
+             mng_pars = mng_pars,
+             man_pars = man_pars,
+             grp_pars = grp_pars,
+             mic_pars = mic_pars,
+             sub_pars = sub_pars,
+             chem_pars = chem_pars,
+             var_pars = var_pars)
+```
+
+
+```{r}
+plot(slurry_mass ~ time, data = out3, type = 'l')
+```
+
+The "late" and "mid" options are still available, but now through `ctrl_pars`.
+Here we can change the value through `add_pars`
+
+```{r}
+out3b <- abm(50,
+             mng_pars = mng_pars,
+             man_pars = man_pars,
+             grp_pars = grp_pars,
+             mic_pars = mic_pars,
+             sub_pars = sub_pars,
+             chem_pars = chem_pars,
+             var_pars = var_pars,
+             add_pars = list(approx_method = 'late'))
+```
+
+```{r}
+devtools::load_all()
+out3c <- abm(50,
+             mng_pars = mng_pars,
+             man_pars = man_pars,
+             grp_pars = grp_pars,
+             mic_pars = mic_pars,
+             sub_pars = sub_pars,
+             chem_pars = chem_pars,
+             var_pars = var_pars,
+             add_pars = list(approx_method = 'mid'))
+```
+
+```{r}
+plot(slurry_mass ~ time, data = out3a, type = 'l')
+lines(slurry_mass ~ time, data = out3b, col = 'red')
+lines(slurry_mass ~ time, data = out3c, col = 'blue')
+```
+
+Here there is an effect of slurry mass and temperature.
+
+```{r}
+plot(CH4_emis_cum ~ time, data = out3a, type = 'l')
+lines(CH4_emis_cum ~ time, data = out3b, col = 'red')
+lines(CH4_emis_cum ~ time, data = out3c, col = 'blue')
+```
+
+# 4. Time-variable inputs part 2
+Here we'll vary fresh substrate concentrations over time.
+
+First the data frame with slurry mass.
+
+```{r}
+var_dat <- data.frame(time = c(0, 1, 10, 15, 30, 50), 
+                      slurry_mass = c(1000, 7000, 2000, 5000, 3000, 10000))
+var_dat
+```
+
+Then add `sub_fresh` values.
+Each row needs a list containing a named vector.
+This is somewhat unusual data frame usage.
+
+```{r}
+var_dat
+var_dat$sub_fresh <- rep(list(c(VSd = 50)), nrow(var_dat))
+var_dat$sub_fresh[3] <- list(c(VSd = 100))
+var_dat$sub_fresh[4] <- list(c(VSd = 10))
+var_dat$sub_fresh[5] <- list(c(VSd = 0))
+var_dat
+var_dat[1, 3]
+var_dat[5, 3]
+```
+
+```{r}
+devtools::load_all()
+out4a <- abm(100,
+             mng_pars = mng_pars,
+             man_pars = man_pars,
+             grp_pars = grp_pars,
+             mic_pars = mic_pars,
+             sub_pars = sub_pars,
+             chem_pars = chem_pars,
+             var_pars = var_pars)
+```
+
+
+```{r}
+plot(slurry_mass ~ time, data = out4a, type = 'l')
+plot(CH4_emis_rate ~ time, data = out4a, type = 'l')
+plot(VSd_conc ~ time, data = out4a, type = 'l')
+plot(VFA_conc ~ time, data = out4a, type = 'l')
+```
+
+Let's vary some microbial parameters as well.
+And pH.
+
+```{r}
+var_dat <- data.frame(time = c(0, 1, 10, 15, 30, 50), 
+                      slurry_mass = c(1000, 7000, 2000, 5000, 3000, 10000),
+                      pH = 7 - 0:5/10)
+var_dat
+```
+
+
+VSd.
+
+```{r}
+var_dat$sub_fresh <- rep(list(c(VSd = 50)), nrow(var_dat))
+var_dat$sub_fresh[3] <- list(c(VSd = 100))
+```
+
+Some microbial parameters for a shift in temperature optima, "adaptation" for example.
+
+```{r}
+for (i in 1:nrow(var_dat)) {
+  var_dat$T_opt[i] <- list(grp_pars$T_opt + 2 * i)
+}
+var_dat
+```
+
+```{r}
+out4b <- abm(100,
+             mng_pars = mng_pars,
+             man_pars = man_pars,
+             grp_pars = grp_pars,
+             mic_pars = mic_pars,
+             sub_pars = sub_pars,
+             chem_pars = chem_pars,
+             var_pars = var_pars)
+```
+
+```{r}
+plot(slurry_mass ~ time, data = out4b, type = 'l')
+plot(CH4_emis_rate ~ time, data = out4b, type = 'l')
+plot(VSd_conc ~ time, data = out4b, type = 'l')
+plot(VFA_conc ~ time, data = out4b, type = 'l')
+```
+
+5. COD balance
+There is now a `checkCOD()` function that runs on `abm()` results before returning them.
+For now the tolerance is fixed at 1%.
+Some of the examples above do not meet that criterion for some reason.

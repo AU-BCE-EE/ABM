@@ -18,8 +18,8 @@ rates <- function(t,
   qhat[p$grps] <- CTM_cpp(temp_K, p$T_opt, p$T_min, p$T_max, p$qhat_opt)
 
   # VFA consumption rates (g/d) and growth
-  rut[p$meths] <- (qhat[p$meths] * y['VFA'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['VFA'])
-  rut[p$srs] <- qhat[p$srs] * 0
+  rut[p$meths] <- p$ired[p$meths] * (qhat[p$meths] * y['VFA'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['VFA'])
+  rut[p$srs] <- p$ired[p$srs] * qhat[p$srs] * 0
   growth[p$grps] <- p$yield[p$grps] * rut[p$grps]
   consump['VFA'] <- - sum(rut)
 

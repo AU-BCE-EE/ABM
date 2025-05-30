@@ -52,6 +52,9 @@ abm_variable <-
 
     # Fill in other pars from var
     pars <- updateVarPars(pars, i - 1)
+
+    # Calculate inhibition reductions
+    pars <- calcInhib(pars, y)
     
     # Create empty (0) y.eff vector because washing could occur, and dat needs columns
     yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)

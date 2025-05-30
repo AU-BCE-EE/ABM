@@ -118,7 +118,7 @@ These last two are similar to other versions.
 ```{r}
 man_pars <- list(conc_fresh = c(sulfide = 0.01, 
 				                        sulfate = 0.2, 
-				                        TAN = 0.0, 
+				                        TAN = 2.5, 
                                 VFA = 2, 
 				                        ash = 15), 
                  pH = 7, dens = 1000)
@@ -388,3 +388,64 @@ plot(VFA_conc ~ time, data = out4b, type = 'l')
 There is now a `checkCOD()` function that runs on `abm()` results before returning them.
 For now the tolerance is fixed at 1%.
 Some of the examples above do not meet that criterion for some reason.
+
+5. Inhibition
+
+
+
+```{r}
+ilwr <- matrix(
+  c(1, 0.1, 3, 0.1,
+    1, 0.1, 3, 0.1,
+    1, 0.1, 3, 0.01,
+    4, 0.1, 3, 0.1),
+  nrow = length(grps),
+  byrow = TRUE,
+  dimnames = list(
+    c('m0', 'm1', 'm2', 'sr1'),
+    c('NH4.', 'NH3', 'VFA', 'HVFA')
+  )
+)
+
+iupr <- matrix(
+  c(4, 0.5, 7, 0.3,
+    4, 0.5, 7, 0.3,
+    4, 0.5, 7, 0.03,
+    8, 0.5, 9, 0.3),
+  nrow = length(grps),
+  byrow = TRUE,
+  dimnames = list(
+    c('m0', 'm1', 'm2', 'sr1'),
+    c('NH4.', 'NH3', 'VFA', 'HVFA')
+  )
+)
+
+inhib_pars <- list(
+  ilwr = ilwr,
+  iupr = iupr
+)
+                  
+```
+
+```{r}
+var_dat <- data.frame(time = c(0, 1, 10, 15, 30), 
+                      slurry_mass = c(1000, 7000, 2000, 1500, 3000),
+                      temp_C = c(10, 15, 15, 20, 20))
+var_pars <- list(var = var_dat)
+```
+
+```{r}
+devtools::load_all()
+out5 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars,
+            grp_pars = grp_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars,
+            chem_pars = chem_pars,
+            inhib_pars = inhib_pars,
+            var_pars = var_pars
+)
+```
+
+

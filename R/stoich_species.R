@@ -1,4 +1,4 @@
-stoich_species2 <- function(acefrac, fs, y) {
+stoich_species <- function(acefrac, fs, y) {
   
   formulas <- c(starch = 'C6H10O5', 
                 Cfat = 'C51H98O6', 

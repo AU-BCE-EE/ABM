@@ -24,6 +24,29 @@ slurry_mass_dat <- data.frame(time = c(0, 1, 10, 15, 30), slurry_mass = c(1000, 
 plot(slurry_mass ~ time, data = slurry_mass_dat, type = 'o')
 ```
 
+```{r}
+mng_pars = list(slurry_prod_rate = 5700,
+                slurry_mass = slurry_mass_dat,    
+                storage_depth = 4,    
+                resid_depth = 0.05,     
+                area = 1000,             
+                empty_int = 42,         
+                temp_C = 20,
+                wash_water = 0,            
+                wash_int = NA,
+                rest_d = 0,
+                cover = 'none',
+                resid_enrich = 1,
+                scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1))
+
+```
+
+```{r}
+out0 <- abm(30, delta_t = 0.1, mng_pars = mng_pars)
+```
+
+
+
 Default, with "early" behavior.
 
 ```{r}

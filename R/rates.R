@@ -1,16 +1,12 @@
 rates <- function(t, 
 		              y, 
-		              parms, 
-		              temp_C_fun = temp_C_fun, 
-		              pH_fun = pH_fun) {
+		              parms) {
     
   # Short name for parms to make indexing in code below simpler 
   p <- parms
 
   # Time-dependent values
-  pH <- pH_fun(t + p$t_run)
-  temp_C <- temp_C_fun(t + p$t_run)
-  temp_K <- temp_C + 273.15
+  temp_K <- p$temp_C + 273.15
 
   # Create 0 vectors with derivative components, all with same order of y elements
   alpha <- qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- emis <- 0 * y
@@ -55,6 +51,6 @@ rates <- function(t,
   #   * CH4 (g/d as CH4 or C?)
   ders <- inflow + growth + consump + death + hydrol + emis
   
-  return(list(ders, c(CH4_emis_rate = emis[['CH4_emis_cum']], temp_C = temp_C, pH = pH)))
+  return(list(ders, c(CH4_emis_rate = emis[['CH4_emis_cum']], temp_C = p$temp_C, pH = p$pH)))
 
 }

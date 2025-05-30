@@ -24,10 +24,10 @@ abm <- function(
   chem_pars = chem_parsx,
   ctrl_pars = list(respir = TRUE,
                    pH_inhib = FALSE, 
-                   approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'early'), 
+                   approx_method = 'early',
                    par_key = '\\.',
                    rates_calc = 'instant'),
-  variable_pars = data.frame(),
+  var_pars = list(var = NULL),
   add_pars = NULL,
   pars = NULL,
   startup = 0,                                # Number of times complete simulation should be run before returning results
@@ -44,6 +44,7 @@ abm <- function(
                    sub_pars = sub_pars,
                    chem_pars = chem_pars,
                    ctrl_pars = ctrl_pars,
+                   var_pars = var_pars,
                    add_pars = add_pars,
                    pars = pars,
                    starting = starting)
@@ -64,35 +65,27 @@ abm <- function(
   } 
 
 
-  # Create time-variable functions
-  # The element pars$x must either be a numeric constant for constant temperature or pH, or a data frame with time (column 1) and variable value (column 2)
-  temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = pars$approx_method['temp'])
-  pH_fun <- makeTimeFunc(pars$pH, approx_method = pars$approx_method['pH'])
-
   # Create initial state variable vector
   y <- makeInitState(pars) 
 
-  if (is.numeric(pars$slurry_mass)) {
+  if (is.null(pars$var)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
     dat <- abm_regular(days = days, 
                        delta_t = delta_t, 
                        times_regular = times, 
                        y = y, 
-                       pars = pars, 
-                       temp_C_fun = temp_C_fun, 
-                       pH_fun = pH_fun)
-  } else if (is.data.frame(pars$slurry_mass)) {
+                       pars = pars)
+  } else if (inherits(pars$var, 'data.frame')) {
     # Option 2: Everything based on given slurry mass vs. time
     dat <- abm_variable(days = days, 
                         delta_t = delta_t, 
                         times = times, 
                         y = y, 
                         pars = pars, 
-                        warn = warn, 
-                        temp_C_fun = temp_C_fun, 
-                        pH_fun = pH_fun, 
-                        slurry_mass_approx = pars$approx_method['slurry_mass'])
-  } 
+                        warn = warn)
+  } else {
+    stop('pars_var must be NULL or a data frame')
+  }
 
   # Clean up and possibly extend output
   dat <- cleanOutput(dat, pars, addcols = TRUE, addconcs = TRUE, cumeff = TRUE)

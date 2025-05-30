@@ -2,10 +2,10 @@
 
 getWashWater <- function(pars) {
   
-  if ('wash_water' %in% names(pars$slurry_mass)) {
-    wash_water <- pars$slurry_mass[, 'wash_water']
+  if ('wash_water' %in% names(pars$var)) {
+    wash_water <- pars$var[, 'wash_water']
   } else {
-    wash_water <- 0 * pars$slurry_mass[, 'slurry_mass']
+    wash_water <- 0 * pars$var[, 'slurry_mass']
   }
 
   return(wash_water)

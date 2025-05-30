@@ -4,10 +4,7 @@ abm_variable <-
            times, 
            y, 
            pars, 
-           warn, 
-           temp_C_fun = temp_C_fun, 
-           pH_fun = pH_fun, 
-           slurry_mass_approx) {
+           warn) {
     
   pars$abm_regular <- FALSE
   
@@ -16,14 +13,14 @@ abm_variable <-
     warning('Fixed wash_water value of ', pars$wash_water, '\nwill be ignored because variable slurry input is used.')
   }
 
-  pars <- fixSlurryMass(pars, days, slurry_mass_approx)
+  pars <- fixVarDat(pars, days)
   removals <- pars$removals
 
   # Extract washing mass
   wash_water <- getWashWater(pars)
   
   # Extract slurry_mass vector for use in emptying calculations
-  slurry_mass <- pars$slurry_mass[, 'slurry_mass']
+  slurry_mass <- pars$var[, 'slurry_mass']
 
   # Determine variable slurry production rate for each time interval
   slurry_prod_rate_t <- getSlurryProd(pars)
@@ -52,6 +49,9 @@ abm_variable <-
 
     # Fill in slurry_prod_rate
     pars$slurry_prod_rate <- slurry_prod_rate_t[i]
+
+    # Fill in other pars from var
+    pars <- updateVarPars(pars, i - 1)
     
     # Create empty (0) y.eff vector because washing could occur, and dat needs columns
     yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
@@ -59,7 +59,7 @@ abm_variable <-
 
     # If there is a removal event, remove slurry before calling up ODE solver
     if (removals[i]) {
-      if (slurry_mass_approx == 'late') {
+      if (pars$approx_method == 'late') {
         j <- i - 1
       } else {
         j <- i
@@ -94,9 +94,7 @@ abm_variable <-
     out <- deSolve::lsoda(y = y, 
                        times = tt, 
                        rates, 
-                       parms = pars, 
-                       temp_C_fun = temp_C_fun, 
-                       pH_fun = pH_fun)
+                       parms = pars)
      
     # Change format of output and drop first (time 0) row (duplicated in last row of previous)
     if (i == 2) {

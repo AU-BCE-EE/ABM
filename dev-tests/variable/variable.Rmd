@@ -44,108 +44,104 @@ man_pars <- list(conc_fresh = c(VFA = 0),
 
 ```
 
-
-# 0. Default
+Slurry mass data.
 
 ```{r}
-out0 <- abm(365)
+var_dat <- data.frame(time = c(0, 1, 10, 15, 30), 
+                      slurry_mass = c(1000, 7000, 2000, 1500, 3000),
+                      temp_C = c(10, 15, 15, 20, 20))
+plot(slurry_mass ~ time, data = var_dat, type = 'o')
+plot(temp_C ~ time, data = var_dat, type = 'o')
+```
+
+```{r}
+var_pars <- list(var = var_dat)
+```
+
+# 0. Variable slurry mass and temp_C
+
+```{r}
+devtools::load_all()
+out0 <- abm(50, var_pars = var_pars)
 ```
 
 ```{r}
 plot(CH4_emis_rate ~ time, data = out0, type = 'l')
+plot(temp_C ~ time, data = out0, type = 'l')
 ```
 
-# 1. Variable pH
-
-Add `pr` for protein.
+# 1. Variable sub_fresh
 
 ```{r}
-sub_pars <- list(subs = c('VSd', 'pr'),
-                 T_opt_hyd = c(VSd = 60),
-                 T_min_hyd = c(all = 0),
-                 T_max_hyd = c(all = 90),
-                 hydrol_opt = c(VSd = 0.1),
-                 sub_fresh = c(VSd = 50),
-                 sub_init = c(VSd = 30))
+var_dat <- data.frame(time = c(0, 1, 10, 15, 30, 50), 
+                      slurry_mass = c(1000, 7000, 2000, 5000, 3000, 10000),
+                      temp_C = c(10, 15, 15, 20, 20, 5))
+var_dat
 ```
 
-```{r, error=TRUE}
-out1 <- abm(365, 
-            grp_pars = grp_pars,
-            man_pars = man_pars,
-            mic_pars = mic_pars,
-            sub_pars = sub_pars)
-```
-
-Add missing elements.
-
-```{r}
-sub_pars <- list(subs = c('VSd', 'pr'),
-                 T_opt_hyd = c(VSd = 60, pr = 50),
-                 T_min_hyd = c(all = 0),
-                 T_max_hyd = c(all = 90),
-                 hydrol_opt = c(VSd = 0.1, pr = 0.04),
-                 sub_fresh = c(VSd = 50, pr = 50),
-                 sub_init = c(VSd = 30, pr = 0))
-```
-
-```{r, error=TRUE}
-out1 <- abm(365, 
-            grp_pars = grp_pars,
-            man_pars = man_pars,
-            mic_pars = mic_pars,
-            sub_pars = sub_pars)
-```
 
 
 ```{r}
-plot(CH4_emis_rate ~ time, data = out1, type = 'l')
-plot(CH4_emis_cum ~ time, data = out1, type = 'l')
-plot(COD_load ~ time, data = out1, type = 'l')
-lines(COD_load ~ time, data = out0, col = 'red')
-plot(VSd_conc ~ time, data = out1, type = 'l')
-plot(pr_conc ~ time, data = out1, type = 'l')
-plot(VFA_conc ~ time, data = out1, type = 'l')
+var_dat
+var_dat$sub_fresh <- rep(list(c(VSd = 50)), nrow(var_dat))
+var_dat$sub_fresh[3] <- list(c(VSd = 100))
+var_dat$sub_fresh[4] <- list(c(VSd = 10))
+var_dat$sub_fresh[5] <- list(c(VSd = 0))
+var_dat
+var_dat[1, 4]
+var_dat[5, 4]
 ```
-
-# 2. Adjustments with `add_pars`
 
 ```{r}
 devtools::load_all()
-sub_pars <- list(subs = c('VSd', 'pr'),
-                 T_opt_hyd = c(VSd = 60, pr = 50),
-                 T_min_hyd = c(all = 0),
-                 T_max_hyd = c(all = 90),
-                 hydrol_opt = c(VSd = 0.1, pr = 0.04),
-                 sub_fresh = c(VSd = 50, pr = 50),
-                 sub_init = c(VSd = 30, pr = 0))
+out1 <- abm(50, var_pars = list(var = var_dat))
 ```
 
 ```{r}
-out2a <- abm(365, 
-            grp_pars = grp_pars,
-            man_pars = man_pars,
-            mic_pars = mic_pars,
-            sub_pars = sub_pars,
-            add_pars = list(sub_init.pr = 100))
+plot(CH4_emis_rate ~ time, data = out1, type = 'l')
+plot(temp_C ~ time, data = out1, type = 'l')
+plot(VSd_conc ~ time, data = out1, type = 'l')
+lines(VSd_conc ~ time, data = out0, col = 'red')
+```
+
+# 2. More variable inputs
+
+```{r}
+var_dat <- data.frame(time = c(0, 1, 10, 15, 30, 50), 
+                      slurry_mass = c(1000, 7000, 2000, 5000, 3000, 10000),
+                      temp_C = 30)
+var_dat
+```
+
+VSd.
+
+```{r}
+var_dat$sub_fresh <- rep(list(c(VSd = 50)), nrow(var_dat))
+var_dat$sub_fresh[3] <- list(c(VSd = 100))
+```
+
+Some microbial parameters for a shift in temperature optima, "adaptation" for example.
+
+```{r}
+grp_pars
+for (i in 1:nrow(var_dat)) {
+  var_dat$T_opt[i] <- list(grp_pars$T_opt)
+}
+var_dat
+```
+
+
+```{r}
+devtools::load_all()
+out2 <- abm(50, var_pars = list(var = var_dat))
 ```
 
 ```{r}
-plot(pr_conc ~ time, data = out2a, type = 'l')
+plot(CH4_emis_rate ~ time, data = out2, type = 'l')
+lines(CH4_emis_rate ~ time, data = out1, col = 'red')
+plot(temp_C ~ time, data = out1, type = 'l')
+plot(VSd_conc ~ time, data = out1, type = 'l')
+lines(VSd_conc ~ time, data = out0, col = 'red')
 ```
-
-Will get error if `subs` has substrates not present in `sub_pars` elements.
-
-```{r, error=TRUE}
-out2b <- abm(365, 
-            grp_pars = grp_pars,
-            man_pars = man_pars,
-            mic_pars = mic_pars,
-            sub_pars = sub_pars,
-            add_pars = list(subs = c('VSd', 'pr', 'fat'), sub_init.pr = 100))
-```
-
-
-
 
 

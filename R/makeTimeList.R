@@ -8,13 +8,13 @@ makeTimeList <- function(pars, times, days, delta_t) {
   }
 
   # Include days argument in times vector
-  times <- sort(unique(c(times, pars$slurry_mass$time)))
+  times <- sort(unique(c(times, pars$var$time)))
     
-  # Note about time: 1) All simulations start at 0, 2) days must be at least as long as mass data
+  # Note about time: 1) All simulations start at 0, 2) days must be at least as long as var data
   # Note that this works even with t_end = NULL (is ignored)
   # Note the "dummy" placeholder in position 1 (and extra + 1 in n_int)
-  n_int <- nrow(pars$slurry_mass)
-  st <- pars$slurry_mass[, 'time']
+  n_int <- nrow(pars$var)
+  st <- pars$var[, 'time']
   timelist <- cumtime <- as.list(rep(0, n_int))
   for (i in 2:n_int) {
     tt <- times[times > st[i - 1] & times <= st[i]] # slow speed of this line

@@ -1,0 +1,57 @@
+# Prepares slurry mass data for 
+
+fixVarDat <- function(pars, days) {
+
+  # Make sure at least slurry_mass is in pars$var data frame
+  if (!'slurry_mass' %in% names(pars$var)) {
+    stop('The var_pars var element is missing a slurry_mass column, which is required.')
+  }
+
+  # Cannot have no slurry present because is used in all concentration calculations
+  pars$var[pars$var[, 'slurry_mass'] == 0, 'slurry_mass'] <- 1E-10
+
+  # Trim unused times
+  pars$var <- pars$var[pars$var$time <= days, ]
+
+  # Check for sorted time
+  if (is.unsorted(pars$var$time)) {
+    stop('Column `time` must be sorted when time-variable parameters are used (pars_var), but it is not: ',
+         head(pars$var$time))
+  }
+  
+  # If simulation continues past slurry_mass data frame time, set following slurry production (addition) to zero
+  # Extend last slurry mass all the way 
+  # NTS: needs extension for other parameters
+  if (pars$var[nrow(pars$var), 'time'] < days) {
+    t_end <- days
+    pars$var <- rbind(pars$var, pars$var[nrow(pars$var), ])
+    pars$var[nrow(pars$var), 'time'] <- days
+    # But make sure washing is not repeated!
+    if (ncol(pars$var) > 2) {
+      pars$var[nrow(pars$var), 3:ncol(pars$var)] <- 0
+    }
+  }
+
+  if (pars$approx_method == 'mid') {
+    # Get midpoint time
+    ir <- which(- c(0, diff(pars$var[, 'slurry_mass'])) > 0)
+    tt <- (pars$var[ir, 'time']  + pars$var[ir - 1, 'time']) / 2
+    # And copy slurry mass
+    mm <- pars$var[ir, 'slurry_mass']
+    pars$var <- rbind(pars$var, data.frame(time = tt, slurry_mass = mm))
+    pars$var <- pars$var[order(pars$var$time), ]
+  } 
+  
+  # Determine slurry removal quantity in each time interval
+  # Note final 0--alignment is a bit tricky
+  if (pars$approx_method %in% c('late', 'mid')) {
+    removals <- - c(0, 0, diff(pars$var[-nrow(pars$var), 'slurry_mass'])) > 0
+  } else if (pars$approx_method == 'early') {
+    removals <- - c(0, diff(pars$var[, 'slurry_mass'])) > 0
+  } 
+
+  pars$removals <- removals
+
+  return(pars)
+
+}

@@ -8,13 +8,14 @@ packPars <- function(mng_pars,
                      sub_pars,
                      chem_pars,
                      ctrl_pars,
+                     var_pars,
                      add_pars,
                      pars,
                      starting) {
 
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) { 
-    pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, sub_pars, chem_pars, ctrl_pars)
+    pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, sub_pars, chem_pars, ctrl_pars, var_pars)
   }
   
  

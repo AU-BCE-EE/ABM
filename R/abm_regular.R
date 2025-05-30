@@ -3,9 +3,7 @@ abm_regular <- function(
 			delta_t, 
 			times_regular, 
 			y, 
-			pars, 
-			temp_C_fun = temp_C_fun, 
-			pH_fun = pH_fun) { 
+			pars) { 
 
   # Figure out timing
   intervals <- getRegTimes(pars, days)
@@ -38,9 +36,7 @@ abm_regular <- function(
     out <- deSolve::lsoda(y = y, 
                           times = times, 
                           rates, 
-                          parms = pars, 
-                          temp_C_fun = temp_C_fun, 
-                          pH_fun = pH_fun)
+                          parms = pars)
     
     # Update time remaining and time run so far
     t_run <- t_run + t_call
@@ -73,9 +69,7 @@ abm_regular <- function(
           outr <- deSolve::lsoda(y = y, 
                                 times = times, 
                                 rates, 
-                                parms = parsr, 
-                                temp_C_fun = temp_C_fun, 
-                                pH_fun = pH_fun)
+                                parms = parsr)
           # Extract new state variable vector from last row
           y <- getLastState(outr, y)
           

@@ -248,7 +248,7 @@ out3a <- abm(50,
 
 
 ```{r}
-plot(slurry_mass ~ time, data = out3, type = 'l')
+plot(slurry_mass ~ time, data = out3a, type = 'l')
 ```
 
 The "late" and "mid" options are still available, but now through `ctrl_pars`.

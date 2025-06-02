@@ -10,7 +10,7 @@ abm <- function(
   mic_pars,
   sub_pars,
   chem_pars,
-  inhib_pars,
+  inhib_pars = NULL,
   ctrl_pars = list(respir = TRUE,
                    pH_inhib = FALSE, 
                    approx_method = 'early',

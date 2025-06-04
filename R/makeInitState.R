@@ -16,7 +16,7 @@ makeInitState <- function(pars) {
   
   y <- c(pars$xa_init * slurry_mass_init,                       # Multiple microbial groups
          pars$sub_init[pars$subs] * slurry_mass_init,           # Multiple particulate substrates 
-         VFA = pars$conc_init[['VFA']] * slurry_mass_init,      # VFA
+         pars$conc_init * slurry_mass_init,                     # VFA and conservative solutes
          slurry_mass = slurry_mass_init, 
          CH4_emis_cum = 0, 
          CO2_emis_cum = 0, 

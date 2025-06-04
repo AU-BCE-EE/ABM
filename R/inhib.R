@@ -10,6 +10,9 @@ inhib <- function(im0,
   inhibs <- colnames(im0)
   grps <- rownames(im0)
 
+  # Get just those species that have inhibition parameters
+  iconc <- iconc[inhibs]
+
   # Convert concentrations to matrix
   cmat <- matrix(rep(iconc, length(grps)), 
                  nrow = length(grps), 

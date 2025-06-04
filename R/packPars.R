@@ -14,13 +14,36 @@ packPars <- function(mng_pars,
                      pars,
                      starting) {
 
+  # Move extra var_pars
+  if(length(var_pars) > 1) {
+    for (i in 2:length(var_pars)) {
+      dv <- var_pars[[i]]
+      nv <- names(var_pars)[[i]]
+      if (nrow(dv) != nrow(var_pars$var)) {
+        stop('var_pars has multiple elements with different sizes.')
+      }
+      if (!all(dv$time == var_pars$var$time)) {
+        stop('Multiple elements in var_pars have different time values in first column.')
+      }
+      ll <- list()
+      for (j in 1:nrow(var_pars$var)) {
+        # Challenging to get list into each element using indexing
+        x <- as.numeric(dv[j, -1, drop = FALSE])
+        names(x) <- names(dv)[-1]
+        ll[[j]] <- x
+      }
+      var_pars$var[[nv]] <- ll
+    }
+    # Take only the var element and var_pars must remain a list to avoid duplicate par elements from combining into par
+    var_pars <- var_pars['var']
+  }
+
   # Combine pars to make extraction and pass to rates() easier
   if (is.null(pars)) { 
     pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, sub_pars, chem_pars, inhib_pars, ctrl_pars, var_pars)
   }
-  
- 
-  # Sort out parameter inputs
+
+  # Sort out more parameter inputs
   # Note: pe.pars = add_pars that use par.element approach, these are converted to normal (simple) add_par elements here
   # Note: sa.pars = normal (simple) add_pars that do not need to be converted
   # Note: Use of [] vs. [[]] affect how code works--needs to work for both lists and vector pars
@@ -84,6 +107,7 @@ packPars <- function(mng_pars,
   checkGrpNames(pars)
 
   # For size-variable parameters, get number of elements and indices
+  # NTS: I expect to change to a different approach, only using block below this one with names
   pars$n_mic <- length(pars$grps)
   pars$i_mic <- grep('^sr|^p|^m', pars$grps)
   pars$i_meth <- grep('^[mp]', pars$grps)
@@ -97,6 +121,10 @@ packPars <- function(mng_pars,
   pars$srs <- pars$grps[pars$i_sr]
   pars$aers <- pars$grps[pars$i_aer]
   pars$hyds <- pars$grps[pars$i_hyd]
+
+  # All solutes
+  pars$sols <- c(pars$comps, 'VFA')
+  pars$conc_fresh <- c(pars$comp_fresh, pars$VFA_fresh)
   
   pars$n_subs <- length(pars$subs)
   pars$i_subs <- length(pars$grps) + 1:length(pars$subs)
@@ -105,6 +133,7 @@ packPars <- function(mng_pars,
   pars$g_NH4 <- 0.7
   pars$temp_standard <- 298
   pars$temp_zero <- 273
+  pars$temp_K <- pars$temp_C + 273.15
   pars$pH_floor <- 7
 
   # Convert temperature constants to K if needed
@@ -123,7 +152,7 @@ packPars <- function(mng_pars,
     pars$conc_init[c('VSd', 'VFA')] <- as.numeric(starting[nrow(starting), c('VSd_conc', 'VFA_conc')])
     # Set slurry_mass as well?
   }
-  
+
   return(pars)
  
 }

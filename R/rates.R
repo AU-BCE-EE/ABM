@@ -5,17 +5,18 @@ rates <- function(t,
   # Short name for parms to make indexing in code below simpler 
   p <- parms
 
-  # Time-dependent values
-  temp_K <- p$temp_C + 273.15
+  # Determine inhibition reductions
+  # Chemical speciation with fixed Ka values, followed by inhibition matrix calculations
+  p <- calcInhib(p, y)
 
   # Create 0 vectors with derivative components, all with same order of y elements
   alpha <- qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- emis <- 0 * y
 
   # Hydrolysis rate
-  alpha[p$subs] <- CTM_cpp(temp_K, p$T_opt_hyd, p$T_min_hyd, p$T_max_hyd, p$hydrol_opt)
+  alpha[p$subs] <- CTM_cpp(p$temp_K, p$T_opt_hyd, p$T_min_hyd, p$T_max_hyd, p$hydrol_opt)
 
   # Microbial substrate utilization rate (vectorized calculation)
-  qhat[p$grps] <- CTM_cpp(temp_K, p$T_opt, p$T_min, p$T_max, p$qhat_opt)
+  qhat[p$grps] <- CTM_cpp(p$temp_K, p$T_opt, p$T_min, p$T_max, p$qhat_opt)
 
   # VFA consumption rates (g/d) and growth
   rut[p$meths] <- p$ired[p$meths] * (qhat[p$meths] * y['VFA'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['VFA'])
@@ -27,7 +28,7 @@ rates <- function(t,
   # First only concentrations are set, and multiplied by inflow in last line
   inflow[p$grps] <- p$xa_fresh
   inflow[p$subs] <- p$sub_fresh[p$subs]
-  inflow['VFA'] <- p$conc_fresh['VFA']
+  inflow[p$sols] <- p$conc_fresh[p$sols]
   inflow[c('slurry_mass', 'slurry_load')] <- 1
   inflow['COD_load'] <- sum(inflow[c(p$grps, p$subs, 'VFA')])
   inflow <- inflow * p$slurry_prod_rate

@@ -10,9 +10,10 @@ This demo shows:
 
 1. basic usage,
 2. variable substrates,
-3. time-variable parameters
-   ...
-4. COD balance,
+3. time-variable inputs,
+4. speciation (proton-transfer reactions),
+5. inhibition,
+6. COD balance,
 
 # Prep
 
@@ -25,16 +26,18 @@ The argument list currently looks like this:
 
 ```
 abm <- function(
-  days = 365,                                # Number of days to run
-  delta_t = 1,                               # Time step for output
-  times = NULL,                              # Optional vector of times for output
+  days = 365,                 # Number of days to run
+  delta_t = 1,                # Time step for output
+  times = NULL,               # Optional vector of times for output
   mng_pars,
   man_pars,
-  init_pars = list(conc_init = man_pars$conc_fresh),
+  init_pars = list(conc_init =  c(man_pars$comp_fresh, man_pars$VFA_fresh)),
   grp_pars,
   mic_pars,
   sub_pars,
   chem_pars,
+  inhib_pars = NULL,
+  mt_pars = NULL,
   ctrl_pars = list(respir = TRUE,
                    pH_inhib = FALSE, 
                    approx_method = 'early',
@@ -43,17 +46,17 @@ abm <- function(
   var_pars = list(var = NULL),
   add_pars = NULL,
   pars = NULL,
-  startup = 0,                                # Number of times complete simulation should be run before returning results
-  starting = NULL,                            # Output from previous simulation to be starting condition for new one
-  value = 'ts',                               # Type of output
+  startup = 0,                # Number of times complete simulation should be run before returning results
+  starting = NULL,            # Output from previous simulation to be starting condition for new one
+  value = 'ts',               # Type of output
   warn = TRUE) {
 ```
 
-The main changes are:
+The main changes in arguments are:
 
-* `sub_pars` for defining substrates
-* `ctrl_pars` for some "control" parameters
-* `var_pars` for any parameters that change over time
+* new `sub_pars` for defining substrates
+* new `ctrl_pars` for some "control" parameters
+* new `var_pars` for *any* parameters that change over time
 
 I have removed the default `*_pars` objects for now.
 
@@ -78,7 +81,7 @@ mng_pars = list(slurry_prod_rate = 10000,
 Next substrate parameters, a new argument.
 This defines substrates.
 We could have any number with any names.
-Note that hydrolysis uses CTM now (like anything here, it could change).
+Note that hydrolysis uses CTM again (like anything here, that could be changed).
 
 ```{r}
 sub_pars <- list(subs = c('VSd'),
@@ -90,7 +93,7 @@ sub_pars <- list(subs = c('VSd'),
                  sub_init = c(VSd = 50))
 ```
 
-Microbial parameters are similar to other ABM versions, but there is no inhibition for now.
+Microbial parameters are similar to other ABM versions, but inhibition is set separately now.
 
 ```{r}
 grp_pars <- list(grps = c('m0', 'm1', 'm2','sr1'),
@@ -109,16 +112,14 @@ The `dd_rate_xa` parameter is for "death and decay".
 
 
 ```{r}
-mic_pars <- list(ks_SO4 = 0.00694, 
-                 km_urea = 0.913,
-                 dd_rate_xa = 0.02)
+mic_pars <- list(dd_rate_xa = 0.02)
 ```
 
-These last two are similar to other versions.
+These last two arguments are similar to other versions.
+VFA is hard-wired and so has its own elements.
 
 ```{r}
-man_pars <- list(VFA_fresh = c(VFA = 2), 
-                 pH = 7, dens = 1000)
+man_pars <- list(VFA_fresh = c(VFA = 2), pH = 7, dens = 1000)
 
 chem_pars <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
@@ -137,7 +138,7 @@ out1 <- abm(365,
 ```
 
 Output is similar to other versions.
-The `value` argument does not currently work.
+(The `value` argument does not currently work.)
 
 ```{r}
 head(out1)
@@ -145,7 +146,8 @@ tail(out1)
 ```
 
 The effluent columns are cumulative.
-I did this for COD balance checking.
+Is this what we had before?
+I did it for COD balance checking.
 We will have to discuss what is needed.
 
 Here are some results.
@@ -168,9 +170,10 @@ legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 
 
 # 2. Substrate flexibility
 
-Particulate substrates are defined in `sub_pars` now and there are no particular substrates hard-wired in the code.
+Particulate substrates are defined in `sub_pars` now and there are no specific substrates hard-wired in the code.
 VFA is the only intermediate, and it is hard-wired.
 Here we will use three substrates.
+Parameter values have no connection to reality.
 
 ```{r}
 sub_pars2 <- list(subs = c('cellulose', 'protein', 'lipids'),
@@ -223,8 +226,9 @@ plot(slurry_mass ~ time, data = var_dat, type = 'o')
 plot(temp_C ~ time, data = var_dat, type = 'o')
 ```
 
-This data frame goes in the `var_pars` argument, which must be a list, even though it has a single element named `var`.
-The data frame must have a `slurry_mass` column if it is used--it is not possible to use an `abm_regular()`-like approach with variable temperature etc.
+This data frame goes in the `var_pars` argument, which must be a list, even though it might have a single element named `var`.
+The `var` element is the only required one.
+The `var` data frame must have a `slurry_mass` column if it is used--it is not possible to use an `abm_regular()`-like approach with variable temperature etc.
 
 ```{r}
 var_pars <- list(var = var_dat)
@@ -298,7 +302,8 @@ var_dat
 
 Then add `sub_fresh` values.
 Each row needs a list containing a named vector.
-This is somewhat unusual data frame usage.
+This is somewhat unusual data frame usage, and there is a user-friendly alternative based on additional data frames in the `var` argument (see next section).
+But I've kept this demo.
 
 ```{r}
 var_dat
@@ -435,9 +440,7 @@ The `comp` part of the name below is for "component".
 
 ```{r}
 man_pars6 <- list(comps = c('H2S', 'SO4m2', 'NH4p'),
-                 comp_fresh = c(H2S = 0.01, 
-				                        SO4m2 = 0.2, 
-				                        NH4p = 2.5), 
+                 comp_fresh = c(H2S = 0.01, SO4m2 = 0.2, NH4p = 2.5), 
                  VFA_fresh = c(VFA = 2),
                  pH = 7, dens = 1000)
 ```
@@ -503,11 +506,11 @@ lines(NH4p_conc ~ time, data = out6a, col = 'red')
 # 7. Speciation
 Acid-base reactions are needed for inhibition.
 They can be added for any component.
+The `chem_pars` argument can accept temperature-dependent log ka expressions.
 
 ```{r}
 man_pars7 <- list(comps = c('H2S', 'NH4p'),
-                 comp_fresh = c(H2S = 0.01, 
-				                        NH4p = 2.5), 
+                 comp_fresh = c(H2S = 0.01, NH4p = 2.5), 
                  VFA_fresh = c(VFA = 2),
                  pH = 7, dens = 1000)
 
@@ -516,22 +519,21 @@ chem_pars7 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
                    specs = c('NH3', 'HSm', 'VFAm'),
-                  mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
-                  lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
-                          HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
-                          VFAm = '-4.8288 + 21.42/temp_K')
+                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                   lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
+                           HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
+                           VFAm = '-4.8288 + 21.42/temp_K')
 )
 ```
 
 ```{r}
-devtools::load_all()
 out7 <- abm(365,
             mng_pars = mng_pars,
             man_pars = man_pars6,
             grp_pars = grp_pars,
             mic_pars = mic_pars,
             sub_pars = sub_pars,
-            chem_pars = chem_pars6)
+            chem_pars = chem_pars7)
 ```
 
 ```{r}
@@ -543,6 +545,7 @@ But chemical species are actually ignored unless they are used in inhibition.
 # 8. Inhibition
 
 Any chemical species can inhibit any microbial group.
+Inhibition parameters (currently initial and complete concentrations, with linear response, why not?) are entered in a matrix.
 
 ```{r}
 ilwr <- matrix(
@@ -592,10 +595,10 @@ chem_pars8 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
                    specs = c('NH3', 'HSm', 'VFAm'),
-                  mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
-                  lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
-                          HSm = '- 3448.7/temp_K + 47.479 - 7.5227* log(temp_K)',
-                          VFAm = '-4.8288 + 21.42/temp_K')
+                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                   lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
+                           HSm = '- 3448.7/temp_K + 47.479 - 7.5227* log(temp_K)',
+                           VFAm = '-4.8288 + 21.42/temp_K')
 )
 ```
 

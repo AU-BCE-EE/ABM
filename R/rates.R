@@ -58,7 +58,7 @@ rates <- function(t,
   #   * CH4 (g/d as CH4 or C?)
   #   * solutes other than VFA (g/d)
   ders <- inflow + growth + consump + death + hydrol + volat + emis
-  
+
   return(list(ders, c(CH4_emis_rate = emis[['CH4_emis_cum']], temp_C = p$temp_C, pH = p$pH)))
 
 }

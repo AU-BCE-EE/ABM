@@ -30,7 +30,7 @@ makeInitState <- function(pars) {
          emis,
          slurry_load = 0,
          COD_load = 0)
- 
+
   return(y)
 
 }

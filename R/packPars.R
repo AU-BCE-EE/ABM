@@ -125,7 +125,14 @@ packPars <- function(mng_pars,
   # All solutes
   pars$sols <- c(pars$comps, 'VFA')
   pars$conc_fresh <- c(pars$comp_fresh, pars$VFA_fresh)
+
+  # Master species, fill in masters = masters
+  mmspec <- pars$sols 
+  names(mmspec) <- mmspec
+  pars$mspec <- c(pars$mspec, mmspec)
+  pars$mspec <- pars$mspec[!duplicated(names(pars$mspec))]
   
+  # Substrates
   pars$n_subs <- length(pars$subs)
   pars$i_subs <- length(pars$grps) + 1:length(pars$subs)
   

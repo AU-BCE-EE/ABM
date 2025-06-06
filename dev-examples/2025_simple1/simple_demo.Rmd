@@ -522,11 +522,21 @@ chem_pars7 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                    mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
-                           VFAm = '-4.8288 + 21.42/temp_K')
+                           VFAm = '- 4.8288 + 21.42/temp_K')
 )
 ```
 
+Here `comps` are the chemical "components", or "master species", as described a bit above.
+All are automatically included as chemical species in `packPars()`.
+In the `chem_pars` argument, `specs` are the other (non-master) species that the master species are in equilirbium with.
+And `mspec` are the associated master species.
+So the NH3 species comes from NH4+.
+When there is speciation, the master species are always taken as the protonated ones.
+So the species in `specs` always have one less proton than their associated master species.
+Only 2 species are supported for any component.
+
 ```{r}
+devtools::load_all()
 out7 <- abm(365,
             mng_pars = mng_pars,
             man_pars = man_pars6,
@@ -633,15 +643,15 @@ man_pars9 <- list(comps = c('H2S', 'NH4p'),
                  pH = 7, dens = 1000)
 ```
 
-We need to set mass transfer coefficient values (m/s) for any species that volatilizes.
+We need to set mass transfer coefficient values (m/d) for any species that volatilizes.
 
 ```{r}
 chem_pars9 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
-                   specs = c('NH4p', 'NH3', 'H2S', 'HSm', 'VFA', 'VFAm'),
-                   mspec = c(NH4p = 'NH4p', NH3 = 'NH4p', H2S = 'H2S', HSm = 'H2S', VFA = 'VFA', VFAm = 'VFA'),
+                   specs = c('NH3', 'HSm', 'VFAm'),
+                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
                            VFAm = '-4.8288 + 21.42/temp_K'),
@@ -679,7 +689,6 @@ plot(H2S_emis_cum ~ time, data = out9, type = 'l')
 plot(VFA_emis_cum ~ time, data = out9, type = 'l')
 ```
 
-
 # 9. COD balance
 There is now a `checkCOD()` function that runs on `abm()` results before returning them.
 For now the tolerance is fixed at 1%.
@@ -693,8 +702,8 @@ chem_pars10 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
-                   specs = c('NH4p', 'NH3', 'H2S', 'HSm', 'VFA', 'VFAm'),
-                   mspec = c(NH4p = 'NH4p', NH3 = 'NH4p', H2S = 'H2S', HSm = 'H2S', VFA = 'VFA', VFAm = 'VFA'),
+                   specs = c('NH3', 'HSm', 'VFAm'),
+                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
                            VFAm = '-4.8288 + 21.42/temp_K'),

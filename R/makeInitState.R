@@ -13,6 +13,13 @@ makeInitState <- function(pars) {
   if (slurry_mass_init == 0) {
     slurry_mass_init <- 1E-10
   }
+
+  if (!is.null(pars$kla)) {
+    emis <- pars$kla * 0
+    names(emis) <- paste0(names(emis), '_emis_cum')
+  } else {
+    emis <- NULL
+  }
   
   y <- c(pars$xa_init * slurry_mass_init,                       # Multiple microbial groups
          pars$sub_init[pars$subs] * slurry_mass_init,           # Multiple particulate substrates 
@@ -20,6 +27,7 @@ makeInitState <- function(pars) {
          slurry_mass = slurry_mass_init, 
          CH4_emis_cum = 0, 
          CO2_emis_cum = 0, 
+         emis,
          slurry_load = 0,
          COD_load = 0)
  

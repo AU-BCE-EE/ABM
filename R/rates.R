@@ -47,6 +47,12 @@ rates <- function(t,
   p$COD_conv['CO2_meth'] <- 5
   emis[c('CH4_emis_cum', 'CO2_emis_cum')] <- (sum(rut[p$meths]) - sum(growth[p$meths])) / 
                                              p$COD_conv[c('CH4', 'CO2_meth')]
+  # Emission of other species                                           
+  if (!is.null(p$kla)) {
+    emis[paste0(names(p$kla), '_emis_cum')] <- p$kla * p$conc_sp[names(p$kla)] * p$area
+    # Remove emitted amount from component pool
+    emis[p$mspec[names(p$kla)]] <- - emis[paste0(names(p$kla), '_emis_cum')]
+  }
 
   # Add vectors to get derivatives
   # All elements in g/d as COD except 

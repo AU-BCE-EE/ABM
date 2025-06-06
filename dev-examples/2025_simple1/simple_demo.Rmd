@@ -664,7 +664,6 @@ out9 <- abm(365,
 ```
 
 The state variable vector and output data frame automatically expand for the new values.
-There is an `if` statement that I had to add to `rates()` that I don't like though.
 
 ```{r}
 head(out9)

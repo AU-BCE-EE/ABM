@@ -5,12 +5,14 @@ rates <- function(t,
   # Short name for parms to make indexing in code below simpler 
   p <- parms
 
+  # Calculation speciation, used for emission and inhibition
+  p <- calcSpec(p, y)
+
   # Determine inhibition reductions
-  # Chemical speciation with fixed Ka values, followed by inhibition matrix calculations
   p <- calcInhib(p, y)
 
-  # Create 0 vectors with derivative components, all with same order of y elements
-  alpha <- qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- emis <- 0 * y
+  # Initialize vectors with derivative components, all with same order of y elements
+  alpha <- qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- volat <- emis <- 0 * y
 
   # Hydrolysis rate
   alpha[p$subs] <- CTM_cpp(p$temp_K, p$T_opt_hyd, p$T_min_hyd, p$T_max_hyd, p$hydrol_opt)
@@ -43,22 +45,19 @@ rates <- function(t,
   hydrol[p$subs] <- - alpha[p$subs] * y[p$subs]
   hydrol['VFA'] <- - sum(hydrol[p$subs])
 
-  # Emission
+  # Calculate volatilization
+  volat <- calcVolat(p, volat)
+  
+  # Emission of CH4 and CO2
   p$COD_conv['CO2_meth'] <- 5
   emis[c('CH4_emis_cum', 'CO2_emis_cum')] <- (sum(rut[p$meths]) - sum(growth[p$meths])) / 
-                                             p$COD_conv[c('CH4', 'CO2_meth')]
-  # Emission of other species                                           
-  if (!is.null(p$kla)) {
-    emis[paste0(names(p$kla), '_emis_cum')] <- p$kla * p$conc_sp[names(p$kla)] * p$area
-    # Remove emitted amount from component pool
-    emis[p$mspec[names(p$kla)]] <- - emis[paste0(names(p$kla), '_emis_cum')]
-  }
-
+                                              p$COD_conv[c('CH4', 'CO2_meth')]
   # Add vectors to get derivatives
   # All elements in g/d as COD except 
   #   * slurry_mass (kg/d as fresh slurry mass)
   #   * CH4 (g/d as CH4 or C?)
-  ders <- inflow + growth + consump + death + hydrol + emis
+  #   * solutes other than VFA (g/d)
+  ders <- inflow + growth + consump + death + hydrol + volat + emis
   
   return(list(ders, c(CH4_emis_rate = emis[['CH4_emis_cum']], temp_C = p$temp_C, pH = p$pH)))
 

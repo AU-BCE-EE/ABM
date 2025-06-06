@@ -1,12 +1,9 @@
 # Check COD balance
 
 checkCOD <- function(dat, 
-                     grps = c('m0', 'm1', 'm2', 'sr1'),
-                     subs = c('VSd'),
-                     COD_conv = c(CH4 = 1/0.251, 
-                                  xa = 1/0.707, 
-                                  VFA = 1/0.938, 
-                                  VSd = 1/0.69),
+                     grps,
+                     subs,
+                     COD_conv,
                      rtol = 0.001
                     ) {
 

@@ -2,8 +2,8 @@
 
 updateVarPars <- function(pars, i) {
 
-  if (any(! names(pars$var) %in% c('time', 'slurry_mass'))) {
-    vdat <- pars$var[, !grepl('time|slurry_mass', names(pars$var)), drop = FALSE]
+  if (any(names(pars$var) != 'time')) {
+    vdat <- pars$var[, names(pars$var) == 'time', drop = FALSE]
 
     for (j in 1:ncol(vdat)) {
       pn <- names(vdat)[j]

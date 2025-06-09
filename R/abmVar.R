@@ -84,7 +84,9 @@ abmVar <-
     }
 
     # This might not be possible with above code
-    if (t_call <= 0) stop('t_call < 0. slk409.')
+    if (t_call <= 0) {
+      stop('t_call < 0. slk409.')
+    }
 
     # Get times for lsoda() call
     # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t

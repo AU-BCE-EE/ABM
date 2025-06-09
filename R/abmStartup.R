@@ -25,10 +25,8 @@ abmStartup <- function(days,
       value <- value.orig
     }
 
-    print(i)
     if (i > 1) {
       starting <- out
-    browser()
     } 
 
     

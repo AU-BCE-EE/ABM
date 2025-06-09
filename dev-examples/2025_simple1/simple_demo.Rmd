@@ -13,7 +13,8 @@ This demo shows:
 3. time-variable inputs,
 4. speciation (proton-transfer reactions),
 5. inhibition,
-6. COD balance,
+6. volatilization, and
+7. COD balance,
 
 # Prep
 

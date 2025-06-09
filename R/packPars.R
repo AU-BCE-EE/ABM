@@ -156,8 +156,10 @@ packPars <- function(mng_pars,
   if (!is.null(starting) & is.data.frame(starting)) {
     message('Using starting conditions from `starting` argument')
     pars$xa_init[pars$grps] <- as.numeric(starting[nrow(starting), paste0(pars$grps, '_conc')])
-    pars$conc_init[c('VSd', 'VFA')] <- as.numeric(starting[nrow(starting), c('VSd_conc', 'VFA_conc')])
+    pars$conc_init['VFA'] <- as.numeric(starting[nrow(starting), 'VFA_conc'])
+    pars$sub_init[pars$subs] <- as.numeric(starting[nrow(starting), paste0(pars$subs, '_conc')])
     # Set slurry_mass as well?
+    # comp solutes??
   }
 
   return(pars)

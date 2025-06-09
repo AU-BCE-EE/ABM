@@ -25,9 +25,12 @@ abmStartup <- function(days,
       value <- value.orig
     }
 
+    print(i)
     if (i > 1) {
       starting <- out
+    browser()
     } 
+
     
     # Call abm() with arguments given in outside call except for startup and value
     out <- abm(days = days,

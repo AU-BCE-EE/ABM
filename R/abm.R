@@ -3,13 +3,13 @@ abm <- function(
   days = 365,                                # Number of days to run
   delta_t = 1,                               # Time step for output
   times = NULL,                              # Optional vector of times for output
-  mng_pars,
-  man_pars,
+  mng_pars = NULL,
+  man_pars = NULL,
   init_pars = list(conc_init =  c(man_pars$comp_fresh, man_pars$VFA_fresh)),
-  grp_pars,
-  mic_pars,
-  sub_pars,
-  chem_pars,
+  grp_pars = NULL,
+  mic_pars = NULL,
+  sub_pars = NULL,
+  chem_pars = NULL,
   inhib_pars = NULL,
   mt_pars = NULL,
   ctrl_pars = list(respir = TRUE,
@@ -61,14 +61,14 @@ abm <- function(
 
   if (is.null(pars$var)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, 
+    dat <- abmReg(days = days, 
                        delta_t = delta_t, 
                        times_regular = times, 
                        y = y, 
                        pars = pars)
   } else if (inherits(pars$var, 'data.frame')) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- abm_variable(days = days, 
+    dat <- abmVar(days = days, 
                         delta_t = delta_t, 
                         times = times, 
                         y = y, 

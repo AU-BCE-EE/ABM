@@ -1,4 +1,4 @@
-abm_variable <-
+abmVar <-
   function(days, 
            delta_t, 
            times, 

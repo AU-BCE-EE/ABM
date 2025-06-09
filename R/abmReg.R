@@ -1,4 +1,4 @@
-abm_regular <- function(
+abmReg <- function(
       days, 
 			delta_t, 
 			times_regular, 

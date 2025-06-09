@@ -51,7 +51,7 @@ grp_pars <- list(grps = c('m0', 'm1', 'm2','sr1'),
                  dd_rate = c(all = 0.02),
                  ks = c(default = 1, sr1 = 0.5),
                  qhat_opt = c(m0 = 0.8, m1 = 0.9, m2 = 1.5, sr1 = 9),
-                 T_opt = c(m0 = 18, m1 = 18, m2 = 28, sr1 = 44),
+                 T_opt = c(m0 = 12, m1 = 18, m2 = 28, sr1 = 44),
                  T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41, sr1 = 0),
                  T_max = c(m0 = 25, m1 = 25, m2 = 38, sr1 = 51))
 ```
@@ -83,6 +83,11 @@ out1b <- abm(365.1,
 
 ```{r}
 setDT(out1b)
+plot(CH4_emis_rate ~ time, data = out1b) 
+plot(VFA_conc ~ time, data = out1b, type = 'l') 
+plot(m0_conc ~ time, data = out1b, type = 'l') 
+plot(m1_conc ~ time, data = out1b, type = 'l') 
+plot(m2_conc ~ time, data = out1b, type = 'l') 
 plot(CH4_emis_cum / 400 / time ~ time, data = out1b, 
      type = 'l', ylim = c(0, 20), 
      xlab = 'Time (d)', ylab = expression('Ave. CH'[4]~'emission'~(g~'pig'^'-1'~d^'-1')))
@@ -92,14 +97,13 @@ plot(CH4_emis_rate ~ time, data = out1b, type = 'l', lty = 2, col = 'gray46',
      ylim = c(0, 13000), axes = F, xlab = '', ylab = '')
 ```
 
-Now storage of effluent.
+Now storage of removed slurry.
 
 ```{r}
-sm <- as.numeric(out1b[c(FALSE, diff(slurry_mass_eff) > 0), .(slurry_mass_eff)][1])
-concs <- out1b[c(FALSE, diff(slurry_mass_eff) > 0), .(VSd_conc, VFA_conc)]
-eff <- data.table(time = 1:(4*mng_pars1$empty_int))
-eff[, slurry_mass := sm * cumsum((time %% 77 == 0))]
-plot(eff$slurry_mass)
+out1b <- out1b[c(!duplicated(time[-1]), TRUE), ]
+slurry_mass_dat <- data.table(time = out1b$time, slurry_mass = out1b$slurry_mass_eff)
+sub_dat <- data.table(time = out1b$time, VSd = out1b$VSd_conc)
+VFA_dat <- data.table(time = out1b$time, VFA = out1b$VFA_conc)
 ```
 
 ```{r}
@@ -111,8 +115,7 @@ out1e <- abm(365,
              mic_pars = mic_pars,
              sub_pars = sub_pars,
              chem_pars = chem_pars,
-             var_pars = list(var = eff),
-             starting = out1)
+             var_pars = list(var = slurry_mass_dat, sub_fresh = sub_dat, VFA_fresh = VFA_dat))
 ```
 
 ```{r}
@@ -126,7 +129,7 @@ plot(CH4_emis_rate ~ time, data = out1e, type = 'l', lty = 2, col = 'gray46',
 ```
 
 ```{r}
-plot(VFA_conc ~ time, data = out1e)
+plot(VFA_conc ~ time, data = out1e, type = 'l')
 ```
 
 Scenario 2 is with frequent emptying.
@@ -134,7 +137,7 @@ Scenario 2 is with frequent emptying.
 
 ```{r}
 mng_pars2 <- list(slurry_prod_rate = 2200, 
-                  slurry_mass = 20000,     
+                  slurry_mass = 2000,     
                   storage_depth = 2,     
                   resid_depth = 0.01,      
                   area = 200,              
@@ -161,6 +164,8 @@ out2b <- abm(365,
 
 ```{r}
 setDT(out2b)
+plot(VFA_conc ~ time, data = out2b, type = 'l') 
+plot(slurry_mass ~ time, data = out2b, type = 'l') 
 plot(CH4_emis_cum / 400 / time ~ time, data = out2b, 
      type = 'l', ylim = c(0, 20), 
      xlab = 'Time (d)', ylab = expression('Ave. CH'[4]~'emission'~(g~'pig'^'-1'~d^'-1')))
@@ -170,15 +175,13 @@ abline(h = 0, lty = 1)
 Now storage of slurry removed from the barn.
 
 ```{r}
-sm <- as.numeric(out2b[c(FALSE, diff(slurry_mass_eff) > 0), .(slurry_mass_eff)][1])
-concs <- out2b[c(FALSE, diff(slurry_mass_eff) > 0), .(VSd_conc, VFA_conc)]
-eff <- data.table(time = 1:365)
-eff[, slurry_mass := sm * cumsum((time %% mng_pars2$empty_int == 0))]
-plot(eff$slurry_mass)
+out2b <- out2b[c(!duplicated(time[-1]), TRUE), ]
+slurry_mass_dat <- data.table(time = out2b$time, slurry_mass = out2b$slurry_mass_eff)
+sub_dat <- data.table(time = out2b$time, VSd = out2b$VSd_eff_conc)
+VFA_dat <- data.table(time = out2b$time, VFA = out2b$VFA_eff_conc)
 ```
 
 ```{r}
-devtools::load_all()
 out2e <- abm(365,
              mng_pars = mng_pars2,
              man_pars = man_pars,
@@ -186,8 +189,7 @@ out2e <- abm(365,
              mic_pars = mic_pars,
              sub_pars = sub_pars,
              chem_pars = chem_pars,
-             var_pars = list(var = eff),
-             starting = out1)
+             var_pars = list(var = slurry_mass_dat, sub_fresh = sub_dat, VFA_fresh = VFA_dat))
 ```
 
 ```{r}

@@ -747,6 +747,7 @@ For now the tolerance is fixed at 1%.
 Some of the examples above do not meet that criterion for some reason.
 At least one shows a real problem that needs to be identified.
 For the emission example above, the problem is that VFA is emitted but that loss is not included in the balance check.
+I need to decide about how to pass that COD information.
 We can make it worse by pretending the the charged form can volatilize (`VFA` changed to `VFAm` below).
  
 ```{r}
@@ -778,6 +779,8 @@ out10 <- abm(365,
 
 # 10. Stoichiometry and nitrogen mineralization
 
+Now substrates can produce any amount of arbitrary components (defined in `man_pars`, possibly volatilized, possibly involved in speciation in inhibition) through hydrolysis and fermentation to VFA.
+
 ```{r}
 man_pars10 <- list(comps = c('H2S', 'SO4m2', 'NH4p'),
                    comp_fresh = c(H2S = 0.01, SO4m2 = 0.2, NH4p = 2.5), 
@@ -785,7 +788,10 @@ man_pars10 <- list(comps = c('H2S', 'SO4m2', 'NH4p'),
                    pH = 7, dens = 1000)
 ```
 
-Hmm, should `comps` be moved to `chem_pars`?
+(Hmm, should `comps` be moved to `chem_pars`?)
+
+Here we'll have 4 substrates.
+But substrates need not actually produce VFA anymore.
 
 ```{r}
 sub_pars10 <- list(subs = c('cellulose', 'protein', 'lipids', 'urea'),
@@ -796,6 +802,8 @@ sub_pars10 <- list(subs = c('cellulose', 'protein', 'lipids', 'urea'),
                    sub_fresh = c(lipids = 3, protein = 20, cellulose = 35, urea = 10),
                    sub_init = c(lipids = 3, protein = 20, cellulose = 35, urea = 10))
 ```
+
+Production of any component is set in the `stoich` element of the `chem_pars` argument.
 
 
 ```{r}
@@ -821,7 +829,6 @@ chem_pars10 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                     stoich = smat)
 
 ```
-
 
 ```{r}
 devtools::load_all()

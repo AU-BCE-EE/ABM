@@ -131,6 +131,15 @@ packPars <- function(mng_pars,
   names(mmspec) <- mmspec
   pars$mspec <- c(pars$mspec, mmspec)
   pars$mspec <- pars$mspec[!duplicated(names(pars$mspec))]
+
+  # Fill in missing stochiometry
+  # If missing, assume only VFA is produced
+  if (is.null(pars$stoich)) {
+    pars$stoich <- matrix(rep(1, length(pars$subs)),
+                          nrow = 1,
+                          dimnames = list(c('VFA'), c(pars$subs))
+                         )
+  }
   
   # Substrates
   pars$n_subs <- length(pars$subs)

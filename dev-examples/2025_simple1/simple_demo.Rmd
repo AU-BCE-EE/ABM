@@ -187,6 +187,7 @@ sub_pars2 <- list(subs = c('cellulose', 'protein', 'lipids'),
 ```
 
 ```{r}
+devtools::load_all()
 out2 <- abm(365,
             mng_pars = mng_pars,
             man_pars = man_pars,
@@ -772,6 +773,70 @@ out10 <- abm(365,
             chem_pars = chem_pars10,
             inhib_pars = inhib_pars
 )
+```
+
+
+# 10. Stoichiometry and nitrogen mineralization
+
+```{r}
+man_pars10 <- list(comps = c('H2S', 'SO4m2', 'NH4p'),
+                   comp_fresh = c(H2S = 0.01, SO4m2 = 0.2, NH4p = 2.5), 
+                   VFA_fresh = c(VFA = 2),
+                   pH = 7, dens = 1000)
+```
+
+Hmm, should `comps` be moved to `chem_pars`?
+
+```{r}
+sub_pars10 <- list(subs = c('cellulose', 'protein', 'lipids', 'urea'),
+                   T_opt_hyd = c(all = 60),
+                   T_min_hyd = c(all = 0),
+                   T_max_hyd = c(all = 90),
+                   hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05, urea = 1),
+                   sub_fresh = c(lipids = 3, protein = 20, cellulose = 35, urea = 10),
+                   sub_init = c(lipids = 3, protein = 20, cellulose = 35, urea = 10))
+```
+
+
+```{r}
+smat <- matrix(c(0, 0.2,  0, 0.2,
+                 0, 0.01, 0, 0,
+                 1, 1,    1, 0),
+               nrow = 3,
+               byrow = TRUE,
+               dimnames = list(
+                 c('NH4p', 'H2S', 'VFA'),
+                 c('cellulose', 'protein', 'lipids', 'urea')))
+
+smat
+```
+               
+```{r}
+chem_pars10 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
+                               VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
+                               CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
+                               C_xa = 1/0.3753125),
+                    specs = c('NH3', 'HSm', 'VFAm'),
+                    mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                    stoich = smat)
+
+```
+
+
+```{r}
+devtools::load_all()
+out10 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars10,
+            grp_pars = grp_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars10,
+            chem_pars = chem_pars10)
+```
+
+```{r}
+plot(VFA_conc ~ time, data = out10, type = 'l')
+plot(NH4p_conc ~ time, data = out10, type = 'l')
 ```
 
 

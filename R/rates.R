@@ -43,7 +43,8 @@ rates <- function(t,
 
   # Hydrolysis
   hydrol[p$subs] <- - alpha[p$subs] * y[p$subs]
-  hydrol['VFA'] <- - sum(hydrol[p$subs])
+  # Production of arbitrary components based on specified stoichiometry (can exclude components)
+  hydrol[rownames(p$stoich)] <- - p$stoich %*% hydrol[colnames(p$stoich)]
 
   # Calculate volatilization
   volat <- calcVolat(p, volat)

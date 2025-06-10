@@ -836,6 +836,7 @@ out10 <- abm(365,
 
 ```{r}
 plot(VFA_conc ~ time, data = out10, type = 'l')
+plot(urea_conc ~ time, data = out10, type = 'l')
 plot(NH4p_conc ~ time, data = out10, type = 'l')
 ```
 

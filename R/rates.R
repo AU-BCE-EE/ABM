@@ -32,7 +32,7 @@ rates <- function(t,
   inflow[p$subs] <- p$sub_fresh[p$subs]
   inflow[p$sols] <- p$conc_fresh[p$sols]
   inflow[c('slurry_mass', 'slurry_load')] <- 1
-  inflow['COD_load'] <- sum(inflow[c(p$grps, p$subs, 'VFA')])
+  inflow['COD_load'] <- sum(inflow[p$grps], inflow[p$subs] * p$stoich['VFA', p$subs], inflow['VFA'])
   inflow <- inflow * p$slurry_prod_rate
 
   # Death of microbes

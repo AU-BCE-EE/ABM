@@ -38,7 +38,7 @@ sub_pars <- list(subs = c('VSd'),
                  T_opt_hyd = c(VSd = 40),
                  T_min_hyd = c(VSd = 0),
                  T_max_hyd = c(VSd = 90),
-                 hydrol_opt = c(VSd = 0.01),
+                 hydrol_opt = c(VSd = 0.008),
                  sub_fresh = c(VSd = 50),
                  sub_init = c(VSd = 50))
 ```
@@ -84,14 +84,15 @@ out1b <- abm(365.1,
 ```{r}
 setDT(out1b)
 plot(CH4_emis_rate ~ time, data = out1b) 
+plot(1000 * CH4_emis_cum / (slurry_load * VSd_conc) ~ time, data = out1b) 
+plot(VSd_conc ~ time, data = out1b) 
 plot(VFA_conc ~ time, data = out1b, type = 'l') 
 plot(m0_conc ~ time, data = out1b, type = 'l') 
 plot(m1_conc ~ time, data = out1b, type = 'l') 
 plot(m2_conc ~ time, data = out1b, type = 'l') 
 plot(CH4_emis_cum / 400 / time ~ time, data = out1b, 
      type = 'l', ylim = c(0, 20), 
-     xlab = 'Time (d)', ylab = expression('Ave. CH'[4]~'emission'~(g~'pig'^'-1'~d^'-1')))
-abline(h = 0, lty = 1)
+     xlab = 'Time (d)', ylab = expression('Ave. CH'[4]~'emission rate'~(g~'pig'^'-1'~d^'-1')))
 par(new = TRUE)
 plot(CH4_emis_rate ~ time, data = out1b, type = 'l', lty = 2, col = 'gray46', 
      ylim = c(0, 13000), axes = F, xlab = '', ylab = '')
@@ -120,12 +121,15 @@ out1e <- abm(365,
 
 ```{r}
 setDT(out1e)
+plot(1000 * CH4_emis_cum / (slurry_load * VSd_conc) ~ time, data = out1e) 
 plot(CH4_emis_cum / 400 / time ~ time, data = out1e, 
-     type = 'l', ylim = c(0, 400), 
-     xlab = 'Time (d)', ylab = expression('Ave. CH'[4]~'emission'~(g~'pig'^'-1'~d^'-1')))
+     type = 'l', ylim = c(0, 50), 
+     xlab = 'Time (d)', ylab = expression('Ave. CH'[4]~'emission rate'~(g~'pig'^'-1'~d^'-1')))
 par(new = TRUE)
 plot(CH4_emis_rate ~ time, data = out1e, type = 'l', lty = 2, col = 'gray46', 
      ylim = c(0, 200000), axes = F, xlab = '', ylab = '')
+plot(VSd_conc ~ time, data = out1e) 
+plot(VFA_conc ~ time, data = out1e) 
 ```
 
 ```{r}
@@ -195,11 +199,13 @@ out2e <- abm(365,
 ```{r}
 setDT(out2e)
 plot(CH4_emis_cum / 400 / time ~ time, data = out2e, 
-     type = 'l', ylim = c(0, 400), 
+     type = 'l', ylim = c(0, 50), 
      xlab = 'Time (d)', ylab = expression('Ave. CH'[4]~'emission'~(g~'pig'^'-1'~d^'-1')))
 par(new = TRUE)
 plot(CH4_emis_rate ~ time, data = out2e, type = 'l', lty = 2, col = 'gray46', 
      ylim = c(0, 300000), axes = F, xlab = '', ylab = '')
+
+plot(CH4_emis_rate / (slurry_mass / 1000) ~ time, data = out2e)
 ```
 
 

@@ -895,8 +895,6 @@ chem_pars11 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
 ```{r}
 grp_pars11 <- list(meths = c('m0', 'm1', 'm2'),
                    srs = c('sr1'),
-                   aer = c('a1'),
-                   ferm = c('f1'),
                    yield = c(default = 0.05, sr1 = 0.065),
                    xa_fresh = c(all = 0.05),
                    xa_init = c(all = 0.05),

@@ -25,10 +25,12 @@ rates <- function(t,
   rut[p$meths] <- p$ired[p$meths] * (qhat[p$meths] * y['VFA'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['VFA'])
   # Sulfate reducers
   rut[p$srs] <- p$ired[p$srs] * qhat[p$srs] * 0
-  # Aerobes (single group)
-  rut[p$aer] <- p$ired[p$aer] * p$O2kl * 0.2 * 0.001 * 16 *  p$area
-  # VFA consumption is sum of above 3 groups
+  
+  # VFA consumption is sum of all rut terms
   consump['VFA'] <- - sum(rut)
+  
+  # Growth rate of all groups
+  growth[p$grps] <- p$yield[p$grps] * rut[p$grps]
 
   # Inflow from slurry addition
   # First only concentrations are set, and multiplied by inflow in last line
@@ -50,11 +52,6 @@ rates <- function(t,
   # Production of arbitrary components based on specified stoichiometry (can omit components)
   hydrol[rownames(p$stoich)] <- - p$stoich %*% hydrol[colnames(p$stoich)]
   
-  # Fermenters (single group) utilization rate
-  rut[p$ferm] <- sum(hydrol)
-
-  # Growth rate of all groups
-  growth[p$grps] <- p$yield[p$grps] * rut[p$grps]
 
   # Volatilization
   volat <- calcVolat(p, volat)

@@ -97,9 +97,9 @@ packPars <- function(mng_pars,
   # Multiple microbial groups
   # NTS: need to sort out how this works with above mess for add_pars with grps
   if (is.null(pars$meths)) {
-    pars$meths <- pars$grps[! pars$grps %in% c(pars$srs, pars$aers, pars$ferms)]
+    pars$meths <- pars$grps[! pars$grps %in% pars$srs]
   } else {
-    pars$grps <- unique(c(pars$grps, pars$meths, pars$srs, pars$aer, pars$ferm))
+    pars$grps <- unique(c(pars$grps, pars$meths, pars$srs))
   }
 
   # Fill in default values for grp_pars if keyword name `default` or `all` is used

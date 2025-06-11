@@ -4,10 +4,10 @@ calcVolat <- function(p, vi) {
   volat <- 0 * vi
 
   # Emission of other species                                           
-  if (!is.null(p$kla)) {
-    volat[paste0(names(p$kla), '_emis_cum')] <- p$kla * p$conc_sp[names(p$kla)] * p$area
+  if (!is.null(p$kl)) {
+    volat[paste0(names(p$kl), '_emis_cum')] <- p$kl * p$conc_sp[names(p$kl)] * p$area
     # Remove emitted amount from component pool
-    volat[p$mspec[names(p$kla)]] <- - volat[paste0(names(p$kla), '_emis_cum')]
+    volat[p$mspec[names(p$kl)]] <- - volat[paste0(names(p$kl), '_emis_cum')]
   } 
 
   return(volat)

@@ -66,7 +66,7 @@ packPars <- function(mng_pars,
   # If any additional parameters were added (or modified) using add_pars, update them in pars list here
   # But grp_pars and sub_pars work differently than the others because of the all = and default = keywords
   # Needs to work in a case where default is all but e.g., m1 is given in add_pars (see def stuff below)
-  grp_par_nms <- names(grp_pars)[names(grp_pars) != 'grps']
+  grp_par_nms <- names(grp_pars)[!names(grp_pars) %in% c('grps', 'meths', 'srs', 'aer', 'ferm')]
   sub_par_nms <- names(sub_pars)[names(sub_pars) != 'subs']
   if (!is.null(add_pars) && length(add_pars) > 0) {
     if (any(bad.names <- !names(add_pars) %in% names(pars))) {
@@ -94,6 +94,14 @@ packPars <- function(mng_pars,
     pars$subs <- add_pars$subs
   }
 
+  # Multiple microbial groups
+  # NTS: need to sort out how this works with above mess for add_pars with grps
+  if (is.null(pars$meths)) {
+    pars$meths <- pars$grps[! pars$grps %in% c(pars$srs, pars$aers, pars$ferms)]
+  } else {
+    pars$grps <- unique(c(pars$grps, pars$meths, pars$srs, pars$aer, pars$ferm))
+  }
+
   # Fill in default values for grp_pars if keyword name `default` or `all` is used
   # Note: Microbial groups are defined by grps element
   # Note: `default` does *not* work with add_pars argument because grps are already defined in defaults
@@ -105,6 +113,15 @@ packPars <- function(mng_pars,
   # Check grp arguments, including order of element names in some pars
   # After above block, this should be redundant
   checkGrpNames(pars)
+
+  # O2 kl is handled differently from others
+  if (!is.null(pars$kl) && 'O2' %in% names(pars$kl)) {
+    pars$O2kl <- pars$kl['O2']
+    pars$kl <- pars$kl[names(pars$kl) != 'O2']
+    if (length(pars$kl) == 0) {
+      pars$kl <- NULL
+    }
+  }
 
   # For size-variable parameters, get number of elements and indices
   # NTS: I expect to change to a different approach, only using block below this one with names

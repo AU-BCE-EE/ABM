@@ -21,9 +21,13 @@ rates <- function(t,
   qhat[p$grps] <- CTM_cpp(p$temp_K, p$T_opt, p$T_min, p$T_max, p$qhat_opt)
 
   # VFA consumption rates (g/d) and growth
+  # Methanogens
   rut[p$meths] <- p$ired[p$meths] * (qhat[p$meths] * y['VFA'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['VFA'])
+  # Sulfate reducers
   rut[p$srs] <- p$ired[p$srs] * qhat[p$srs] * 0
-  growth[p$grps] <- p$yield[p$grps] * rut[p$grps]
+  # Aerobes (single group)
+  rut[p$aer] <- p$ired[p$aer] * p$O2kl * 0.2 * 0.001 * 16 *  p$area
+  # VFA consumption is sum of above 3 groups
   consump['VFA'] <- - sum(rut)
 
   # Inflow from slurry addition
@@ -43,10 +47,16 @@ rates <- function(t,
 
   # Hydrolysis
   hydrol[p$subs] <- - alpha[p$subs] * y[p$subs]
-  # Production of arbitrary components based on specified stoichiometry (can exclude components)
+  # Production of arbitrary components based on specified stoichiometry (can omit components)
   hydrol[rownames(p$stoich)] <- - p$stoich %*% hydrol[colnames(p$stoich)]
+  
+  # Fermenters (single group) utilization rate
+  rut[p$ferm] <- sum(hydrol)
 
-  # Calculate volatilization
+  # Growth rate of all groups
+  growth[p$grps] <- p$yield[p$grps] * rut[p$grps]
+
+  # Volatilization
   volat <- calcVolat(p, volat)
   
   # Emission of CH4 and CO2

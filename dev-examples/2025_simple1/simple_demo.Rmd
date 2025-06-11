@@ -657,7 +657,7 @@ chem_pars9 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
                            VFAm = '-4.8288 + 21.42/temp_K'),
-                   kla = c(NH3 = 0.01, H2S = 0.01, VFA = 0.01) * 86400)
+                   kl = c(NH3 = 0.01, H2S = 0.01, VFA = 0.01) * 86400)
 
 ```
 
@@ -717,7 +717,7 @@ chem_pars9b <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
                            VFAm = '-4.8288 + 21.42/temp_K'),
-                   kla = c(NH3 = 0.01, H2S = 0.01) * 86400)
+                   kl = c(NH3 = 0.01, H2S = 0.01) * 86400)
 
 ```
 
@@ -760,7 +760,7 @@ chem_pars10 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
                            VFAm = '-4.8288 + 21.42/temp_K'),
-                   kla = c(NH3 = 0.01, H2S = 0.01, VFAm = 0.01) * 86400)
+                   kl = c(NH3 = 0.01, H2S = 0.01, VFAm = 0.01) * 86400)
 
 ```
 
@@ -845,6 +845,86 @@ out10 <- abm(365,
 plot(VFA_conc ~ time, data = out10, type = 'l')
 plot(urea_conc ~ time, data = out10, type = 'l')
 plot(NH4p_conc ~ time, data = out10, type = 'l')
+```
+
+# 11. Other microbes
+
+```{r}
+man_pars11 <- list(comps = c('H2S', 'SO4m2', 'NH4p'),
+                   comp_fresh = c(H2S = 0.01, SO4m2 = 0.2, NH4p = 2.5), 
+                   VFA_fresh = c(VFA = 2),
+                   pH = 7, dens = 1000)
+```
+
+```{r}
+sub_pars11 <- list(subs = c('cellulose', 'protein', 'lipids', 'urea'),
+                   T_opt_hyd = c(all = 60),
+                   T_min_hyd = c(all = 0),
+                   T_max_hyd = c(all = 90),
+                   hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05, urea = 1),
+                   sub_fresh = c(lipids = 3, protein = 20, cellulose = 35, urea = 10),
+                   sub_init = c(lipids = 3, protein = 20, cellulose = 35, urea = 10))
+```
+
+
+
+```{r}
+smat <- matrix(c(0, 0.2,  0, 0.2,
+                 0, 0.01, 0, 0,
+                 1, 1,    1, 0),
+               nrow = 3,
+               byrow = TRUE,
+               dimnames = list(
+                 c('NH4p', 'H2S', 'VFA'),
+                 c('cellulose', 'protein', 'lipids', 'urea')))
+
+```
+               
+```{r}
+chem_pars11 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
+                               VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
+                               CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
+                               C_xa = 1/0.3753125),
+                    specs = c('NH3', 'HSm', 'VFAm'),
+                    mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                    stoich = smat,
+                    kl = c(O2 = 0.01))
+
+```
+
+```{r}
+grp_pars11 <- list(meths = c('m0', 'm1', 'm2'),
+                   srs = c('sr1'),
+                   aer = c('a1'),
+                   ferm = c('f1'),
+                   yield = c(default = 0.05, sr1 = 0.065),
+                   xa_fresh = c(all = 0.05),
+                   xa_init = c(all = 0.05),
+                   dd_rate = c(all = 0.02),
+                   ks = c(default = 1, sr1 = 0.5),
+                   qhat_opt = c(m0 = 1, m1 = 1, m2 = 2, sr1 = 9, default = 1),
+                   T_opt = c(m0 = 18, m1 = 18, m2 = 28, sr1 = 44, default = 40),
+                   T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41, sr1 = 0, default = 0),
+                   T_max = c(m0 = 25, m1 = 25, m2 = 38, sr1 = 51, default = 55))
+```
+
+```{r}
+devtools::load_all()
+out11 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars11,
+            grp_pars = grp_pars11,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars11,
+            chem_pars = chem_pars11)
+```
+
+
+```{r}
+plot(a1_conc ~ time, data = out11, type = 'l')
+plot(VFA_conc ~ time, data = out11, type = 'l')
+plot(urea_conc ~ time, data = out11, type = 'l')
+plot(NH4p_conc ~ time, data = out11, type = 'l')
 ```
 
 

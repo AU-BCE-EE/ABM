@@ -14,8 +14,8 @@ makeInitState <- function(pars) {
     slurry_mass_init <- 1E-10
   }
 
-  if (!is.null(pars$kla)) {
-    emis <- pars$kla * 0
+  if (!is.null(pars$kl)) {
+    emis <- pars$kl * 0
     names(emis) <- paste0(names(emis), '_emis_cum')
   } else {
     emis <- NULL

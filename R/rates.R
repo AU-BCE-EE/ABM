@@ -57,11 +57,13 @@ rates <- function(t,
   volat <- calcVolat(p, volat)
   
   # Methanogenesis
-  p$COD_conv['CO2_meth'] <- 5
+  p$COD_conv['CO2_meth'] <- 1
   # All CH4 emitted
   meth['CH4_emis_cum'] <- (sum(rut[p$meths]) - sum(growth[p$meths])) / p$COD_conv['CH4']
   # CO2 goes into dissolved pool
-  meth['CO2'] <- meth['CO2'] + meth['CH4_emis_cum'] / p$COD_conv['CO2_meth']
+  if ('CO2' %in% names(y)) {
+    meth['CO2'] <- meth['CO2'] + meth['CH4_emis_cum'] / p$COD_conv['CO2_meth']
+  }
   # Add vectors to get derivatives
   # All elements in g/d as COD except 
   #   * slurry_mass (kg/d as fresh slurry mass)

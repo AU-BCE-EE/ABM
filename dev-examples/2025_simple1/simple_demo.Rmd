@@ -847,6 +847,50 @@ plot(urea_conc ~ time, data = out10, type = 'l')
 plot(NH4p_conc ~ time, data = out10, type = 'l')
 ```
 
+# 11. CO2
+
+```{r}
+man_pars11 <- list(comps = c('CO2', 'NH4p', 'H2S'),
+                 comp_fresh = c(CO2 = 5, H2S = 0.01, NH4p = 2.5), 
+                 VFA_fresh = c(VFA = 2),
+                 pH = 7, dens = 1000)
+
+
+chem_pars11 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
+                               VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
+                               CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
+                               C_xa = 1/0.3753125),
+                   specs = c('HCO3m', 'NH3', 'HSm', 'VFAm'),
+                   mspec = c(HCO3m = 'CO2', NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                   lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
+                           HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
+                           VFAm = '- 4.8288 + 21.42/temp_K',
+                           HCO3m = '-353.5305 -0.06092*temp_K + 21834.37/temp_K + 126.8339*log10(temp_K) -1684915/temp_K^2'),
+                   kl = c(CO2 = 0.01, NH3 = 0.01, H2S = 0.01, VFA = 0.01) * 86400)
+
+```
+
+```{r}
+devtools::load_all()
+out11 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars11,
+            grp_pars = grp_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars,
+            chem_pars = chem_pars11)
+```
+
+```{r}
+plot(VFA_conc ~ time, data = out11, type = 'l')
+plot(CO2_conc ~ time, data = out11, type = 'l')
+plot(CO2_emis_cum ~ time, data = out11, type = 'l')
+plot(urea_conc ~ time, data = out11, type = 'l')
+plot(NH4p_conc ~ time, data = out11, type = 'l')
+```
+
+
+
 # 11. Other microbes
 
 ```{r}

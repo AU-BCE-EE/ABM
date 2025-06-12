@@ -12,7 +12,7 @@ rates <- function(t,
   p <- calcInhib(p, y)
 
   # Initialize vectors with derivative components, all with same order of y elements
-  alpha <- qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- volat <- emis <- 0 * y
+  alpha <- qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- volat <- meth <- 0 * y
 
   # Hydrolysis rate
   alpha[p$subs] <- CTM_cpp(p$temp_K, p$T_opt_hyd, p$T_min_hyd, p$T_max_hyd, p$hydrol_opt)
@@ -53,20 +53,22 @@ rates <- function(t,
   hydrol[rownames(p$stoich)] <- - p$stoich %*% hydrol[colnames(p$stoich)]
   
 
-  # Volatilization
+  # Volatilization (can include CO2)
   volat <- calcVolat(p, volat)
   
-  # Emission of CH4 and CO2
+  # Methanogenesis
   p$COD_conv['CO2_meth'] <- 5
-  emis[c('CH4_emis_cum', 'CO2_emis_cum')] <- (sum(rut[p$meths]) - sum(growth[p$meths])) / 
-                                              p$COD_conv[c('CH4', 'CO2_meth')]
+  # All CH4 emitted
+  meth['CH4_emis_cum'] <- (sum(rut[p$meths]) - sum(growth[p$meths])) / p$COD_conv['CH4']
+  # CO2 goes into dissolved pool
+  meth['CO2'] <- meth['CO2'] + meth['CH4_emis_cum'] / p$COD_conv['CO2_meth']
   # Add vectors to get derivatives
   # All elements in g/d as COD except 
   #   * slurry_mass (kg/d as fresh slurry mass)
   #   * CH4 (g/d as CH4 or C?)
   #   * solutes other than VFA (g/d)
-  ders <- inflow + growth + consump + death + hydrol + volat + emis
+  ders <- inflow + growth + consump + death + hydrol + volat + meth
 
-  return(list(ders, c(CH4_emis_rate = emis[['CH4_emis_cum']], temp_C = p$temp_C, pH = p$pH)))
+  return(list(ders, c(CH4_emis_rate = meth[['CH4_emis_cum']], temp_C = p$temp_C, pH = p$pH)))
 
 }

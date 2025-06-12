@@ -26,7 +26,6 @@ makeInitState <- function(pars) {
          pars$conc_init * slurry_mass_init,                     # VFA and conservative solutes
          slurry_mass = slurry_mass_init, 
          CH4_emis_cum = 0, 
-         CO2_emis_cum = 0, 
          emis,
          slurry_load = 0,
          COD_load = 0)

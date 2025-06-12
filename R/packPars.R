@@ -140,7 +140,7 @@ packPars <- function(mng_pars,
   pars$hyds <- pars$grps[pars$i_hyd]
 
   # All solutes
-  pars$sols <- c(pars$comps, 'VFA')
+  pars$sols <- c(pars$comps, 'CH3COOH')
   pars$conc_fresh <- c(pars$comp_fresh, pars$VFA_fresh)
 
   # Master species, fill in masters = masters
@@ -149,15 +149,23 @@ packPars <- function(mng_pars,
   pars$mspec <- c(pars$mspec, mmspec)
   pars$mspec <- pars$mspec[!duplicated(names(pars$mspec))]
 
+  # Mass conversion factors
+  pars$mcf <- unlist(lapply(c(pars$form, pars$mspec), getMassConv))
+
+  # Sort out stoichiometry
+  # Three possibilities: 1) NULL, 2) "calc", 3) given
+  if (tolower(pars$stoich == 'calc')) {
+    pars$stoich <- getStoich(pars)
+  }
   # Fill in missing stochiometry
   # If missing, assume only VFA is produced
   if (is.null(pars$stoich)) {
     pars$stoich <- matrix(rep(1, length(pars$subs)),
                           nrow = 1,
-                          dimnames = list(c('VFA'), c(pars$subs))
+                          dimnames = list(c('CH3COOH'), c(pars$subs))
                          )
   }
-  
+
   # Substrates
   pars$n_subs <- length(pars$subs)
   pars$i_subs <- length(pars$grps) + 1:length(pars$subs)

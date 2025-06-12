@@ -120,10 +120,10 @@ These last two arguments are similar to other versions.
 VFA is hard-wired and so has its own elements.
 
 ```{r}
-man_pars <- list(VFA_fresh = c(VFA = 2), pH = 7, dens = 1000)
+man_pars <- list(VFA_fresh = c(CH3COOH = 2), pH = 7, dens = 1000)
 
 chem_pars <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
-                               VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
+                               CH3COOH = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125))
 ```
@@ -158,7 +158,7 @@ Here are some results.
 plot(slurry_mass ~ time, data = out1, type = 'l')
 plot(CH4_emis_rate ~ time, data = out1, type = 'l')
 plot(VSd_conc ~ time, data = out1, type = 'l')
-plot(VFA_conc ~ time, data = out1, type = 'l')
+plot(CH3COOH_conc ~ time, data = out1, type = 'l')
 ```
 
 And methanogens.
@@ -210,8 +210,8 @@ plot(lipids_conc ~ time, data = out2, type = 'l')
 plot(protein_conc ~ time, data = out2, type = 'l')
 plot(cellulose_conc ~ time, data = out2, type = 'l')
 
-plot(VFA_conc ~ time, data = out1, type = 'l')
-lines(VFA_conc ~ time, data = out2, col = 'red')
+plot(CH3COOH_conc ~ time, data = out1, type = 'l')
+lines(CH3COOH_conc ~ time, data = out2, col = 'red')
 ```
 
 This flexibility comes from an approach similar to what we used for microbial groups.
@@ -338,7 +338,7 @@ plot(slurry_mass ~ time, data = out4a, type = 'l')
 plot(CH4_emis_rate ~ time, data = out4a, type = 'l')
 plot(var_dat$time, as.vector(lapply(var_dat$sub_fresh, `[[`, 1)), type = 'p', col = 'red')
 lines(VSd_conc ~ time, data = out4a, type = 'p')
-plot(VFA_conc ~ time, data = out4a, type = 'l')
+plot(CH3COOH_conc ~ time, data = out4a, type = 'l')
 ```
 
 Let's vary some microbial parameters as well.
@@ -383,7 +383,7 @@ out4b <- abm(100,
 plot(slurry_mass ~ time, data = out4b, type = 'l')
 plot(CH4_emis_rate ~ time, data = out4b, type = 'l')
 plot(VSd_conc ~ time, data = out4b, type = 'l')
-plot(VFA_conc ~ time, data = out4b, type = 'l')
+plot(CH3COOH_conc ~ time, data = out4b, type = 'l')
 ```
 
 # 5. Time-variable inputs part 3
@@ -433,7 +433,7 @@ out5 <- abm(100,
 plot(slurry_mass ~ time, data = out5, type = 'l')
 plot(CH4_emis_rate ~ time, data = out5, type = 'l')
 plot(VSd_conc ~ time, data = out5, type = 'l')
-plot(VFA_conc ~ time, data = out5, type = 'l')
+plot(CH3COOH_conc ~ time, data = out5, type = 'l')
 ```
 
 # 6. Flexible solutes
@@ -444,7 +444,7 @@ The `comp` part of the name below is for "component".
 ```{r}
 man_pars6 <- list(comps = c('H2S', 'SO4m2', 'NH4p'),
                  comp_fresh = c(H2S = 0.01, SO4m2 = 0.2, NH4p = 2.5), 
-                 VFA_fresh = c(VFA = 2),
+                 VFA_fresh = c(CH3COOH = 2),
                  pH = 7, dens = 1000)
 ```
 
@@ -515,18 +515,18 @@ Use `temp_K` for absolute temperature in those expressions.
 ```{r}
 man_pars7 <- list(comps = c('H2S', 'NH4p'),
                  comp_fresh = c(H2S = 0.01, NH4p = 2.5), 
-                 VFA_fresh = c(VFA = 2),
+                 VFA_fresh = c(CH3COOH = 2),
                  pH = 7, dens = 1000)
 
 chem_pars7 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
-                   specs = c('NH3', 'HSm', 'VFAm'),
-                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                   specs = c('NH3', 'HSm', 'CH3COOm'),
+                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', CH3COOm = 'CH3COOH'),
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
-                           VFAm = '- 4.8288 + 21.42/temp_K')
+                           CH3COOm = '- 4.8288 + 21.42/temp_K')
 )
 ```
 
@@ -571,7 +571,7 @@ ilwr <- matrix(
   byrow = TRUE,
   dimnames = list(
     c('m0', 'm1', 'm2', 'sr1'),
-    c('NH4p', 'NH3', 'VFAm', 'VFA')
+    c('NH4p', 'NH3', 'CH3COOm', 'CH3COOH')
   )
 )
 
@@ -584,7 +584,7 @@ iupr <- matrix(
   byrow = TRUE,
   dimnames = list(
     c('m0', 'm1', 'm2', 'sr1'),
-    c('NH4p', 'NH3', 'VFAm', 'VFA')
+    c('NH4p', 'NH3', 'CH3COOm', 'CH3COOH')
   )
 )
 
@@ -601,18 +601,18 @@ inhib_pars
 man_pars8 <- list(comps = c('H2S', 'NH4p'),
                  comp_fresh = c(H2S = 0.01, 
 				                        NH4p = 2.5), 
-                 VFA_fresh = c(VFA = 2),
+                 VFA_fresh = c(CH3COOH = 2),
                  pH = 7, dens = 1000)
 
 chem_pars8 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
-                               VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
+                               CH3COOH = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
-                   specs = c('NH3', 'HSm', 'VFAm'),
-                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                   specs = c('NH3', 'HSm', 'CH3COOm'),
+                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', CH3COOm = 'CH3COOH'),
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227* log(temp_K)',
-                           VFAm = '-4.8288 + 21.42/temp_K')
+                           CH3COOm = '-4.8288 + 21.42/temp_K')
 )
 ```
 
@@ -643,7 +643,7 @@ Any chemical species can volatilize.
 ```{r}
 man_pars9 <- list(comps = c('H2S', 'NH4p'),
                  comp_fresh = c(H2S = 0.01, NH4p = 2.5), 
-                 VFA_fresh = c(VFA = 2),
+                 VFA_fresh = c(CH3COOH = 2),
                  pH = 7, dens = 1000)
 ```
 
@@ -655,12 +655,12 @@ chem_pars9 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
-                   specs = c('NH3', 'HSm', 'VFAm'),
-                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                   specs = c('NH3', 'HSm', 'CH3COOm'),
+                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', CH3COOm = 'CH3COOH'),
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
-                           VFAm = '-4.8288 + 21.42/temp_K'),
-                   kl = c(NH3 = 0.01, H2S = 0.01, VFA = 0.01) * 86400)
+                           CH3COOm = '-4.8288 + 21.42/temp_K'),
+                   kl = c(NH3 = 0.01, H2S = 0.01, CH3COOH = 0.01) * 86400)
 
 ```
 
@@ -691,7 +691,7 @@ plot(NH4p ~ time, data = out8, type = 'l')
 lines(NH4p ~ time, data = out9a, col = 'red')
 plot(NH3_emis_cum ~ time, data = out9a, type = 'l')
 plot(H2S_emis_cum ~ time, data = out9a, type = 'l')
-plot(VFA_emis_cum ~ time, data = out9a, type = 'l')
+plot(CH3COOH_emis_cum ~ time, data = out9a, type = 'l')
 ```
 
 Let's use a fixed slurry mass to exaggerate emission.
@@ -715,11 +715,11 @@ chem_pars9b <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
-                   specs = c('NH3', 'HSm', 'VFAm'),
-                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                   specs = c('NH3', 'HSm', 'CH3COOm'),
+                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', CH3COOm = 'CH3COOH'),
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
-                           VFAm = '-4.8288 + 21.42/temp_K'),
+                           CH3COOm = '-4.8288 + 21.42/temp_K'),
                    kl = c(NH3 = 0.01, H2S = 0.01) * 86400)
 
 ```
@@ -751,19 +751,19 @@ Some of the examples above do not meet that criterion for some reason.
 At least one shows a real problem that needs to be identified.
 For the emission example above, the problem is that VFA is emitted but that loss is not included in the balance check (this might have been fixed).
 I need to decide about how to pass that COD information.
-We can make it worse by pretending the the charged form can volatilize (`VFA` changed to `VFAm` below).
+We can make it worse by pretending the the charged form can volatilize (`VFA` changed to `CH3COOm` below).
  
 ```{r}
 chem_pars10 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
-                   specs = c('NH3', 'HSm', 'VFAm'),
-                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                   specs = c('NH3', 'HSm', 'CH3COOm'),
+                   mspec = c(NH3 = 'NH4p', HSm = 'H2S', CH3COOm = 'CH3COOH'),
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                            HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
-                           VFAm = '-4.8288 + 21.42/temp_K'),
-                   kl = c(NH3 = 0.01, H2S = 0.01, VFAm = 0.01) * 86400)
+                           CH3COOm = '-4.8288 + 21.42/temp_K'),
+                   kl = c(NH3 = 0.01, H2S = 0.01, CH3COOm = 0.01) * 86400)
 
 ```
 
@@ -787,7 +787,7 @@ Now substrates can produce any amount of arbitrary components (defined in `man_p
 ```{r}
 man_pars10 <- list(comps = c('H2S', 'SO4m2', 'NH4p'),
                    comp_fresh = c(H2S = 0.01, SO4m2 = 0.2, NH4p = 2.5), 
-                   VFA_fresh = c(VFA = 2),
+                   VFA_fresh = c(CH3COOH = 2),
                    pH = 7, dens = 1000)
 ```
 
@@ -816,7 +816,7 @@ smat <- matrix(c(0, 0.2,  0, 0.2,
                nrow = 3,
                byrow = TRUE,
                dimnames = list(
-                 c('NH4p', 'H2S', 'VFA'),
+                 c('NH4p', 'H2S', 'CH3COOH'),
                  c('cellulose', 'protein', 'lipids', 'urea')))
 
 smat
@@ -827,8 +827,8 @@ chem_pars10 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                C_xa = 1/0.3753125),
-                    specs = c('NH3', 'HSm', 'VFAm'),
-                    mspec = c(NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                    specs = c('NH3', 'HSm', 'CH3COOm'),
+                    mspec = c(NH3 = 'NH4p', HSm = 'H2S', CH3COOm = 'CH3COOH'),
                     stoich = smat)
 
 ```
@@ -845,7 +845,7 @@ out10 <- abm(365,
 ```
 
 ```{r}
-plot(VFA_conc ~ time, data = out10, type = 'l')
+plot(CH3COOH_conc ~ time, data = out10, type = 'l')
 plot(urea_conc ~ time, data = out10, type = 'l')
 plot(NH4p_conc ~ time, data = out10, type = 'l')
 ```
@@ -857,27 +857,15 @@ To include CO2 production from fermentation and methanogenesis and subsequent em
 Fermentation product:
 
 ```{r}
-smat <- matrix(c(0, 0.2,  0, 0.2,
-                 0, 0.01, 0, 0,
-                 1, 1,    1, 0,
-                 0.1, 0.1,    0.1, 0.1),
-               nrow = 4,
-               byrow = TRUE,
-               dimnames = list(
-                 c('NH4p', 'H2S', 'VFA', 'CO2'),
-                 c('cellulose', 'protein', 'lipids', 'urea')))
-
-smat
-```
-
-```{r}
-sub_pars11 <- list(subs = c('cellulose', 'protein', 'lipids', 'urea'),
+sub_pars11 <- list(subs = c('VSd', 'cellulose', 'protein', 'lipids', 'urea'),
+                   forms = c(VSd = 'CH4CO2', cellulose = 'C6H10O5', protein = 'C40H61O12N10',
+                             lipids = 'C57H104O6', urea = 'CO(NH2)2'),
                    T_opt_hyd = c(all = 60),
                    T_min_hyd = c(all = 0),
                    T_max_hyd = c(all = 90),
-                   hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05, urea = 1),
-                   sub_fresh = c(lipids = 3, protein = 20, cellulose = 35, urea = 10),
-                   sub_init = c(lipids = 3, protein = 20, cellulose = 35, urea = 10))
+                   hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05, urea = 1, default = 0.1),
+                   sub_fresh = c(lipids = 0.1, protein = 2, cellulose = 35, urea = 10, VSd = 20),
+                   sub_init = c(lipids = 0.1, protein = 2, cellulose = 35, urea = 10, VSd = 20))
 
 ```
 
@@ -886,7 +874,7 @@ A component:
 ```{r}
 man_pars11 <- list(comps = c('CO2', 'NH4p', 'H2S'),
                  comp_fresh = c(CO2 = 5, H2S = 0.01, NH4p = 2.5), 
-                 VFA_fresh = c(VFA = 2),
+                 VFA_fresh = c(CH3COOH = 2),
                  pH = 7, dens = 1000)
 ```
 
@@ -897,14 +885,14 @@ chem_pars11 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
                                  VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
                                  CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
                                  C_xa = 1/0.3753125),
-                     specs = c('HCO3m', 'NH3', 'HSm', 'VFAm'),
-                     mspec = c(HCO3m = 'CO2', NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                     specs = c('HCO3m', 'NH3', 'HSm', 'CH3COOm'),
+                     mspec = c(HCO3m = 'CO2', NH3 = 'NH4p', HSm = 'H2S', CH3COOm = 'CH3COOH'),
                      lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
                              HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
-                             VFAm = '- 4.8288 + 21.42/temp_K',
+                             CH3COOm = '- 4.8288 + 21.42/temp_K',
                              HCO3m = '-2.778 + -353.5305 -0.06092*temp_K + 21834.37/temp_K + 126.8339*log10(temp_K) -1684915/temp_K^2'),
-                     stoich = smat,
-                     kl = c(CO2 = 1, NH3 = 0.01, H2S = 0.01, VFA = 0.01) * 86400)
+                     stoich = 'calc',
+                     kl = c(CO2 = 1, NH3 = 0.01, H2S = 0.01, CH3COOH = 0.01) * 86400)
 
 ```
 
@@ -917,12 +905,16 @@ out11 <- abm(365,
             mic_pars = mic_pars,
             sub_pars = sub_pars11,
             chem_pars = chem_pars11)
+devtools::load_all()
+molMass('CO(NH2)2')
+molMass('CO(NH2)2', elements = 'N')
 ```
 
 Here is total dissolved inorganic C:
 
 ```{r}
 plot(CO2_conc ~ time, data = out11, type = 'l')
+plot(CO2 ~ time, data = out11, type = 'l')
 ```
 
 Units are almost nonsense.
@@ -933,7 +925,7 @@ And CO2 emission:
 ```{r}
 plot(CO2_emis_cum ~ time, data = out11, type = 'l')
 plot(CH4_emis_cum ~ time, data = out11, type = 'l')
-plot(VFA ~ time, data = out11, type = 'l', ylab = 'CO2:CH4')
+plot(CH3COOH ~ time, data = out11, type = 'l', ylab = 'CO2:CH4')
 plot(cellulose ~ time, data = out11, type = 'l', ylab = 'CO2:CH4')
 ```
 

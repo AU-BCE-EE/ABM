@@ -22,12 +22,12 @@ rates <- function(t,
 
   # VFA consumption rates (g/d) and growth
   # Methanogens
-  rut[p$meths] <- p$ired[p$meths] * (qhat[p$meths] * y['VFA'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['VFA'])
+  rut[p$meths] <- p$ired[p$meths] * (qhat[p$meths] * y['CH3COOH'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['CH3COOH'])
   # Sulfate reducers
   rut[p$srs] <- p$ired[p$srs] * qhat[p$srs] * 0
   
   # VFA consumption is sum of all rut terms
-  consump['VFA'] <- - sum(rut)
+  consump['CH3COOH'] <- - sum(rut)
   
   # Growth rate of all groups
   growth[p$grps] <- p$yield[p$grps] * rut[p$grps]
@@ -38,7 +38,7 @@ rates <- function(t,
   inflow[p$subs] <- p$sub_fresh[p$subs]
   inflow[p$sols] <- p$conc_fresh[p$sols]
   inflow[c('slurry_mass', 'slurry_load')] <- 1
-  inflow['COD_load'] <- sum(inflow[p$grps], inflow[p$subs] * p$stoich['VFA', p$subs], inflow['VFA'])
+  inflow['COD_load'] <- sum(inflow[p$grps], inflow[p$subs] * p$stoich['CH3COOH', p$subs], inflow['CH3COOH'])
   inflow <- inflow * p$slurry_prod_rate
 
   # Death of microbes
@@ -57,18 +57,17 @@ rates <- function(t,
   volat <- calcVolat(p, volat)
   
   # Methanogenesis
-  p$COD_conv['CO2_meth'] <- 1
   # All CH4 emitted
   meth['CH4_emis_cum'] <- (sum(rut[p$meths]) - sum(growth[p$meths])) / p$COD_conv['CH4']
   # CO2 goes into dissolved pool
   if ('CO2' %in% names(y)) {
-    meth['CO2'] <- meth['CO2'] + meth['CH4_emis_cum'] / p$COD_conv['CO2_meth']
+    meth['CO2'] <- meth['CO2'] + meth['CH4_emis_cum'] * 1 * 12
   }
   # Add vectors to get derivatives
   # All elements in g/d as COD except 
   #   * slurry_mass (kg/d as fresh slurry mass)
   #   * CH4 (g/d as CH4 or C?)
-  #   * solutes other than VFA (g/d)
+  #   * solutes other than VFA (...)
   ders <- inflow + growth + consump + death + hydrol + volat + meth
 
   return(list(ders, c(CH4_emis_rate = meth[['CH4_emis_cum']], temp_C = p$temp_C, pH = p$pH)))

@@ -849,6 +849,33 @@ plot(NH4p_conc ~ time, data = out10, type = 'l')
 
 # 11. CO2
 
+
+```{r}
+smat <- matrix(c(0, 0.2,  0, 0.2,
+                 0, 0.01, 0, 0,
+                 1, 1,    1, 0,
+                 0.1, 0.1,    0.1, 0.1),
+               nrow = 4,
+               byrow = TRUE,
+               dimnames = list(
+                 c('NH4p', 'H2S', 'VFA', 'CO2'),
+                 c('cellulose', 'protein', 'lipids', 'urea')))
+
+smat
+```
+
+```{r}
+sub_pars11 <- list(subs = c('cellulose', 'protein', 'lipids', 'urea'),
+                   T_opt_hyd = c(all = 60),
+                   T_min_hyd = c(all = 0),
+                   T_max_hyd = c(all = 90),
+                   hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05, urea = 1),
+                   sub_fresh = c(lipids = 3, protein = 20, cellulose = 35, urea = 10),
+                   sub_init = c(lipids = 3, protein = 20, cellulose = 35, urea = 10))
+
+```
+
+
 ```{r}
 man_pars11 <- list(comps = c('CO2', 'NH4p', 'H2S'),
                  comp_fresh = c(CO2 = 5, H2S = 0.01, NH4p = 2.5), 
@@ -857,16 +884,17 @@ man_pars11 <- list(comps = c('CO2', 'NH4p', 'H2S'),
 
 
 chem_pars11 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
-                               VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
-                               CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
-                               C_xa = 1/0.3753125),
-                   specs = c('HCO3m', 'NH3', 'HSm', 'VFAm'),
-                   mspec = c(HCO3m = 'CO2', NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
-                   lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
-                           HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
-                           VFAm = '- 4.8288 + 21.42/temp_K',
-                           HCO3m = '-353.5305 -0.06092*temp_K + 21834.37/temp_K + 126.8339*log10(temp_K) -1684915/temp_K^2'),
-                   kl = c(CO2 = 0.01, NH3 = 0.01, H2S = 0.01, VFA = 0.01) * 86400)
+                                 VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
+                                 CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
+                                 C_xa = 1/0.3753125),
+                     specs = c('HCO3m', 'NH3', 'HSm', 'VFAm'),
+                     mspec = c(HCO3m = 'CO2', NH3 = 'NH4p', HSm = 'H2S', VFAm = 'VFA'),
+                     lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
+                             HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
+                             VFAm = '- 4.8288 + 21.42/temp_K',
+                             HCO3m = '-353.5305 -0.06092*temp_K + 21834.37/temp_K + 126.8339*log10(temp_K) -1684915/temp_K^2'),
+                     stoich = smat,
+                     kl = c(CO2 = 1, NH3 = 0.01, H2S = 0.01, VFA = 0.01) * 86400)
 
 ```
 
@@ -877,7 +905,7 @@ out11 <- abm(365,
             man_pars = man_pars11,
             grp_pars = grp_pars,
             mic_pars = mic_pars,
-            sub_pars = sub_pars,
+            sub_pars = sub_pars11,
             chem_pars = chem_pars11)
 ```
 

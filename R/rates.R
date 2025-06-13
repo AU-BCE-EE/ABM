@@ -52,7 +52,6 @@ rates <- function(t,
   # Production of arbitrary components based on specified stoichiometry (can omit components)
   hydrol[rownames(p$stoich)] <- - p$stoich %*% hydrol[colnames(p$stoich)]
   
-
   # Volatilization (can include CO2)
   volat <- calcVolat(p, volat)
   

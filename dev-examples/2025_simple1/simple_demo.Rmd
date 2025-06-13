@@ -851,49 +851,41 @@ plot(NH4p_conc ~ time, data = out10, type = 'l')
 ```
 
 # 11. CO2 emission
-To include CO2 production from fermentation and methanogenesis and subsequent emission, it needs to be added in a few places.
 
-
-Fermentation product:
+CO2 emission can be includes through the volatilization route.
+It can be produced from both fermentation and methanogenesis.
+Speciation of dissolved CO2 (really H2CO3*) and HCO3- needs to be included (although a reduced mass transfer coefficient could achieve the same effect).
+So far, CO2 emission behavior is troublesome--it is difficult to produce plausible results.
 
 ```{r}
-sub_pars11 <- list(subs = c('VSd', 'cellulose', 'protein', 'lipids', 'urea'),
-                   forms = c(VSd = 'CH4CO2', cellulose = 'C6H10O5', protein = 'C40H61O12N10',
-                             lipids = 'C57H104O6', urea = 'CO(NH2)2'),
+sub_pars11 <- list(subs = c('VSd'),
+                   forms = c(VSd = 'C23H37O14N (CO2)1.5'),
                    T_opt_hyd = c(all = 60),
                    T_min_hyd = c(all = 0),
                    T_max_hyd = c(all = 90),
-                   hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05, urea = 1, default = 0.1),
-                   sub_fresh = c(lipids = 0.1, protein = 2, cellulose = 35, urea = 10, VSd = 20),
-                   sub_init = c(lipids = 0.1, protein = 2, cellulose = 35, urea = 10, VSd = 20))
+                   hydrol_opt = c(all = 0.1),
+                   sub_fresh = c(VSd = 20),
+                   sub_init = c(VSd = 20))
 
 ```
 
-A component:
-
 ```{r}
-man_pars11 <- list(comps = c('CO2', 'NH4p', 'H2S'),
-                 comp_fresh = c(CO2 = 5, H2S = 0.01, NH4p = 2.5), 
+man_pars11 <- list(comps = c('CO2', 'NH4p'),
+                 comp_fresh = c(CO2 = 1, NH4p = 2.5), 
                  VFA_fresh = c(CH3COOH = 2),
                  pH = 7, dens = 1000)
 ```
 
-And for emission, we need speciation (just dissolved CO2 and HCO3- here, remember 2 species limit) and a mass transfer coefficient:
+Here we will define speciation only for TIC.
+There is no way to include CO3-2 as a third species.
 
 ```{r}
-chem_pars11 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
-                                 VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
-                                 CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
-                                 C_xa = 1/0.3753125),
-                     specs = c('HCO3m', 'NH3', 'HSm', 'CH3COOm'),
-                     mspec = c(HCO3m = 'CO2', NH3 = 'NH4p', HSm = 'H2S', CH3COOm = 'CH3COOH'),
-                     lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
-                             HSm = '- 3448.7/temp_K + 47.479 - 7.5227 * log(temp_K)',
-                             CH3COOm = '- 4.8288 + 21.42/temp_K',
-                             HCO3m = '-2.778 + -353.5305 -0.06092*temp_K + 21834.37/temp_K + 126.8339*log10(temp_K) -1684915/temp_K^2'),
+chem_pars11 <- list(COD_conv = c(CH4 = 1/0.2507),
+                     specs = c('HCO3m'),
+                     mspec = c(HCO3m = 'CO2', NH3 = 'NH4p'),
+                     lka = c(HCO3m = '-2.778 + -353.5305 -0.06092*temp_K + 21834.37/temp_K + 126.8339*log10(temp_K) -1684915/temp_K^2'),
                      stoich = 'calc',
-                     kl = c(CO2 = 1, NH3 = 0.01, H2S = 0.01, CH3COOH = 0.01) * 86400)
-
+                     kl = c(CO2 = 0.1) * 86400)
 ```
 
 ```{r}
@@ -905,33 +897,20 @@ out11 <- abm(365,
             mic_pars = mic_pars,
             sub_pars = sub_pars11,
             chem_pars = chem_pars11)
-devtools::load_all()
-molMass('CO(NH2)2')
-molMass('CO(NH2)2', elements = 'N')
 ```
 
-Here is total dissolved inorganic C:
+TIC in slurry shows a lot of change over time, implausible, really.
+Emission reduces the concentration to nearly zero when the level is low.
 
 ```{r}
 plot(CO2_conc ~ time, data = out11, type = 'l')
-plot(CO2 ~ time, data = out11, type = 'l')
 ```
 
-Units are almost nonsense.
-Mass-based at the moment I guess.
-
-And CO2 emission:
-
-```{r}
-plot(CO2_emis_cum ~ time, data = out11, type = 'l')
-plot(CH4_emis_cum ~ time, data = out11, type = 'l')
-plot(CH3COOH ~ time, data = out11, type = 'l', ylab = 'CO2:CH4')
-plot(cellulose ~ time, data = out11, type = 'l', ylab = 'CO2:CH4')
-```
-
-CO2:CH4 ratio (cumulative):
+But now we can predict a CO2:CH4 ratio.
+This is a cumulative value.
 
 ```{r}
 plot(CO2_emis_cum / CH4_emis_cum ~ time, data = out11, type = 'l', ylab = 'CO2:CH4')
-plot(CO2_emis_cum / CH4_emis_cum ~ time, data = out11, type = 'l', ylab = 'CO2:CH4', ylim = c(0, 10))
+plot(CO2_emis_cum / CH4_emis_cum ~ time, data = out11, type = 'l', ylab = 'CO2:CH4', ylim = c(0, 20))
 ```
+

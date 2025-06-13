@@ -99,7 +99,7 @@ predFerm <- function(
   elements = c('C', 'H', 'O', 'N'),
   order = 'sort',
   dropzero = TRUE,
-  dropsub = FALSE,
+  dropsub = TRUE,
   tol = 1E-10
   ) {
 
@@ -107,33 +107,12 @@ predFerm <- function(
     stop('The biomassform formula is the/a substrate! Change one (change in just order is OK).')
   }
 
-  # Vectorize, return matrix without substrate (for 1 mole substrate)
-  if (length(subform) > 1) {
-    res <- lapply(as.list(subform), predFerm, biomassform = biomassform, acefrac = acefrac, 
-                  fs = fs, elements = elements, order = FALSE, dropzero = FALSE, dropsub = TRUE, 
-                  tol = tol)
-    # Align names and sort before combining in matrix
-    nn <- unique(unlist(lapply(res, names)))
-    for (i in 1:length(res)) {
-      res[[i]][nn[!nn %in% names(res[[i]])]] <- 0
-      res[[i]] <- res[[i]][nn]
-    }
-    resmat <- matrix(unlist(res), ncol = length(subform), byrow = FALSE)
-    rownames(resmat) <- names(res[[1]])
-    colnames(resmat) <- subform
-
-    if (dropzero) {
-      resmat <- resmat[rowSums(resmat) != 0, ]
-    }
-    
-    return(resmat)
-  }
-
   # Donor half reaction
   rd <- customOrgStoich(subform, elements = elements)
 
   # If donor has no available electrons
   if (length(rd) == 1 && rd == subform) {
+    print(rd)
     rtot <- - customOrgStoich(subform, elements = elements, dover = TRUE)
     rtot <- c(rtot, CH3COOH = 0, H2 = 0)
     # Drop substrate

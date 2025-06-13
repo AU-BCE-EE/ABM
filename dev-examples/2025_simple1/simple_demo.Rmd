@@ -22,45 +22,6 @@ This demo shows:
 devtools::load_all()
 ```
 
-# Function arguments
-The argument list currently looks like this:
-
-```
-abm <- function(
-  days = 365,                 # Number of days to run
-  delta_t = 1,                # Time step for output
-  times = NULL,               # Optional vector of times for output
-  mng_pars,
-  man_pars,
-  init_pars = list(conc_init =  c(man_pars$comp_fresh, man_pars$VFA_fresh)),
-  grp_pars,
-  mic_pars,
-  sub_pars,
-  chem_pars,
-  inhib_pars = NULL,
-  mt_pars = NULL,
-  ctrl_pars = list(respir = TRUE,
-                   pH_inhib = FALSE, 
-                   approx_method = 'early',
-                   par_key = '\\.',
-                   rates_calc = 'instant'),
-  var_pars = list(var = NULL),
-  add_pars = NULL,
-  pars = NULL,
-  startup = 0,                # Number of times complete simulation should be run before returning results
-  starting = NULL,            # Output from previous simulation to be starting condition for new one
-  value = 'ts',               # Type of output
-  warn = TRUE) {
-```
-
-The main changes in arguments are:
-
-* new `sub_pars` for defining substrates
-* new `ctrl_pars` for some "control" parameters
-* new `var_pars` for *any* parameters that change over time
-
-I have removed the default `*_pars` objects for now.
-
 # 1. Basic behavior
 The simplest usage is with constant slurry production rate and a fixed schedule.
 We need to set some parameters, first management parameters.
@@ -94,7 +55,7 @@ sub_pars <- list(subs = c('VSd'),
                  sub_init = c(VSd = 50))
 ```
 
-Microbial parameters are similar to other ABM versions, but inhibition is set separately now.
+Microbial parameters are similar to other ABM versions, but inhibition is set separately now (and not shown in this simple example).
 
 ```{r}
 grp_pars <- list(grps = c('m0', 'm1', 'm2','sr1'),
@@ -118,14 +79,11 @@ mic_pars <- list(dd_rate_xa = 0.02)
 
 These last two arguments are similar to other versions.
 VFA is hard-wired and so has its own elements.
+The name should be `CH3COOH`.
 
 ```{r}
 man_pars <- list(VFA_fresh = c(CH3COOH = 2), pH = 7, dens = 1000)
-
-chem_pars <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
-                               CH3COOH = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
-                               CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
-                               C_xa = 1/0.3753125))
+chem_pars <- list(COD_conv = c(CH4 = 1/0.2507))
 ```
 
 ```{r}
@@ -175,7 +133,7 @@ legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 
 Particulate substrates are defined in `sub_pars` now and there are no specific substrates hard-wired in the code.
 VFA is the only intermediate, and it is hard-wired.
 Here we will use three substrates.
-Parameter values have no connection to reality.
+Parameter values have no connection to reality in this example.
 
 ```{r}
 sub_pars2 <- list(subs = c('cellulose', 'protein', 'lipids'),
@@ -206,9 +164,9 @@ lines(slurry_mass ~ time, data = out1, col = 'red')
 plot(CH4_emis_rate ~ time, data = out1, type = 'l')
 lines(CH4_emis_rate ~ time, data = out2, col = 'red')
 
-plot(lipids_conc ~ time, data = out2, type = 'l')
-plot(protein_conc ~ time, data = out2, type = 'l')
-plot(cellulose_conc ~ time, data = out2, type = 'l')
+plot(cellulose_conc ~ time, data = out2, type = 'l', ylim = c(0, 35))
+lines(lipids_conc ~ time, data = out2, type = 'l', col = 'red')
+lines(protein_conc ~ time, data = out2, type = 'l', col = 'blue')
 
 plot(CH3COOH_conc ~ time, data = out1, type = 'l')
 lines(CH3COOH_conc ~ time, data = out2, col = 'red')
@@ -448,7 +406,7 @@ man_pars6 <- list(comps = c('H2S', 'SO4m2', 'NH4p'),
                  pH = 7, dens = 1000)
 ```
 
-Note that `VFA` is still special--it has a fixed name in the code and is not conservative.
+Note that `CH3COOH` is still special--it has a fixed name in the code and is not conservative.
 
 
 ```{r}
@@ -821,6 +779,18 @@ smat <- matrix(c(0, 0.2,  0, 0.2,
 
 smat
 ```
+
+Substrate and other component quantities are
+
+1. COD mass, or if COD = 0,
+2. N mass, or if N = 0,
+3. C mass, or if C = 0,
+4. S mass, or if S = 0,
+5. total mass
+
+So the `CH3COOH` row should only have 1 or 0.
+
+The `stoich` matrix can be calculated from substrate chemical formulas--see next example.
                
 ```{r}
 chem_pars10 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
@@ -846,8 +816,80 @@ out10 <- abm(365,
 
 ```{r}
 plot(CH3COOH_conc ~ time, data = out10, type = 'l')
-plot(urea_conc ~ time, data = out10, type = 'l')
-plot(NH4p_conc ~ time, data = out10, type = 'l')
+plot(urea_conc ~ time, data = out10, type = 'l', ylab = 'Urea or TAN (g/kg)')
+lines(NH4p_conc ~ time, data = out10, col = 'blue')
+```
+
+It might make more sense to have `stoich` calculated internally.
+For this, substrate formulas must be provided.
+
+```{r}
+sub_pars10b <- list(subs = c('cellulose', 'protein', 'lipids', 'urea'),
+                    forms = c(cellulose = 'C6H10O5', protein = 'C4 H6.1 O1.2 N',
+                              lipids = 'C57 H104 O6', urea = 'CO(NH2)2'),
+                    T_opt_hyd = c(all = 60),
+                    T_min_hyd = c(all = 0),
+                    T_max_hyd = c(all = 90),
+                    hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05, urea = 1),
+                    sub_fresh = c(lipids = 3, protein = 20, cellulose = 35, urea = 10),
+                    sub_init = c(lipids = 3, protein = 20, cellulose = 35, urea = 10))
+```
+
+Internally, the `getStoich()` function is used, which in turn calls `predFerm()`.
+Among these substrates, cellulose produces no CO2 from fermentation, protein and lipids *consume* CO2 (they are highly reduced), and urea is a special case with no COD. 
+So it produces no VFAs.
+
+```{r}
+predFerm(sub_pars10b$forms[1])
+predFerm(sub_pars10b$forms[2])
+predFerm(sub_pars10b$forms[3])
+predFerm(sub_pars10b$forms[4])
+```
+
+Internally, the stiochiometric coefficients are changed to the same units given above (COD, N, C, S, or total mass).
+Now we must have CO2 as a component, because it will be produced.
+
+```{r}
+man_pars10b <- list(comps = c('H2S', 'SO4m2', 'NH4p', 'CO2'),
+                   comp_fresh = c(H2S = 0.01, SO4m2 = 0.2, NH4p = 2.5, CO2 = 1), 
+                   VFA_fresh = c(CH3COOH = 2),
+                   pH = 7, dens = 1000)
+```
+
+We don't actually need the species included above.
+But because of a bit of a programming quirk, we need to provide the master species for NH3.
+
+               
+```{r}
+chem_pars10b <- list(COD_conv = c(CH4 = 1/0.2507),
+                    specs = c('NH3'),
+                    mspec = c(NH3 = 'NH4p'),
+                    stoich = 'calc')
+
+```
+
+```{r}
+devtools::load_all()
+out10b <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars10b,
+            grp_pars = grp_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars10b,
+            chem_pars = chem_pars10b)
+```
+
+```{r}
+plot(CH3COOH_conc ~ time, data = out10b, type = 'l')
+plot(urea_conc ~ time, data = out10b, type = 'l', ylab = 'Urea or TAN (g/kg)')
+lines(NH4p_conc ~ time, data = out10b, col = 'blue')
+```
+
+Now we also have dissolved CO2 (really TIC) concentration.
+Only there is no emission, so it does not mean much.
+
+```{r}
+plot(CO2_conc ~ time, data = out10b, type = 'l')
 ```
 
 # 11. CO2 emission

@@ -112,7 +112,6 @@ predFerm <- function(
 
   # If donor has no available electrons
   if (length(rd) == 1 && rd == subform) {
-    print(rd)
     rtot <- - customOrgStoich(subform, elements = elements, dover = TRUE)
     rtot <- c(rtot, CH3COOH = 0, H2 = 0)
     # Drop substrate

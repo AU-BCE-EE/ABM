@@ -154,16 +154,18 @@ packPars <- function(mng_pars,
 
   # Sort out stoichiometry
   # Three possibilities: 1) NULL, 2) "calc", 3) given
-  if (tolower(pars$stoich == 'calc')) {
-    pars$stoich <- getStoich(pars)
-  }
-  # Fill in missing stochiometry
-  # If missing, assume only VFA is produced
   if (is.null(pars$stoich)) {
+    # Fill in missing stochiometry
+    # If missing, assume only VFA is produced
     pars$stoich <- matrix(rep(1, length(pars$subs)),
                           nrow = 1,
                           dimnames = list(c('CH3COOH'), c(pars$subs))
                          )
+  }
+
+  # Or calculated from substrate chemical formulas
+  if (all(tolower(pars$stoich) == 'calc')) {
+    pars$stoich <- getStoich(pars)
   }
 
   # Substrates

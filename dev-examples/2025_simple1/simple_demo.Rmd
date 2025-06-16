@@ -27,17 +27,17 @@ The simplest usage is with constant slurry production rate and a fixed schedule.
 We need to set some parameters, first management parameters.
 
 ```{r}
-mng_pars = list(slurry_prod_rate = 10000, 
-                slurry_mass = 1000,     
-                storage_depth = 2,     
-                resid_depth = 0.1,      
-                area = 100,              
-                empty_int = 100,          
-                temp_C = 20,
-                wash_water = 0,            
-                wash_int = NA,
-                rest_d = 0,
-                resid_enrich = 1)
+mng_pars <- list(slurry_prod_rate = 10000, 
+                 slurry_mass = 1000,     
+                 storage_depth = 2,     
+                 resid_depth = 0.1,      
+                 area = 100,              
+                 empty_int = 100,          
+                 temp_C = 20,
+                 wash_water = 0,            
+                 wash_int = NA,
+                 rest_d = 0,
+                 resid_enrich = 1)
 ```
 
 Next substrate parameters, a new argument.
@@ -63,7 +63,8 @@ grp_pars <- list(grps = c('m0', 'm1', 'm2','sr1'),
                  xa_fresh = c(all = 0.05),
                  xa_init = c(all = 0.05),
                  dd_rate = c(all = 0.02),
-                 ks = c(default = 1, sr1 = 0.5),
+                 ksv = c(default = 1, sr1 = 0.5),
+                 kss = c(sr1 = 0.5),
                  qhat_opt = c(m0 = 1, m1 = 1, m2 = 2, sr1 = 9),
                  T_opt = c(m0 = 18, m1 = 18, m2 = 28, sr1 = 44),
                  T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41, sr1 = 0),
@@ -430,6 +431,13 @@ Conservative components are boring in output (without inhibition or volatilizati
 ```{r}
 plot(NH4p_conc ~ time, data = out6a)
 plot(NH4p ~ time, data = out6a)
+```
+
+But now with sulfate and sulfide, sulfate reducers can grow.
+
+```{r}
+plot(sr1_conc ~ time, data = out6a)
+lines(m1_conc ~ time, data = out6a, col = 'red')
 ```
 
 We can see dilution effects at least if some washing water is added.
@@ -955,4 +963,3 @@ This is a cumulative value.
 plot(CO2_emis_cum / CH4_emis_cum ~ time, data = out11, type = 'l', ylab = 'CO2:CH4')
 plot(CO2_emis_cum / CH4_emis_cum ~ time, data = out11, type = 'l', ylab = 'CO2:CH4', ylim = c(0, 20))
 ```
-

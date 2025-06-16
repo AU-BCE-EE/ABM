@@ -21,10 +21,8 @@ rates <- function(t,
   qhat[p$grps] <- CTM_cpp(p$temp_K, p$T_opt, p$T_min, p$T_max, p$qhat_opt)
 
   # VFA consumption rates (g/d) and growth
-  # Methanogens
-  rut[p$meths] <- p$ired[p$meths] * (qhat[p$meths] * y['CH3COOH'] * y[p$meths]) / (p$ks[p$meths] * y['slurry_mass'] + y['CH3COOH'])
-  # Sulfate reducers
-  rut[p$srs] <- p$ired[p$srs] * qhat[p$srs] * 0
+  # Rate of substrate utilization
+  rut <- calcUt(p, y, qhat, rut)
   
   # VFA consumption is sum of all rut terms
   consump['CH3COOH'] <- - sum(rut)

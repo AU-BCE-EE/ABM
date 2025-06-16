@@ -17,7 +17,7 @@ expandPars <- function(pars, elnms, parnms) {
     pars[[i]] <- pars[[i]][elnms]
     # Check for missing values
     if (any(is.na(pars[[i]]))) {
-      stop('Size-variable parameter problem: Missing element(s) in ', i, '.')
+      warning('Size-variable parameter problem: Missing element(s) in ', i, '.')
     }
   }
 

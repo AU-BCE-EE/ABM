@@ -678,10 +678,7 @@ We need to set mass transfer coefficient values (m/d) for any species that volat
 These are overall (possibly two-film) values for in liquid-phase units.
 
 ```{r}
-chem_pars9 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561,
-                               VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, 
-                               CO2_aer = 1/0.436, CO2_sr = 1/1.2, 
-                               C_xa = 1/0.3753125),
+chem_pars9 <- list(COD_conv = c(CH4 = 1/0.2507),
                    specs = c('NH3', 'HSm', 'CH3COOm'),
                    mspec = c(NH3 = 'NH4p', HSm = 'H2S', CH3COOm = 'CH3COOH'),
                    lka = c(NH3 = '- 0.09046 - 2729.31/temp_K', 
@@ -996,7 +993,7 @@ chem_pars11 <- list(COD_conv = c(CH4 = 1/0.2507),
                      mspec = c(HCO3m = 'CO2', NH3 = 'NH4p'),
                      lka = c(HCO3m = '-2.778 + -353.5305 -0.06092*temp_K + 21834.37/temp_K + 126.8339*log10(temp_K) -1684915/temp_K^2'),
                      stoich = 'calc',
-                     kl = c(CO2 = 0.1) * 86400)
+                     kl = c(CO2 = 0.01) * 86400)
 ```
 
 ```{r}
@@ -1010,11 +1007,11 @@ out11 <- abm(365,
             chem_pars = chem_pars11)
 ```
 
-TIC in slurry shows a lot of change over time, implausible, really.
-Emission reduces the concentration to nearly zero when the level is low.
+TIC in slurry shows a lot of change over time, but can be kept away from 0 by adjusting kl.
+The low slurry level leads to a high relative loss.
 
 ```{r}
-plot(CO2_conc ~ time, data = out11, type = 'l')
+plot(CO2_conc ~ time, data = out11, type = 'l', ylim = c(0, 3))
 ```
 
 But now we can predict a CO2:CH4 ratio.
@@ -1022,5 +1019,134 @@ This is a cumulative value.
 
 ```{r}
 plot(CO2_emis_cum / CH4_emis_cum ~ time, data = out11, type = 'l', ylab = 'CO2:CH4')
-plot(CO2_emis_cum / CH4_emis_cum ~ time, data = out11, type = 'l', ylab = 'CO2:CH4', ylim = c(0, 20))
+plot(CO2_emis_cum / CH4_emis_cum ~ time, data = out11, type = 'l', ylab = 'CO2:CH4', ylim = c(0, 5))
+abline(h = 1, lty = 2)
 ```
+
+Let's try some different substrates.
+
+# 12. Respiration
+
+To include respiration just add a `kl` value for `O2`.
+
+```{r}
+chem_pars12a <- list(COD_conv = c(CH4 = 1/0.2507))
+
+chem_pars12b <- list(COD_conv = c(CH4 = 1/0.2507),
+                     kl = c(O2 = 0.1) * 86400)
+
+```
+
+
+```{r}
+devtools::load_all()
+out12a <- abm(365,
+             mng_pars = mng_pars,
+             man_pars = man_pars,
+             grp_pars = grp_pars,
+             mic_pars = mic_pars,
+             sub_pars = sub_pars,
+             chem_pars = chem_pars12a,
+)
+```
+
+```{r}
+devtools::load_all()
+out12b <- abm(365,
+             mng_pars = mng_pars,
+             man_pars = man_pars,
+             grp_pars = grp_pars,
+             mic_pars = mic_pars,
+             sub_pars = sub_pars,
+             chem_pars = chem_pars12b,
+)
+```
+
+```{r}
+plot(CH4_emis_cum ~ time, data = out12a, type = 'l')
+lines(CH4_emis_cum ~ time, data = out12b, col = 'red')
+```
+
+To track CO2 emission, we need all the inputs used in example 11.
+
+
+```{r}
+man_pars12 <- list(comps = c('CO2', 'NH4p'),
+                   comp_fresh = c(CO2 = 1, NH4p = 3), 
+                   VFA_fresh = c(CH3COOH = 2),
+                   pH = 7, dens = 1000)
+```
+
+```{r}
+chem_pars12c <- list(COD_conv = c(CH4 = 1/0.2507),
+                     specs = c('HCO3m'),
+                     mspec = c(HCO3m = 'CO2', NH3 = 'NH4p'),
+                     lka = c(HCO3m = '-2.778 + -353.5305 -0.06092*temp_K + 21834.37/temp_K + 126.8339*log10(temp_K) -1684915/temp_K^2'),
+                     stoich = 'calc',
+                     kl = c(CO2 = 0.01) * 86400)
+```
+
+```{r}
+chem_pars12d <- list(COD_conv = c(CH4 = 1/0.2507),
+                     specs = c('HCO3m'),
+                     mspec = c(HCO3m = 'CO2', NH3 = 'NH4p'),
+                     lka = c(HCO3m = '-2.778 + -353.5305 -0.06092*temp_K + 21834.37/temp_K + 126.8339*log10(temp_K) -1684915/temp_K^2'),
+                     stoich = 'calc',
+                     kl = c(O2 = 0.1, CO2 = 0.01) * 86400)
+```
+
+(Hmm, shouldn't `stoich` be part of `sub_pars`?)
+
+We also need stoichiometry for CO2, so we need a substrate chemical formula.
+
+```{r}
+sub_pars12 <- list(subs = c('VSd'),
+                   forms = c(VSd = 'C23H37O14N (CO2)1.5'),
+                   T_opt_hyd = c(all = 60),
+                   T_min_hyd = c(all = 0),
+                   T_max_hyd = c(all = 90),
+                   hydrol_opt = c(all = 0.1),
+                   sub_fresh = c(VSd = 20),
+                   sub_init = c(VSd = 20))
+
+```
+
+```{r}
+devtools::load_all()
+out12c <- abm(365,
+             mng_pars = mng_pars,
+             man_pars = man_pars12,
+             grp_pars = grp_pars,
+             mic_pars = mic_pars,
+             sub_pars = sub_pars12,
+             chem_pars = chem_pars12c,
+)
+```
+
+```{r}
+devtools::load_all()
+out12d <- abm(365,
+             mng_pars = mng_pars,
+             man_pars = man_pars12,
+             grp_pars = grp_pars,
+             mic_pars = mic_pars,
+             sub_pars = sub_pars12,
+             chem_pars = chem_pars12d,
+)
+```
+
+See how COD balance is worse?
+
+
+```{r}
+plot(CH4_emis_cum ~ time, data = out12c, type = 'l')
+lines(CH4_emis_cum ~ time, data = out12d, col = 'red')
+```
+
+
+```{r}
+plot(CO2_emis_cum ~ time, data = out12c, type = 'l')
+lines(CO2_emis_cum ~ time, data = out12d, col = 'red')
+```
+
+

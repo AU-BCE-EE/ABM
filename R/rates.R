@@ -12,7 +12,7 @@ rates <- function(t,
   p <- calcInhib(p, y)
 
   # Initialize vectors with derivative components, all with same order of y elements
-  alpha <- qhat <- rut <- consump <- growth <- inflow <- death <- hydrol <- volat <- meth <- 0 * y
+  alpha <- qhat <- rut <- respir <- consump <- growth <- inflow <- death <- hydrol <- volat <- meth <- 0 * y
 
   # Hydrolysis rate
   alpha[p$subs] <- CTM_cpp(p$temp_K, p$T_opt_hyd, p$T_min_hyd, p$T_max_hyd, p$hydrol_opt)
@@ -43,6 +43,14 @@ rates <- function(t,
   # Growth rate of all groups
   growth[p$grps] <- p$yield[p$grps] * rut[p$grps]
 
+  # Respiration only consumes VFA
+  if (!is.null(p$O2kl)) {
+    respir['CH3COOH'] <- - 0.01 * p$O2kl * p$area
+    if ('CO2' %in% names(y)) {
+      respir['CO2'] <- - 12.01 / 32. * respir['CH3COOH']
+    }
+  }
+
   # Inflow from slurry addition
   # First only concentrations are set, and multiplied by inflow in last line
   inflow[p$grps] <- p$xa_fresh
@@ -70,15 +78,16 @@ rates <- function(t,
   # All CH4 emitted
   meth['CH4_emis_cum'] <- (sum(rut[p$meths]) - sum(growth[p$meths])) / p$COD_conv['CH4']
   # CO2 goes into dissolved pool
+  # Note fixed coefficient 1:1 CO2:CH4 on a C basis, because all methane is always from acetic acid
   if ('CO2' %in% names(y)) {
-    meth['CO2'] <- meth['CO2'] + meth['CH4_emis_cum'] * 1 * 12
+    meth['CO2'] <- meth['CO2'] + meth['CH4_emis_cum'] * 1 
   }
   # Add vectors to get derivatives
   # All elements in g/d as COD except 
   #   * slurry_mass (kg/d as fresh slurry mass)
   #   * CH4 (g/d as CH4 or C?)
   #   * solutes other than VFA (...)
-  ders <- inflow + growth + consump + death + hydrol + volat + meth
+  ders <- inflow + growth + respir + consump + death + hydrol + volat + meth
 
   return(list(ders, c(CH4_emis_rate = meth[['CH4_emis_cum']], temp_C = p$temp_C, pH = p$pH)))
 

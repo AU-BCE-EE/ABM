@@ -395,7 +395,7 @@ plot(VSd_conc ~ time, data = out5, type = 'l')
 plot(CH3COOH_conc ~ time, data = out5, type = 'l')
 ```
 
-# 6. Flexible solutes
+# 6. Flexible solutes and sulfate reduction
 Any conservative solute can be added in `man_pars`, using any names.
 I am moving toward using a "master species" approach, so it makes sense to use the chemical formula of the primary species, with `p` or `m` for a charge symbol.
 The `comp` part of the name below is for "component".
@@ -436,11 +436,18 @@ plot(NH4p ~ time, data = out6a)
 But now with sulfate and sulfide, sulfate reducers can grow.
 
 ```{r}
-plot(sr1_conc ~ time, data = out6a)
+plot(sr1_conc ~ time, data = out6a, type = 'l', ylim = c(0, 0.4))
 lines(m1_conc ~ time, data = out6a, col = 'red')
 ```
 
-We can see dilution effects at least if some washing water is added.
+And if H2S is a component, it will be produced.
+
+```{r}
+plot(SO4m2_conc ~ time, data = out6a, type = 'l')
+plot(H2S_conc ~ time, data = out6a, type = 'l')
+```
+
+We can see dilution effects at if some washing water is added.
 
 ```{r}
 mng_pars6 = list(slurry_prod_rate = 10000, 
@@ -470,6 +477,60 @@ out6b <- abm(365,
 ```{r}
 plot(NH4p_conc ~ time, data = out6b, type = 'l')
 lines(NH4p_conc ~ time, data = out6a, col = 'red')
+```
+
+To include sulfate reduction, there must be an `sr` microbial group and `SO4m2` must be a chemical component.
+Omit either to exclude sulfate reduction.
+
+```{r}
+man_pars6c <- list(comps = c('H2S', 'NH4p'),
+                 comp_fresh = c(H2S = 0.01, NH4p = 2.5), 
+                 VFA_fresh = c(CH3COOH = 2),
+                 pH = 7, dens = 1000)
+```
+
+```{r}
+grp_pars6c <- list(grps = c('m0', 'm1', 'm2'),
+                 yield = c(default = 0.05),
+                 xa_fresh = c(all = 0.05),
+                 xa_init = c(all = 0.05),
+                 dd_rate = c(all = 0.02),
+                 ksv = c(default = 1),
+                 qhat_opt = c(m0 = 1, m1 = 1, m2 = 2),
+                 T_opt = c(m0 = 18, m1 = 18, m2 = 28),
+                 T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41),
+                 T_max = c(m0 = 25, m1 = 25, m2 = 38))
+```
+
+```{r}
+devtools::load_all()
+out6c <- abm(365,
+            mng_pars = mng_pars6,
+            man_pars = man_pars6c,
+            grp_pars = grp_pars6c,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars,
+            chem_pars = chem_pars)
+```
+
+```{r}
+plot(CH4_emis_cum ~ time, data = out6a, type = 'l')
+lines(CH4_emis_cum ~ time, data = out6c, col = 'red')
+```
+
+```{r}
+plot(CH3COOH_conc ~ time, data = out6a, type = 'l')
+lines(CH3COOH_conc ~ time, data = out6c, col = 'red')
+```
+
+```{r}
+plot(m1_conc ~ time, data = out6a, type = 'l')
+lines(m1_conc ~ time, data = out6c, col = 'red')
+```
+
+```{r}
+plot(slurry_mass ~ time, data = out6a, type = 'l')
+lines(slurry_mass ~ time, data = out6c, col = 'red')
 ```
 
 # 7. Speciation

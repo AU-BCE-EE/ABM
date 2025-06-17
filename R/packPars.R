@@ -138,6 +138,13 @@ packPars <- function(mng_pars,
   pars$srs <- pars$grps[pars$i_sr]
   pars$aers <- pars$grps[pars$i_aer]
   pars$hyds <- pars$grps[pars$i_hyd]
+  
+  # Drop sulfate reducers if SO4-2 is not available
+  if (length(pars$srs) > 0 & 'SO4m2' %in% pars$comps) {
+    pars$sromit <- FALSE 
+  } else {
+    pars$sromit <- TRUE
+  }
 
   # All solutes
   pars$sols <- c(pars$comps, 'CH3COOH')

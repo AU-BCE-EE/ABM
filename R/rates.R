@@ -22,11 +22,24 @@ rates <- function(t,
 
   # VFA consumption rates (g/d) and growth
   # Rate of substrate utilization
-  rut <- calcUt(p, y, qhat, rut)
+  rut[p$meths] <- p$ired[p$meths] * qhat[p$meths] * y[p$meths] * y['CH3COOH'] / 
+                  (p$ksv[p$meths] * y['slurry_mass'] + y['CH3COOH'])
+               
+  # Sulfate and H2S
+  # NTS: missing S:COD conversion factor!
+  if (!p$sromit) {
+    rut[p$srs] <- p$ired[p$srs] * qhat[p$srs] * y[p$srs] * 
+                  y['CH3COOH'] / (p$ksv[p$srs] * y['slurry_mass'] + y['CH3COOH']) *
+                  y['SO4m2'] / (p$kss[p$srs] * y['slurry_mass'] + y['SO4m2'])
+    consump['SO4m2'] <- - sum(rut[p$srs] * (1 - p$yield[p$srs]))
+    if ('H2S' %in% names(y)) {
+      consump['H2S'] <- - consump['SO4m2']
+    }
+  }
   
   # VFA consumption is sum of all rut terms
   consump['CH3COOH'] <- - sum(rut)
-  
+ 
   # Growth rate of all groups
   growth[p$grps] <- p$yield[p$grps] * rut[p$grps]
 

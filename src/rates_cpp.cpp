@@ -278,17 +278,6 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   // urea hydrolysis by Michaelis Menten
   double rut_urea = (alpha_urea * urea) / (km_urea + urea/slurry_mass);
   
-  //# CO2 production from fermentation + methanogenesis + sulfate reduction + aerobic respiration at slurry surface
-  //# also calcualtes growth rate of xa_bac and xa_aer, mineralization rates and COD production from fermentation
-  
-  //### MOVE all the stuff below until derivatives to CPP?
-  //ferm <- stoich(alpha, y, conc_fresh, sub_resp, respiration,
-  //               carb, pro, lip, carb_resp, pro_resp, lip_resp, ace, hyd,
-  //               ace_sr, hyd_sr)
-  
-  //CO2_ferm_meth_sr <- ferm$ferm[['CO2']] * 44.01 + sum(rut[i_meth+1])/ferm$COD_conv_meth_CO2[[1]] + sum(rutsr)/ferm$COD_conv_sr_CO2[[1]]
-  //CO2_ferm <- ferm$ferm[['CO2']] * 44.01 
-
   // Using user's name 'conc_fresh_object'
   Rcpp::RObject conc_fresh_object = parms[p_idx[38]];
   
@@ -397,23 +386,23 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
    double COD_conv_sr_CO2 = -(ace_sr[1] * 64 + hyd_sr[0] * 16)/((ace_sr[3]) * 44.01);
    double CO2_ferm = ferm[8];
   
+  // respiration
   double mol_carb_resp = respiration * (RFd + starch)/sub_resp * 0.005208333;
   double mol_pro_resp = respiration * (CPs + CPf)/sub_resp * 0.00748503;
   double mol_lip_resp = respiration * Cfat/sub_resp * 0.0004194631;
   
-  NumericVector resp(carb_resp.size());
+  NumericVector carb_resp = parms[p_idx[61]];
+  NumericVector pro_resp = parms[p_idx[62]];
+  NumericVector lip_resp = parms[p_idx[63]];
+  NumericVector respir(carb_resp.size());
   
   for(int i = 0; i < carb_resp.size(); ++i) {
-    resp[i] = mol_carb_resp * carb_resp[i] + mol_pro_resp * pro_resp[i] + mol_lip_resp * lip_resp[i];
+    respir[i] = mol_carb_resp * carb_resp[i] + mol_pro_resp * pro_resp[i] + mol_lip_resp * lip_resp[i];
   }
   
-  double xa_aer_rate = resp[] * 160;
-  double TAN_min_resp = resp[] * 14.007;
-  double CO2_resp = (resp[] + resp[]) * 44.01; 
-  
-  double TAN_min_resp = as<double>(parms[p_idx[45]]) * respiration;
-  double CO2_resp = as<double>(parms[p_idx[46]]) * respiration;
-  double xa_aer_rate = as<double>(parms[p_idx[47]]) * respiration;
+  double xa_aer_rate = respir[7] * 160;
+  double TAN_min_resp = respir[3] * 14.007;
+  double CO2_resp = (respir[8] + respir[4]) * 44.01; 
   
   NumericVector COD_conv = parms[p_idx[48]];
   

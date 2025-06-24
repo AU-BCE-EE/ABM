@@ -60,21 +60,16 @@ hard_pars <- function(pars){
   pars$hyd <- c(H2 = -1, C2H4O2 = 0, CO2 = -1/4, CH4 = 1/4, H2O = 2/4)
   pars$ace_sr <- c(H2 = 0, C2H4O2 = -1, H2SO4 = -1, CO2 = 2, H2O = 2, H2S = 1) 
   pars$hyd_sr <- c(H2 = -1, C2H4O2 = 0, H2SO4 = -1/4, CO2 = 0, H2O = 1, H2S = 1/4) 
-  browser()
-  resp_stoich_out <- resp_stoich(pars$conc_fresh, carb_resp, pro_resp, lip_resp)
 
   # these should be factored by "respiration" inside rates call.
-  pars$TAN_min_resp <- resp_stoich_out[['TAN_min_resp']] 
-  pars$CO2_resp <- resp_stoich_out[['CO2_resp']]
-  pars$xa_aer_rate <- resp_stoich_out[['xa_aer_rate']]
-  
-  # these needs to be actually calculated but are set here to test speed in rates_cpp.
-  # need a way to implement stoichiometry of fermentation to calculate properly.
+  # below hardcoded stuff shuld be removed since they are now implemented in rates_cpp
+  pars$TAN_min_resp <- 0
+  pars$CO2_resp <- 0
+  pars$xa_aer_rate <- 0
   pars$xa_bac_rate <- 1.1 
   pars$TAN_min_ferm <- 2.1
   pars$VFA_H2_ferm <- 3.1
   pars$CO2_ferm = 4.1
-  # 
   pars$COD_conv_meth_CO2 <- 2.926 # gCOD consumed /gCO2 produced from methanogenesis
   pars$COD_conv_sr_CO2 <- 0.971 # gCOD consumed /gCO2 produced from sulfate reduction
 

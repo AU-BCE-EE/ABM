@@ -345,18 +345,61 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
    double conc_fresh_VSd = as<double>(conc_fresh[14]);
    double conc_fresh_ash = as<double>(conc_fresh[15]); // Adjusted index
 
+// fermentation stoichiometry
   
+   
   
+   double mol_carb = (alpha_RFd * RFd + alpha_starch * starch) * 0.005208333;
+   double mol_pro = (alpha_CPf * CPf + alpha_CPs * CPs) * 0.00748503;
+   double mol_lip = alpha_Cfat * Cfat * 0.0004194631;
   
 
-  // NOT IMPLEMENTED YET. End products of fermentation (previously from stoich()). 
-  // Right now are just placeholder to test speed. Need to be properly calculated in hard_pars() or otherwise
-  double xa_bac_rate = parms[p_idx[39]];
-  double TAN_min_ferm = parms[p_idx[40]];
-  double VFA_H2_ferm = parms[p_idx[41]];
-  double COD_conv_meth_CO2 = parms[p_idx[42]];
-  double COD_conv_sr_CO2 = parms[p_idx[43]];
-  double CO2_ferm = parms[p_idx[44]];
+   NumericVector carb = parms[p_idx[54]];
+   NumericVector pro = parms[p_idx[55]];
+   NumericVector lip = parms[p_idx[56]];
+   NumericVector ace = parms[p_idx[57]];
+   NumericVector hyd = parms[p_idx[58]];
+   NumericVector ace_sr = parms[p_idx[59]];
+   NumericVector hyd_sr = parms[p_idx[60]];
+   
+   NumericVector ferm(carb.size()); 
+   
+   for(int i = 0; i < carb.size(); ++i) {
+     ferm[i] = mol_carb * carb[i] + mol_pro * pro[i] + mol_lip * lip[i];
+   }
+  
+   double C2H4O2 = ferm[6];
+   double H2 = ferm[7];
+  
+   NumericVector ace_ferm(ace.size());
+   NumericVector ace_sr_ferm(ace_sr.size());
+  
+   for(int i = 0; i < ace.size(); ++i) {
+     ace_ferm[i] = ace[i] * C2H4O2;
+   }
+   
+   for(int i = 0; i < ace_sr.size(); ++i) {
+     ace_sr_ferm[i] = ace_sr[i] * C2H4O2;
+   }
+  
+   NumericVector hyd_ferm(hyd.size());
+   NumericVector hyd_sr_ferm(hyd_sr.size());
+  
+   for(int i = 0; i < hyd.size(); ++i) {
+     hyd_ferm[i] = hyd[i] * H2;
+   }
+   
+   for(int i = 0; i < hyd_sr.size(); ++i) {
+     hyd_sr_ferm[i] = hyd_sr[i] * H2;
+   }
+  
+   double xa_bac_rate = ferm[5] * 160;
+   double VFA_H2_ferm = C2H4O2 * 64 + H2 * 16;
+   double TAN_min_ferm = ferm[3] * 14.007;
+  
+   double COD_conv_meth_CO2 = -(ace[1] * 64 + hyd[0] * 16)/((ace[2] + hyd[2]) * 44.01);
+   double COD_conv_sr_CO2 = -(ace_sr[1] * 64 + hyd_sr[0] * 16)/((ace_sr[3]) * 44.01);
+   double CO2_ferm = ferm[8];
   
   // below are calculated from conc_fresh composition  
   double TAN_min_resp = as<double>(parms[p_idx[45]]) * respiration;
@@ -460,7 +503,12 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
                         Named("xa_fresh") = xa_fresh * scale_xa_fresh,
                         Named("slurry_prod_rate") = slurry_prod_rate,
                         Named("rain") = rain,
-                        Named("evap") = evap);
+                        Named("evap") = evap,
+                        Named("sum_rut") = sum_rut,
+                        Named("rut") = rut,
+                        Named("xa") = xa,
+                        Named("qhat") = qhat,
+                        Named("qhat_opt") = qhat_opt);
   }
   
 

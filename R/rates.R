@@ -1,6 +1,6 @@
 rates <- function(t, y, parms, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
                   SO4_inhibition_fun = SO4_inhibition_fun, 
-                  conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) {
+                  conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, H2SO4_titrat = H2SO4_titrat, CTM_cpp = CTM_cpp, p_idx = p_idx) {
 
     y[y < 1E-10] <- 1E-10
 

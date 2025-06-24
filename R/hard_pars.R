@@ -51,7 +51,7 @@ hard_pars <- function(pars){
   lip_resp <- c(C6H12O6 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
                      NH4 = -9.425, HCO3 = -9.425, O2 = -25.375, H2O = 39.575, C5H7O2N = 9.425,
                      CO2 = 13.3) #
-  
+
   pars$carb_resp <- carb_resp # delete later if new rates_cpp works
   pars$pro_resp <- pro_resp # delete later if new rates_cpp works
   pars$lip_resp <- lip_resp # delete later if new rates_cpp works
@@ -77,6 +77,6 @@ hard_pars <- function(pars){
   # 
   pars$COD_conv_meth_CO2 <- 2.926 # gCOD consumed /gCO2 produced from methanogenesis
   pars$COD_conv_sr_CO2 <- 0.971 # gCOD consumed /gCO2 produced from sulfate reduction
-  
+
   return(pars)
 }

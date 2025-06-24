@@ -21,7 +21,7 @@ if(conc_fresh[['VSd']] > 1e-10){
   mol.pro_resp <- respiration * y['VSd']/sub_resp  * 0.00176104
   mol.lip_resp <- respiration * y['VSd']/sub_resp  * 9.902938e-05
 }
-
+browser()
 # stoichiometry. Now assuming cell synthesis, mole/day
 carb <- carb * mol.carb
 

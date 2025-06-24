@@ -346,14 +346,10 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
    double conc_fresh_ash = as<double>(conc_fresh[15]); // Adjusted index
 
 // fermentation stoichiometry
-  
-   
-  
    double mol_carb = (alpha_RFd * RFd + alpha_starch * starch) * 0.005208333;
    double mol_pro = (alpha_CPf * CPf + alpha_CPs * CPs) * 0.00748503;
    double mol_lip = alpha_Cfat * Cfat * 0.0004194631;
   
-
    NumericVector carb = parms[p_idx[54]];
    NumericVector pro = parms[p_idx[55]];
    NumericVector lip = parms[p_idx[56]];
@@ -401,7 +397,20 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
    double COD_conv_sr_CO2 = -(ace_sr[1] * 64 + hyd_sr[0] * 16)/((ace_sr[3]) * 44.01);
    double CO2_ferm = ferm[8];
   
-  // below are calculated from conc_fresh composition  
+  double mol_carb_resp = respiration * (RFd + starch)/sub_resp * 0.005208333;
+  double mol_pro_resp = respiration * (CPs + CPf)/sub_resp * 0.00748503;
+  double mol_lip_resp = respiration * Cfat/sub_resp * 0.0004194631;
+  
+  NumericVector resp(carb_resp.size());
+  
+  for(int i = 0; i < carb_resp.size(); ++i) {
+    resp[i] = mol_carb_resp * carb_resp[i] + mol_pro_resp * pro_resp[i] + mol_lip_resp * lip_resp[i];
+  }
+  
+  double xa_aer_rate = resp[] * 160;
+  double TAN_min_resp = resp[] * 14.007;
+  double CO2_resp = (resp[] + resp[]) * 44.01; 
+  
   double TAN_min_resp = as<double>(parms[p_idx[45]]) * respiration;
   double CO2_resp = as<double>(parms[p_idx[46]]) * respiration;
   double xa_aer_rate = as<double>(parms[p_idx[47]]) * respiration;

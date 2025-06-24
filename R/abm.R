@@ -357,7 +357,7 @@ abm <- function(
   dat$CH4_flux <- dat$CH4_emis_rate / pars$area
   dat$CO2_emis_rate_slurry <- dat$CO2_emis_rate / (dat$slurry_mass / 1000)
   dat$CO2_flux <- dat$CO2_emis_rate / pars$area
-  
+  dat$area <- pars$area
   ## NTS: Add others, e.g., mu
   # Calculate COD/VS flows
   # First concentrations in g/kg

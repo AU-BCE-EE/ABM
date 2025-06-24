@@ -384,7 +384,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   
    double COD_conv_meth_CO2 = -(ace[1] * 64 + hyd[0] * 16)/((ace[2] + hyd[2]) * 44.01);
    double COD_conv_sr_CO2 = -(ace_sr[1] * 64 + hyd_sr[0] * 16)/((ace_sr[3]) * 44.01);
-   double CO2_ferm = ferm[8];
+   double CO2_ferm = ferm[8] * 44.01;
   
   // respiration
   double mol_carb_resp = respiration * (RFd + starch)/sub_resp * 0.005208333;
@@ -434,7 +434,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   }
   
   // this calculates the CO2 produced from combined fermentation, methanogenesis and sulfate reduction
-  double CO2_ferm_meth_sr = CO2_ferm * 44.01 + sum_rutmeth/COD_conv_meth_CO2 + sum_rutsr/COD_conv_sr_CO2;
+  double CO2_ferm_meth_sr = CO2_ferm + sum_rutmeth/COD_conv_meth_CO2 + sum_rutsr/COD_conv_sr_CO2;
   
   NumericVector xa_fresh = parms[p_idx[49]];
   

@@ -62,7 +62,7 @@ abm_variable <-
   }
 
   if (any(pars$slurry_mass$slurry_mass < 0)) {
-    stop('Negative slurry mass values after adjustment for rain and evaporation.\n  Check parameters and try again.')
+    warning('Negative slurry mass values after adjustment for rain and evaporation.\n  Check parameters and try again.')
   }
   # Determine slurry removal quantity in each time interval
   # Note final 0--alignment is a bit tricky

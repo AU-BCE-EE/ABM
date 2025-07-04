@@ -1,7 +1,7 @@
 rm(list = ls())
 library(data.table)
 
-devtools::load_all('../../../ABM')
+devtools::load_all()
 
 slurry_mass_dat <- fread('slurry_digestate_dat.csv')
 

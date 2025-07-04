@@ -100,7 +100,7 @@ stoich_species <- function(acefrac, fs, y) {
     cc_gCOD_mole[comp, ] <- -cc_gCOD_mole[comp, ] / cc_gCOD_mole[comp, comp]
   }
   
-  # H2 + CH3COOH → VFA
+  # H2 + CH3COOH -> VFA
   cc_gCOD_mole[, 'VFA'] <- cc_gCOD_mole[,'H2'] + cc_gCOD_mole[, 'CH3COOH']
   
   # remove H2, CH3COOH, H2O

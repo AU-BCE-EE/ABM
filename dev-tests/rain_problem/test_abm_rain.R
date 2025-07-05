@@ -15,6 +15,8 @@ evap = 0
 slurry_mass_dat <- as.data.frame(slurry_mass_dat[, .(time, slurry_mass)])
 test <- abm(days = max(slurry_mass_dat$time), add_pars = list(evap = evap, slurry_mass = slurry_mass_dat, rain = rain, area = area))
 
+plot(slurry_mass_dat$time, slurry_mass_dat$slurry_mass)
+lines(test$time, test$slurry_mass, col = 'red')
 # add some slurry mass to avoid negative slurry mass in start
 
 slurry_mass_dat$slurry_mass <- slurry_mass_dat$slurry_mass + area * rain

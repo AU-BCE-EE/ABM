@@ -41,7 +41,6 @@ abm <- function(
                    starting = starting)
 
   # If startup repetitions are requested, repeat some number of times before returning results
-  # This is done in a for loop in abm_repeat()
   if (startup > 0) {
     cat('\nStartup run ')
     out <- abmStartup(days = days,
@@ -55,25 +54,24 @@ abm <- function(
     return(out)
   } 
 
-
   # Create initial state variable vector
   y <- makeInitState(pars) 
 
   if (is.null(pars$var)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
     dat <- abmReg(days = days, 
-                       delta_t = delta_t, 
-                       times_regular = times, 
-                       y = y, 
-                       pars = pars)
+                  delta_t = delta_t, 
+                  times_regular = times, 
+                  y = y, 
+                  pars = pars)
   } else if (inherits(pars$var, 'data.frame')) {
     # Option 2: Everything based on given slurry mass vs. time
     dat <- abmVar(days = days, 
-                        delta_t = delta_t, 
-                        times = times, 
-                        y = y, 
-                        pars = pars, 
-                        warn = warn)
+                  delta_t = delta_t, 
+                  times = times, 
+                  y = y, 
+                  pars = pars, 
+                  warn = warn)
   } else {
     stop('pars_var must be NULL or a data frame')
   }
@@ -82,9 +80,11 @@ abm <- function(
   dat <- cleanOutput(dat, pars, addcols = TRUE, addconcs = TRUE, cumeff = TRUE)
 
   # Check COD balance
-  codbal <- checkCOD(dat = dat, grps = pars$grps, 
+  codbal <- checkCOD(dat = dat, 
+		     grps = pars$grps, 
                      subs = pars$subs, 
-                     COD_conv = pars$COD_conv, stoich = pars$stoich, 
+                     COD_conv = pars$COD_conv, 
+		     stoich = pars$stoich, 
                      rtol = 0.01)
 
   # Return results

@@ -18,7 +18,7 @@ getStoich <- function(pars) {
   # Drop 0
   st <- st[rowSums(st) != 0, , drop = FALSE]
   
-  # Drop water (ignored, treated as conservative)
+  # Drop water (ignored, treated as conservative in system)
   st <- st[rownames(st) != 'H2O', , drop = FALSE] 
 
   # Switch from chemical formulas of columns to substrate names

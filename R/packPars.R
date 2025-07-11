@@ -1,4 +1,5 @@
 # Sorts out parameters and packages them all together in the output list
+# This is a central function that does a lot and is (unfortunately) complicated
 
 packPars <- function(mng_pars,
                      man_pars,
@@ -14,7 +15,7 @@ packPars <- function(mng_pars,
                      pars,
                      starting) {
 
-  # Move extra var_pars
+  # Move extra var_pars ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if(length(var_pars) > 1) {
     for (i in 2:length(var_pars)) {
       dv <- var_pars[[i]]
@@ -38,12 +39,12 @@ packPars <- function(mng_pars,
     var_pars <- var_pars['var']
   }
 
-  # Combine pars to make extraction and pass to rates() easier
+  # Combine pars to make extraction and pass to rates() easier ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (is.null(pars)) { 
     pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, sub_pars, chem_pars, inhib_pars, ctrl_pars, var_pars)
   }
 
-  # Sort out more parameter inputs
+  # Sort out add_pars parameter inputs ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Note: pe.pars = add_pars that use par.element approach, these are converted to normal (simple) add_par elements here
   # Note: sa.pars = normal (simple) add_pars that do not need to be converted
   # Note: Use of [] vs. [[]] affect how code works--needs to work for both lists and vector pars
@@ -62,9 +63,8 @@ packPars <- function(mng_pars,
     add_pars <- c(sa.pars, pe.pars)
   }
 
-
   # If any additional parameters were added (or modified) using add_pars, update them in pars list here
-  # But grp_pars and sub_pars work differently than the others because of the all = and default = keywords
+  # But grp_pars and sub_pars work differently than the others because of the default = keyword (and all =, but this is discouraged)
   # Needs to work in a case where default is all but e.g., m1 is given in add_pars (see def stuff below)
   grp_par_nms <- names(grp_pars)[!names(grp_pars) %in% c('grps', 'meths', 'srs', 'aer', 'ferm')]
   sub_par_nms <- names(sub_pars)[names(sub_pars) != 'subs']
@@ -94,7 +94,7 @@ packPars <- function(mng_pars,
     pars$subs <- add_pars$subs
   }
 
-  # Multiple microbial groups
+  # Multiple microbial groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # NTS: need to sort out how this works with above mess for add_pars with grps
   if (is.null(pars$meths)) {
     pars$meths <- pars$grps[! pars$grps %in% pars$srs]
@@ -114,6 +114,7 @@ packPars <- function(mng_pars,
   # After above block, this should be redundant
   checkGrpNames(pars)
 
+  # O2 kl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # O2 kl is handled differently from others
   if (!is.null(pars$kl) && 'O2' %in% names(pars$kl)) {
     pars$O2kl <- pars$kl['O2']
@@ -123,7 +124,8 @@ packPars <- function(mng_pars,
     }
   }
 
-  # For size-variable parameters, get number of elements and indices
+  # Size-variable elements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # For size-variable parameters, get number of elements and indices 
   # NTS: I expect to change to a different approach, only using block below this one with names
   pars$n_mic <- length(pars$grps)
   pars$i_mic <- grep('^sr|^p|^m', pars$grps)
@@ -132,21 +134,22 @@ packPars <- function(mng_pars,
   pars$i_aer <- grep('^aer', pars$grps)
   pars$i_hyd <- grep('^hyd', pars$grps)
 
-  # Get names of variable elements
+  # Get names of variable elements 
   # Remember pars$grps/pars$mics and pars$subs already exist (set in pars input)
   pars$meths <- pars$grps[pars$i_meth]
   pars$srs <- pars$grps[pars$i_sr]
   pars$aers <- pars$grps[pars$i_aer]
   pars$hyds <- pars$grps[pars$i_hyd]
   
-  # Drop sulfate reducers if SO4-2 is not available
+  # Drop sulfate reducers if SO4-2 is not available ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if (length(pars$srs) > 0 & 'SO4m2' %in% pars$comps) {
     pars$sromit <- FALSE 
   } else {
     pars$sromit <- TRUE
   }
 
-  # All solutes
+  # Solutes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # CH3COOH is always present
   pars$sols <- c(pars$comps, 'CH3COOH')
   pars$conc_fresh <- c(pars$comp_fresh, pars$VFA_fresh)
 
@@ -156,14 +159,15 @@ packPars <- function(mng_pars,
   pars$mspec <- c(pars$mspec, mmspec)
   pars$mspec <- pars$mspec[!duplicated(names(pars$mspec))]
 
-  # Mass conversion factors
+  # Mass conversion factors ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Need to be above stoich matrix determination (below)
   pars$mcf <- unlist(lapply(c(pars$form, pars$mspec), getMassConv))
 
-  # Sort out stoichiometry
+  # Sort out stoichiometry ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Three possibilities: 1) NULL, 2) "calc", 3) given
+  # If missing, assume only VFA is produced
   if (is.null(pars$stoich)) {
     # Fill in missing stochiometry
-    # If missing, assume only VFA is produced
     pars$stoich <- matrix(rep(1, length(pars$subs)),
                           nrow = 1,
                           dimnames = list(c('CH3COOH'), c(pars$subs))
@@ -175,17 +179,18 @@ packPars <- function(mng_pars,
     pars$stoich <- getStoich(pars)
   }
 
-  # Substrates
+  # Substrates ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   pars$n_subs <- length(pars$subs)
   pars$i_subs <- length(pars$grps) + 1:length(pars$subs)
   
-  # Other constants
+  # Other constants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   pars$g_NH4 <- 0.7
   pars$temp_standard <- 298
   pars$temp_zero <- 273
   pars$temp_K <- pars$temp_C + 273.15
   pars$pH_floor <- 7
 
+  # Conversions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Convert temperature constants to K if needed
   pars <- tempsC2K(pars, cutoff = 200)
   
@@ -194,6 +199,7 @@ packPars <- function(mng_pars,
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
   pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
   
+  # Starting conditions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # If starting conditions are provided from a previous simulation, move them to pars
   # Note that additional state variables are extracted from `starting` in abm_*.R
   if (!is.null(starting) & is.data.frame(starting)) {

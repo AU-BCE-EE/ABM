@@ -60,9 +60,9 @@ Microbial parameters are similar to other ABM versions, but inhibition is set se
 ```{r}
 grp_pars <- list(grps = c('m0', 'm1', 'm2','sr1'),
                  yield = c(default = 0.05, sr1 = 0.065),
-                 xa_fresh = c(all = 0.05),
-                 xa_init = c(all = 0.05),
-                 dd_rate = c(all = 0.02),
+                 xa_fresh = c(default = 0.05),
+                 xa_init = c(default = 0.05),
+                 dd_rate = c(default = 0.02),
                  ksv = c(default = 1, sr1 = 0.5),
                  kss = c(sr1 = 0.5),
                  qhat_opt = c(m0 = 1, m1 = 1, m2 = 2, sr1 = 9),
@@ -88,7 +88,6 @@ chem_pars <- list(COD_conv = c(CH4 = 1/0.2507))
 ```
 
 ```{r}
-devtools::load_all()
 out1 <- abm(365,
             mng_pars = mng_pars,
             man_pars = man_pars,
@@ -138,9 +137,9 @@ Parameter values have no connection to reality in this example.
 
 ```{r}
 sub_pars2 <- list(subs = c('cellulose', 'protein', 'lipids'),
-                  T_opt_hyd = c(all = 60),
-                  T_min_hyd = c(all = 0),
-                  T_max_hyd = c(all = 90),
+                  T_opt_hyd = c(default = 60),
+                  T_min_hyd = c(default = 0),
+                  T_max_hyd = c(default = 90),
                   hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05),
                   sub_fresh = c(lipids = 3, protein = 20, cellulose = 35),
                   sub_init = c(lipids = 3, protein = 20, cellulose = 35))
@@ -492,9 +491,9 @@ man_pars6c <- list(comps = c('H2S', 'NH4p'),
 ```{r}
 grp_pars6c <- list(grps = c('m0', 'm1', 'm2'),
                  yield = c(default = 0.05),
-                 xa_fresh = c(all = 0.05),
-                 xa_init = c(all = 0.05),
-                 dd_rate = c(all = 0.02),
+                 xa_fresh = c(default = 0.05),
+                 xa_init = c(default = 0.05),
+                 dd_rate = c(default = 0.02),
                  ksv = c(default = 1),
                  qhat_opt = c(m0 = 1, m1 = 1, m2 = 2),
                  T_opt = c(m0 = 18, m1 = 18, m2 = 28),
@@ -822,9 +821,9 @@ But substrates need not actually produce VFA anymore.
 
 ```{r}
 sub_pars10 <- list(subs = c('cellulose', 'protein', 'lipids', 'urea'),
-                   T_opt_hyd = c(all = 60),
-                   T_min_hyd = c(all = 0),
-                   T_max_hyd = c(all = 90),
+                   T_opt_hyd = c(default = 60),
+                   T_min_hyd = c(default = 0),
+                   T_max_hyd = c(default = 90),
                    hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05, urea = 1),
                    sub_fresh = c(lipids = 3, protein = 20, cellulose = 35, urea = 10),
                    sub_init = c(lipids = 3, protein = 20, cellulose = 35, urea = 10))
@@ -893,9 +892,9 @@ For this, substrate formulas must be provided.
 sub_pars10b <- list(subs = c('cellulose', 'protein', 'lipids', 'urea'),
                     forms = c(cellulose = 'C6H10O5', protein = 'C4 H6.1 O1.2 N',
                               lipids = 'C57 H104 O6', urea = 'CO(NH2)2'),
-                    T_opt_hyd = c(all = 60),
-                    T_min_hyd = c(all = 0),
-                    T_max_hyd = c(all = 90),
+                    T_opt_hyd = c(default = 60),
+                    T_min_hyd = c(default = 0),
+                    T_max_hyd = c(default = 90),
                     hydrol_opt = c(lipids = 0.1, protein = 0.01, cellulose = 0.05, urea = 1),
                     sub_fresh = c(lipids = 3, protein = 20, cellulose = 35, urea = 10),
                     sub_init = c(lipids = 3, protein = 20, cellulose = 35, urea = 10))
@@ -968,10 +967,10 @@ So far, CO2 emission behavior is troublesome--it is difficult to produce plausib
 ```{r}
 sub_pars11 <- list(subs = c('VSd'),
                    forms = c(VSd = 'C23H37O14N (CO2)1.5'),
-                   T_opt_hyd = c(all = 60),
-                   T_min_hyd = c(all = 0),
-                   T_max_hyd = c(all = 90),
-                   hydrol_opt = c(all = 0.1),
+                   T_opt_hyd = c(default = 60),
+                   T_min_hyd = c(default = 0),
+                   T_max_hyd = c(default = 90),
+                   hydrol_opt = c(default = 0.1),
                    sub_fresh = c(VSd = 20),
                    sub_init = c(VSd = 20))
 
@@ -1102,10 +1101,10 @@ We also need stoichiometry for CO2, so we need a substrate chemical formula.
 ```{r}
 sub_pars12 <- list(subs = c('VSd'),
                    forms = c(VSd = 'C23H37O14N (CO2)1.5'),
-                   T_opt_hyd = c(all = 60),
-                   T_min_hyd = c(all = 0),
-                   T_max_hyd = c(all = 90),
-                   hydrol_opt = c(all = 0.1),
+                   T_opt_hyd = c(default = 60),
+                   T_min_hyd = c(default = 0),
+                   T_max_hyd = c(default = 90),
+                   hydrol_opt = c(default = 0.1),
                    sub_fresh = c(VSd = 20),
                    sub_init = c(VSd = 20))
 

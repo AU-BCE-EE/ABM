@@ -46,7 +46,8 @@ abmVar <-
     t_call <- min(max(timelist[[i]]), t_rem)
 
     # Fill in current pars from var
-    pars <- updateVarPars(pars, i - 1)
+    # Also adds 2 temperature-dependent derivative vectors
+    pars <- updateVarPars(pars, y, i - 1)
 
     # Calculate log Ka for speciation
     pars <- calcKa(pars)

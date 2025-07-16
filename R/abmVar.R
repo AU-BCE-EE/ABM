@@ -9,7 +9,9 @@ abmVar <-
   pars$abm_regular <- FALSE
   
   # Some warnings about unused inputs
-  if (!is.na(pars$wash_water) & pars$wash_water != 0) {
+  # NTS: This is incomplete and probably unnecessary
+  # NTS: Consider removing
+  if (!is.null(pars$wash_water) && !is.na(pars$wash_water) && pars$wash_water != 0) {
     warning('Fixed wash_water value of ', pars$wash_water, '\nwill be ignored because variable slurry input is used.')
   }
 

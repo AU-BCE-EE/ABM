@@ -15,7 +15,7 @@ packPars <- function(mng_pars,
                      pars,
                      starting) {
 
-  # Move extra var_pars ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Move extra var_pars into first (var) element, possibly as lists within each data frame element~
   if(length(var_pars) > 1) {
     for (i in 2:length(var_pars)) {
       dv <- var_pars[[i]]
@@ -28,14 +28,15 @@ packPars <- function(mng_pars,
       }
       ll <- list()
       for (j in 1:nrow(var_pars$var)) {
-        # Challenging to get list into each element using indexing
+        # It is challenging to get list into each element using indexing
         x <- as.numeric(dv[j, -1, drop = FALSE])
         names(x) <- names(dv)[-1]
         ll[[j]] <- x
       }
       var_pars$var[[nv]] <- ll
     }
-    # Take only the var element and var_pars must remain a list to avoid duplicate par elements from combining into par
+    # Take only the var element 
+    # And var_pars must remain a list (see single brackets) to avoid duplicate par elements from combining into par
     var_pars <- var_pars['var']
   }
 
@@ -187,7 +188,6 @@ packPars <- function(mng_pars,
   pars$g_NH4 <- 0.7
   pars$temp_standard <- 298
   pars$temp_zero <- 273
-  pars$temp_K <- pars$temp_C + 273.15
   pars$pH_floor <- 7
 
   # Conversions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -205,10 +205,10 @@ packPars <- function(mng_pars,
   if (!is.null(starting) & is.data.frame(starting)) {
     message('Using starting conditions from `starting` argument')
     pars$xa_init[pars$grps] <- as.numeric(starting[nrow(starting), paste0(pars$grps, '_conc')])
-    pars$conc_init['VFA'] <- as.numeric(starting[nrow(starting), 'VFA_conc'])
+    pars$conc_init['CH3COOH'] <- as.numeric(starting[nrow(starting), 'CH3COOH_conc'])
     pars$sub_init[pars$subs] <- as.numeric(starting[nrow(starting), paste0(pars$subs, '_conc')])
     # Set slurry_mass as well?
-    # comp solutes??
+    # NTS: Set comp solutes also?
   }
 
   return(pars)

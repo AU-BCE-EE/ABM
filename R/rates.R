@@ -1,6 +1,6 @@
 rates <- function(t, 
-		              y, 
-		              parms) {
+                  y, 
+                  parms) {
     
   # Short name for parms to make indexing in code below simpler 
   p <- parms

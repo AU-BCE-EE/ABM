@@ -3,7 +3,7 @@
 updateVarPars <- function(pars, i) {
 
   if (any(names(pars$var) != 'time')) {
-    vdat <- pars$var[, names(pars$var) == 'time', drop = FALSE]
+    vdat <- pars$var[, names(pars$var) != 'time', drop = FALSE]
 
     for (j in 1:ncol(vdat)) {
       pn <- names(vdat)[j]
@@ -16,6 +16,7 @@ updateVarPars <- function(pars, i) {
 
     # Convert temperature to K in case any C values were given in var
     pars <- tempsC2K(pars, cutoff = 200)
+    pars$temp_K <- pars$temp_C + 273.15
   }
 
   return(pars)

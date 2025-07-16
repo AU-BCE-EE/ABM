@@ -13,7 +13,7 @@ updateVarPars <- function(pars, y, i) {
     pars[[pn]] <- newval
   }
 
-  # Temperature could change
+  # Temperature and temperature-dependent pars could change
   # Convert temperature to K in case any C values were given in var
   pars <- tempsC2K(pars, cutoff = 200)
   pars$temp_K <- pars$temp_C + 273.15

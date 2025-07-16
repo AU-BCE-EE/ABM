@@ -28,9 +28,9 @@ This will be for a cattle slurry storage tank with a 30 m diameter and 4 m depth
 So maximum volume is 2800 t (`15^2 * pi * 4`).
 
 ```{r}
-var_dat <- data.frame(time = c(0, 200, 201, 364, 365), 
-		      slurry_mass = c(1000, 28000, 100, 12000, 1000) * 1000,
-		      temp_C = c(10, 12, 15, 12, 11))
+var_dat <- data.frame(time = c(0, 200, 250, 300, 340, 365), 
+		      slurry_mass = c(1000, 28000, 100, 12000, 1000, 2000) * 1000,
+		      temp_C = c(10, 12, 15, 12, 11, 11))
 var_pars <- list(var = var_dat)
 ```
 
@@ -101,8 +101,11 @@ out1 <- abm(365,
             sub_pars = sub_pars,
             chem_pars = chem_pars,
             var_pars = var_pars, 
+            add_pars = list(approx_method = 'late'),
             startup = 1)
 names(var_pars)
+pars$removal
+pars$slurry_prod_rate
 var_pars$var
 t_call
 pars$slurry_prod_rate

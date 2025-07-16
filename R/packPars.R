@@ -12,21 +12,16 @@ packPars <- function(mng_pars,
                      ctrl_pars,
                      var_pars,
                      add_pars,
-                     pars,
                      days,
                      starting) {
 
   # Move extra var_pars into first (var) element, possibly as lists within each data frame element~
   if(!is.null(var_pars) && !is.null(var_pars$var)) {
     var_pars <- combineVarPars(var_pars)
-    var_pars <- fixVarDat(var_pars, ctrl_pars$approx_method, days)
-    var_pars <- calcProdRem(var_pars, ctrl_pars$approx_method)
   }
 
   # Combine pars to make extraction and pass to rates() easier ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (is.null(pars)) { 
-    pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, sub_pars, chem_pars, inhib_pars, ctrl_pars, var_pars)
-  }
+  pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, sub_pars, chem_pars, inhib_pars, ctrl_pars, var_pars)
 
   # Sort out add_pars parameter inputs ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Note: pe.pars = add_pars that use par.element approach, these are converted to normal (simple) add_par elements here
@@ -77,6 +72,11 @@ packPars <- function(mng_pars,
   if ('subs' %in% names(add_pars)) {
     pars$subs <- add_pars$subs
   }
+
+  # Finish working with var_pars
+  # This must come after add_par block because approx_method (and other relevant pars?) could be set with add_pars
+  pars <- fixVarDat(pars, days)
+  pars <- calcProdRem(pars)
 
   # Multiple microbial groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # NTS: need to sort out how this works with above mess for add_pars with grps

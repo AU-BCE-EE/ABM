@@ -34,8 +34,10 @@ abmVar <-
   # Time that has already run
   t_run <- 0
 
+  # NTS: below comments are no longer completely true
   # Note: Removals, slurry_mass, wash_water, slurry_prod_rate_t, and t_ints all have same length,
   # Note: but all except _mass have placeholder in first position
+  
   # Start the time (emptying) loop
 
   for (i in 2:n_int) {
@@ -55,12 +57,7 @@ abmVar <-
 
     # If there is a removal event, remove slurry before calling up ODE solver
     if (pars$removal) {
-      if (pars$approx_method == 'late') {
-        j <- i - 1
-      } else {
-        j <- i
-      }
-      y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
+      y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
       y.eff <- y$eff
       y <- y$store
 
@@ -70,7 +67,7 @@ abmVar <-
         y['slurry_mass'] <- y['slurry_mass'] + wash_water[i]
 
         # And empty again, leaving same residual mass as always, and enriching for particles
-        y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
+        y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
         y.eff <- y$eff
         y <- y$store
       }

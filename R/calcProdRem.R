@@ -1,22 +1,28 @@
 # Sorts out slurry production values and removal timing
 
-calcProdRem <- function(var_pars, approx_method) {
+calcProdRem <- function(pars) {
   
-  # Determine slurry removal quantity in each time interval
+  # Removals ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Note final 0--alignment is a bit tricky
-  if (approx_method %in% c('late', 'mid')) {
-    removals <- - c(0, diff(var_pars$var[-nrow(var_pars$var), 'slurry_mass']), 0) > 0
-  } else if (approx_method == 'early') {
-    removals <- - c(diff(var_pars$var[, 'slurry_mass']), 0) > 0
+  if (pars$approx_method %in% c('late', 'mid')) {
+    removals <- - c(0, diff(pars$var[-nrow(pars$var), 'slurry_mass']), 0) > 0
+  } else if (pars$approx_method == 'early') {
+    removals <- - c(diff(pars$var[, 'slurry_mass']), 0) > 0
   } 
-  var_pars$var$removal <- removals
+  pars$var$removal <- removals
 
-  # Add column with slurry production rate
-  slurry_prod_rate_t <- c(diff(var_pars$var[, 'slurry_mass']) / diff(var_pars$var[, 'time']), 0) 
+  # Slurry production rate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  slurry_prod_rate_t <- c(diff(pars$var[, 'slurry_mass']) / diff(pars$var[, 'time']), 0) 
   slurry_prod_rate_t[slurry_prod_rate_t < 0] <- 0
   slurry_prod_rate_t[!is.finite(slurry_prod_rate_t)] <- 0
-  var_pars$var$slurry_prod_rate <- slurry_prod_rate_t
+  pars$var$slurry_prod_rate <- slurry_prod_rate_t
 
-  return(var_pars)
+  # Residual slurry for emptying ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (pars$approx_method == 'late') {
+    pars$var$resid_mass <- pars$var$slurry_mass
+  } else {
+    pars$var$resid_mass <- c(pars$var$slurry_mass[-1], 0)
+  }
 
+  return(pars)
 }

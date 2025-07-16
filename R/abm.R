@@ -26,20 +26,23 @@ abm <- function(
   warn = TRUE) {
 
   # Sort out parameters, package all parameters into a single list pars, add some others
-  pars <- packPars(mng_pars = mng_pars,
-                   man_pars = man_pars,
-                   init_pars = init_pars,
-                   grp_pars = grp_pars,
-                   mic_pars = mic_pars,
-                   sub_pars = sub_pars,
-                   chem_pars = chem_pars,
-                   inhib_pars = inhib_pars,
-                   ctrl_pars = ctrl_pars,
-                   var_pars = var_pars,
-                   add_pars = add_pars,
-                   pars = pars,
-                   days = days,
-                   starting = starting)
+  # Includes sorting out var_pars
+  # All these steps are skipped if pars is provided
+  if (is.null(pars)) {
+    pars <- packPars(mng_pars = mng_pars,
+                     man_pars = man_pars,
+                     init_pars = init_pars,
+                     grp_pars = grp_pars,
+                     mic_pars = mic_pars,
+                     sub_pars = sub_pars,
+                     chem_pars = chem_pars,
+                     inhib_pars = inhib_pars,
+                     ctrl_pars = ctrl_pars,
+                     var_pars = var_pars,
+                     add_pars = add_pars,
+                     days = days,
+                     starting = starting)
+  }
 
   # If startup repetitions are requested, repeat some number of times before returning results
   if (startup > 0) {

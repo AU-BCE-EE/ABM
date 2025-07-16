@@ -25,7 +25,7 @@ abm <- function(
   value = 'ts',                               # Type of output
   warn = TRUE) {
 
-  # Sort out parameters, packaging all parameters into a single list pars, adding some others
+  # Sort out parameters, package all parameters into a single list pars, add some others
   pars <- packPars(mng_pars = mng_pars,
                    man_pars = man_pars,
                    init_pars = init_pars,

@@ -14,9 +14,9 @@ rates <- function(t,
   # Initialize vectors with derivative components, all with same order of y elements
   alpha <- qhat <- rut <- respir <- consump <- growth <- inflow <- death <- hydrol <- volat <- meth <- 0 * y
 
+  # NTS: Move these 2 CTM calls out!
   # Hydrolysis rate
   alpha[p$subs] <- CTM_cpp(p$temp_K, p$T_opt_hyd, p$T_min_hyd, p$T_max_hyd, p$hydrol_opt)
-
   # Microbial substrate utilization rate (vectorized calculation)
   qhat[p$grps] <- CTM_cpp(p$temp_K, p$T_opt, p$T_min, p$T_max, p$qhat_opt)
 

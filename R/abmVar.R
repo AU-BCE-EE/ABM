@@ -24,9 +24,6 @@ abmVar <-
   # Extract slurry_mass vector for use in emptying calculations
   slurry_mass <- pars$var[, 'slurry_mass']
 
-  # Determine variable slurry production rate for each time interval
-  slurry_prod_rate_t <- getSlurryProd(pars)
-
   # Get timing of intervals
   timelist <- makeTimeList(pars, times, days, delta_t)
   n_int <- length(timelist)
@@ -49,10 +46,7 @@ abmVar <-
     # Sort out call duration
     t_call <- min(max(timelist[[i]]), t_rem)
 
-    # Fill in slurry_prod_rate
-    pars$slurry_prod_rate <- slurry_prod_rate_t[i]
-
-    # Fill in other pars from var
+    # Fill in current pars from var
     pars <- updateVarPars(pars, i - 1)
 
     # Calculate log Ka for speciation

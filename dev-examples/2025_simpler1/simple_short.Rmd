@@ -92,6 +92,7 @@ chem_pars <- list(COD_conv = c(CH4 = 1/0.2507))
 ```
 
 ```{r}
+devtools::load_all()
 out1 <- abm(365,
             mng_pars = mng_pars,
             man_pars = man_pars,
@@ -101,6 +102,11 @@ out1 <- abm(365,
             chem_pars = chem_pars,
             var_pars = var_pars, 
             startup = 1)
+names(pars)
+t_call
+pars$slurry_prod_rate
+pars$var
+head(pars$var)
 ```
 
 Here are some results.

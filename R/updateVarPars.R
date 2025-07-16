@@ -2,22 +2,21 @@
 
 updateVarPars <- function(pars, y, i) {
 
-  if (any(names(pars$var) != 'time')) {
-    vdat <- pars$var[, names(pars$var) != 'time', drop = FALSE]
+  vdat <- pars$var[, names(pars$var) != 'time', drop = FALSE]
 
-    for (j in 1:ncol(vdat)) {
-      pn <- names(vdat)[j]
-      newval <- vdat[i, j] 
-      if (is.list(newval)) {
-        newval <- newval[[1]]
-      }
-      pars[[pn]] <- newval
+  for (j in 1:ncol(vdat)) {
+    pn <- names(vdat)[j]
+    newval <- vdat[i, j] 
+    if (is.list(newval)) {
+      newval <- newval[[1]]
     }
-
-    # Convert temperature to K in case any C values were given in var
-    pars <- tempsC2K(pars, cutoff = 200)
-    pars$temp_K <- pars$temp_C + 273.15
+    pars[[pn]] <- newval
   }
+
+  # Temperature could change
+  # Convert temperature to K in case any C values were given in var
+  pars <- tempsC2K(pars, cutoff = 200)
+  pars$temp_K <- pars$temp_C + 273.15
   
   # Temperature-dependent derivative vectors
   pars$alpha <- pars$qhat <- 0 * y

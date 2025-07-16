@@ -1,0 +1,124 @@
+---
+title: 'Short demo of new simple1 version'
+output: pdf_document
+author: Sasha D. Hafner
+date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
+---
+
+# Overview
+This is a simple demo showing the expected way that `abm()` will be used.
+
+# Prep
+
+```{r}
+devtools::load_all()
+```
+
+# 1. Simplest usage
+My current personal inclination is to give up on trying to simulate CO2 production and emission.
+It vastly complicates the problem and the predicted dynamics are approximate at best.
+I don't much like ammonia emission or respiration either.
+And the degree or precision with which we predict inhibition is incongrous with available measurements and consistency across
+microbial communiities.
+It could always be added through parameter values instead.
+
+Anyway, here is an example that follows this perspective.
+It is common for slurry addition rate and temperature to vary.
+This will be for a cattle slurry storage tank with a 30 m diameter and 4 m depth.
+So maximum volume is 2800 t (`15^2 * pi * 4`).
+
+```{r}
+var_dat <- data.frame(time = c(0, 200, 201, 364, 365), 
+		      slurry_mass = c(1000, 28000, 100, 12000, 1000) * 1000,
+		      temp_C = c(10, 12, 15, 12, 11))
+var_pars <- list(var = var_dat)
+```
+
+Management parameters.
+I am leaving out several elements that would only apply for `abmRegular()`.
+
+```{r}
+mng_pars <- list(storage_depth = 4,     
+                 area = 100,              
+                 resid_enrich = 1)
+```
+
+I tend to think that multiple substrates is too complicated too.
+But for some reason I am more inclined to accept that (maybe I just like the code or behavior better).
+Even with multiple substrates, each could be empirical, but here I will use these:
+
+```{r}
+sub_pars <- list(subs = c('cellulose', 'protein', 'lipids'),
+                 forms = c(cellulose = 'C6H10O5', protein = 'C4 H6.1 O1.2 N', lipids = 'C57 H104 O6', urea = 'CO(NH2)2'),
+                 T_opt_hyd = c(default = 60),
+                 T_min_hyd = c(default = 0),
+                 T_max_hyd = c(default = 90),
+                 hydrol_opt = c(lipids = 0.01, protein = 0.05, cellulose = 0.1),
+                 sub_fresh = c(lipids = 3, protein = 20, cellulose = 35),
+                 sub_init = c(lipids = 3, protein = 20, cellulose = 35))
+```
+
+Microbial parameters (with no inhibition and no sulfate reducers).
+The `all` keyword still exists but there is no reason to use it.
+So I plan to cut it from future documentation and usage.
+
+```{r}
+grp_pars <- list(grps = c('m0', 'm1', 'm2'),
+                 yield = c(default = 0.05),
+                 xa_fresh = c(default = 0.05),
+                 xa_init = c(default = 0.05),
+                 dd_rate = c(default = 0.02),
+                 ksv = c(default = 1),
+                 qhat_opt = c(m0 = 1, m1 = 1, m2 = 2),
+                 T_opt = c(m0 = 18, m1 = 18, m2 = 28),
+                 T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41),
+                 T_max = c(m0 = 25, m1 = 25, m2 = 38))
+```
+
+The `dd_rate_xa` parameter is for "death and decay".
+(If I put it in grp_pars I can remove mic_pars, or use its name for grp_pars.)
+
+```{r}
+mic_pars <- list(dd_rate_xa = 0.02)
+```
+
+These last two arguments are similar to other versions.
+VFA is hard-wired and so has its own elements.
+The name should be `CH3COOH`.
+
+```{r}
+man_pars <- list(VFA_fresh = c(CH3COOH = 2), pH = 7, dens = 1000)
+chem_pars <- list(COD_conv = c(CH4 = 1/0.2507))
+```
+
+```{r}
+out1 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars,
+            grp_pars = grp_pars,
+            mic_pars = mic_pars,
+            sub_pars = sub_pars,
+            chem_pars = chem_pars,
+            var_pars = var_pars, 
+            startup = 1)
+```
+
+Here are some results.
+
+```{r}
+plot(slurry_mass ~ time, data = out1, type = 'l')
+plot(CH4_emis_rate ~ time, data = out1, type = 'l')
+plot(cellulose ~ time, data = out1, type = 'l')
+plot(cellulose_conc ~ time, data = out1, type = 'l')
+plot(CH3COOH ~ time, data = out1, type = 'l')
+plot(CH3COOH_conc ~ time, data = out1, type = 'l')
+```
+
+And methanogens.
+
+```{r}
+line_colors <- c('red', 'blue', 'purple','orange')
+matplot(out1$time, out1[, nn <- c('m0','m1','m2')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, ylab = 'Microbial biomass (kg)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1, cex = 0.8)
+```

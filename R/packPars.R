@@ -5,7 +5,6 @@ packPars <- function(mng_pars,
                      man_pars,
                      init_pars,
                      grp_pars,
-                     mic_pars,
                      sub_pars,
                      chem_pars,
                      inhib_pars,
@@ -21,7 +20,7 @@ packPars <- function(mng_pars,
   }
 
   # Combine pars to make extraction and pass to rates() easier ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  pars <- c(mng_pars, man_pars, init_pars, grp_pars, mic_pars, sub_pars, chem_pars, inhib_pars, ctrl_pars, var_pars)
+  pars <- c(mng_pars, man_pars, init_pars, grp_pars, sub_pars, chem_pars, inhib_pars, ctrl_pars, var_pars)
 
   # Sort out add_pars parameter inputs ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Note: pe.pars = add_pars that use par.element approach, these are converted to normal (simple) add_par elements here

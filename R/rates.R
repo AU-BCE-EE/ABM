@@ -61,7 +61,7 @@ rates <- function(t,
   inflow <- inflow * p$slurry_prod_rate
 
   # Death of microbes
-  death[p$grps] <- - p$dd_rate * y[p$grps]
+  death[p$grps] <- - p$dd_rate[p$grps] * y[p$grps]
   # NTS: we need an input parameter setting the sink for dd to a certain substrate
   # NTS: could be one just for the purpose, like xa_dead
   death[p$subs[1]] <- - sum(death[p$grps])

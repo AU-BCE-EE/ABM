@@ -1,56 +1,47 @@
-# Prepares slurry mass data for 
+# Checks and prepares var par data, especially slurry_mass
+# Applies approx_method to slurry_mass
 
-fixVarDat <- function(pars, days) {
+fixVarDat <- function(var_pars, approx_method, days) {
 
-  # Make sure at least slurry_mass is in pars$var data frame
-  if (!'slurry_mass' %in% names(pars$var)) {
+  # Make sure at least slurry_mass is in var_pars$var data frame
+  if (!'slurry_mass' %in% names(var_pars$var)) {
     stop('The var_pars var element is missing a slurry_mass column, which is required.')
   }
 
   # Cannot have no slurry present because is used in all concentration calculations
-  pars$var[pars$var[, 'slurry_mass'] == 0, 'slurry_mass'] <- 1E-10
+  var_pars$var[var_pars$var[, 'slurry_mass'] == 0, 'slurry_mass'] <- 1E-10
 
   # Trim unused times
-  pars$var <- pars$var[pars$var$time <= days, ]
+  var_pars$var <- var_pars$var[var_pars$var$time <= days, ]
 
   # Check for sorted time
-  if (is.unsorted(pars$var$time)) {
-    stop('Column `time` must be sorted when time-variable parameters are used (pars_var), but it is not: ',
-         head(pars$var$time))
+  if (is.unsorted(var_pars$var$time)) {
+    stop('Column `time` must be sorted when time-variable parameters are used (var_pars), but it is not: ',
+         head(var_pars$var$time))
   }
   
   # If simulation continues past var_pars data frame time, extend last row all the way
-  if (pars$var[nrow(pars$var), 'time'] < days) {
+  if (var_pars$var[nrow(var_pars$var), 'time'] < days) {
     t_end <- days
-    pars$var <- rbind(pars$var, pars$var[nrow(pars$var), ])
-    pars$var[nrow(pars$var), 'time'] <- days
+    var_pars$var <- rbind(var_pars$var, var_pars$var[nrow(var_pars$var), ])
+    var_pars$var[nrow(var_pars$var), 'time'] <- days
     # But make sure washing is not repeated!
-    if (ncol(pars$var) > 2) {
-      pars$var[nrow(pars$var), 3:ncol(pars$var)] <- 0
+    if (ncol(var_pars$var) > 2) {
+      var_pars$var[nrow(var_pars$var), 3:ncol(var_pars$var)] <- 0
     }
   }
 
   # For 'mid' option, other variables are copied from previous time
-  if (pars$approx_method == 'mid') {
+  if (approx_method == 'mid') {
     # Get midpoint time
-    ir <- which(- c(0, diff(pars$var[, 'slurry_mass'])) > 0)
-    tt <- (pars$var[ir, 'time']  + pars$var[ir - 1, 'time']) / 2
-    nr <- pars$var[ir, ]
+    ir <- which(- c(0, diff(var_pars$var[, 'slurry_mass'])) > 0)
+    tt <- (var_pars$var[ir, 'time']  + var_pars$var[ir - 1, 'time']) / 2
+    nr <- var_pars$var[ir, ]
     nr$time <- tt
-    pars$var <- rbind(pars$var, nr)
-    pars$var <- pars$var[order(pars$var$time), ]
+    var_pars$var <- rbind(var_pars$var, nr)
+    var_pars$var <- var_pars$var[order(var_pars$var$time), ]
   } 
   
-  # Determine slurry removal quantity in each time interval
-  # Note final 0--alignment is a bit tricky
-  if (pars$approx_method %in% c('late', 'mid')) {
-    removals <- - c(0, 0, diff(pars$var[-nrow(pars$var), 'slurry_mass'])) > 0
-  } else if (pars$approx_method == 'early') {
-    removals <- - c(0, diff(pars$var[, 'slurry_mass'])) > 0
-  } 
-
-  pars$removals <- removals
-
-  return(pars)
+  return(var_pars)
 
 }

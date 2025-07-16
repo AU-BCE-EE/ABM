@@ -13,11 +13,14 @@ packPars <- function(mng_pars,
                      var_pars,
                      add_pars,
                      pars,
+                     days,
                      starting) {
 
   # Move extra var_pars into first (var) element, possibly as lists within each data frame element~
   if(!is.null(var_pars) && !is.null(var_pars$var)) {
     var_pars <- combineVarPars(var_pars)
+    var_pars <- fixVarDat(var_pars, ctrl_pars$approx_method, days)
+    var_pars <- calcProdRem(var_pars, ctrl_pars$approx_method)
   }
 
   # Combine pars to make extraction and pass to rates() easier ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -38,6 +38,7 @@ abm <- function(
                    var_pars = var_pars,
                    add_pars = add_pars,
                    pars = pars,
+                   days = days,
                    starting = starting)
 
   # If startup repetitions are requested, repeat some number of times before returning results

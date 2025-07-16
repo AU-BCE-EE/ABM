@@ -15,9 +15,6 @@ abmVar <-
     warning('Fixed wash_water value of ', pars$wash_water, '\nwill be ignored because variable slurry input is used.')
   }
 
-  pars <- fixVarDat(pars, days)
-  removals <- pars$removals
-
   # Extract washing mass
   wash_water <- getWashWater(pars)
   
@@ -57,7 +54,7 @@ abmVar <-
     y.eff <- 0 * yy$eff
 
     # If there is a removal event, remove slurry before calling up ODE solver
-    if (removals[i]) {
+    if (pars$removal) {
       if (pars$approx_method == 'late') {
         j <- i - 1
       } else {

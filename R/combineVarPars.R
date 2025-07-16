@@ -23,12 +23,6 @@ combineVarPars <- function(var_pars) {
     }
   }
 
-  # Add column with slurry production rate
-  slurry_prod_rate_t <- c(diff(var_pars$var[, 'slurry_mass']) / diff(var_pars$var[, 'time']), 0) 
-  slurry_prod_rate_t[slurry_prod_rate_t < 0] <- 0
-  slurry_prod_rate_t[!is.finite(slurry_prod_rate_t)] <- 0
-  var_pars$var$slurry_prod_rate <- slurry_prod_rate_t
- 
   # Take only the var element 
   # And var_pars must remain a list (see single brackets) to avoid duplicate par elements from combining into par
   var_pars <- var_pars['var']

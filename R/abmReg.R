@@ -48,6 +48,7 @@ abmReg <- function(
     y <- getLastState(out, y)
       
     # See if emptying is needed
+    # As long as simulation is not out of time, the end of an interval means emptying occurs
     if (t_run < days) {
 
       # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
@@ -86,8 +87,9 @@ abmReg <- function(
       
     } else {
       
-      y2 <- emptyStore(y, skip = TRUE, warn = FALSE)
-      y.eff <- y2$eff
+      # Get some zeros for effluent to add below
+      y <- emptyStore(y, skip = TRUE, warn = FALSE)
+      y.eff <- y$eff
       
     }
     
@@ -100,6 +102,7 @@ abmReg <- function(
     
   }
 
+  # Subset to regular times
   if (!is.null(times_regular)) {
     times_regular <- sort(unique(c(times_regular, days)))
     dat <- dat[dat$time %in% times_regular, ]

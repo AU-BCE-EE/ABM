@@ -21,7 +21,6 @@ abm <- function(
   pars = NULL,
   startup = 0,                                # Number of times complete simulation should be run before returning results
   starting = NULL,                            # Output from previous simulation to be starting condition for new one
-  value = 'ts',                               # Type of output
   warn = TRUE) {
 
   # Sort out parameters, package all parameters into a single list pars, add some others
@@ -78,34 +77,19 @@ abm <- function(
     stop('pars_var must be NULL or a data frame')
   }
 
-  # Clean up and possibly extend output
+  # Clean up and extend output
   dat <- cleanOutput(dat, pars, addcols = TRUE, addconcs = TRUE, cumeff = TRUE)
 
   # Check COD balance
   codbal <- checkCOD(dat = dat, 
-		     grps = pars$grps, 
+                     grps = pars$grps, 
                      subs = pars$subs, 
                      COD_conv = pars$COD_conv, 
-		     stoich = pars$stoich, 
+                     stoich = pars$stoich, 
                      rtol = 0.01)
 
   # Return results
-  # Average only
-  if (substring(value, 1, 3) == 'sum') {
-    return(summ)
-  }
-  
-  # ts = time series
-  if (value == 'ts') {
-    return(dat)
-  }
-  
-  if (substring(value, 1, 3) == 'eff') {
-    return(eff)
-  }
-
-  # Or everything
-  return(list(pars = pars, ts = dat, summ = summ))
+  return(dat)
 
 }
 

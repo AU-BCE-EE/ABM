@@ -1,12 +1,9 @@
 ---
-title: 'Short demo of new simple1 version'
+title: 'Short demo of abmReg() in simple1 version'
 output: pdf_document
 author: Sasha D. Hafner
 date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
 ---
-
-# Overview
-This is a simple demo showing a proposal for simpler user of `abm()`.
 
 # Prep
 
@@ -14,7 +11,7 @@ This is a simple demo showing a proposal for simpler user of `abm()`.
 devtools::load_all()
 ```
 
-# 1. abmReg()
+# `abm()`
 
 ```{r}
 mng_pars <- list(slurry_prod_rate = 10000, 
@@ -84,69 +81,6 @@ And methanogens.
 ```{r}
 line_colors <- c('red', 'blue', 'purple')
 matplot(out1$time, out1[, nn <- c('m0', 'm1', 'm2')]/1000, 
-        type = 'l', lty = c(1:length(nn)), col = line_colors, ylab = 'Microbial biomass (kg)')
-legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1, cex = 0.8)
-```
-
-# 1. Intermediate complexity
-My current personal inclination is to give up on trying to simulate CO2 production and emission.
-It complicates the programming problem and the predicted dynamics are approximate at best.
-Now the programming work is done but the speed still suffers when these processes are included.
-I don't much like ammonia emission or respiration either.
-And the degree or precision with which we predict inhibition is incongrous with available measurements and consistency across microbial communiities.
-It could always be added through parameter values instead.
-
-Anyway, here is an example that follows this perspective.
-It is common for slurry addition rate and temperature to vary, so I'll use the variable approach.
-This will be for a slurry storage tank with a 30 m diameter and 4 m depth.
-So maximum volume is 2800 t (`15^2 * pi * 4`).
-
-```{r}
-var_dat <- data.frame(time = c(0, 200, 250, 300, 340, 365), 
-		      slurry_mass = c(1000, 28000, 100, 12000, 1000, 2000) * 1000,
-		      temp_C = c(10, 12, 15, 12, 11, 11))
-var_pars <- list(var = var_dat)
-```
-
-Management parameters.
-I am leaving out several elements that would only apply for `abmRegular()`.
-
-```{r}
-mng_pars <- list(storage_depth = 4,     
-                 area = 100,              
-                 resid_enrich = 1)
-```
-
-```{r}
-devtools::load_all()
-out1 <- abm(365,
-            mng_pars = mng_pars,
-            man_pars = man_pars,
-            grp_pars = grp_pars,
-            sub_pars = sub_pars,
-            chem_pars = chem_pars,
-            var_pars = var_pars, 
-            startup = 1)
-```
-
-Here are some results.
-
-```{r}
-plot(slurry_mass ~ time, data = out1, type = 'l')
-plot(temp_C ~ time, data = out1, type = 'l')
-plot(CH4_emis_rate ~ time, data = out1, type = 'l')
-plot(CH4_emis_cum ~ time, data = out1, type = 'l')
-plot(cellulose ~ time, data = out1, type = 'l')
-plot(cellulose_conc ~ time, data = out1, type = 'l')
-plot(CH3COOH ~ time, data = out1, type = 'l')
-plot(CH3COOH_conc ~ time, data = out1, type = 'l')
-```
-
-And methanogens.
-
-```{r}
-line_colors <- c('red', 'blue', 'purple','orange')
-matplot(out1$time, out1[, nn <- c('m0','m1','m2')]/1000, 
         type = 'l', lty = c(1:length(nn)), col = line_colors, ylab = 'Microbial biomass (kg)')
 legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1, cex = 0.8)
 ```

@@ -59,12 +59,11 @@ abm <- function(
 
   # Create initial state variable vector
   y <- makeInitState(pars) 
-  
-  # Temperature-dependent par values
-  pars <- calcTempPars(pars, y)
 
   if (is.null(pars$var)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
+    # Temperature-dependent par values
+    pars <- calcTempPars(pars, y)
     dat <- abmReg(days = days, 
                   delta_t = delta_t, 
                   times_regular = times, 

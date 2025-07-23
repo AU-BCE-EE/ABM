@@ -74,7 +74,7 @@ packPars <- function(mng_pars,
 
   # Finish working with var_pars
   # This must come after add_par block because approx_method (and other relevant pars?) could be set with add_pars
-  if (is.null(pars$var)) {
+  if (!is.null(pars$var)) {
     pars <- fixVarDat(pars, days)
     pars <- calcProdRem(pars)
   }

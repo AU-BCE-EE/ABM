@@ -8,13 +8,6 @@ abmVar <-
     
   pars$abm_regular <- FALSE
   
-  # Some warnings about unused inputs
-  # NTS: This is incomplete and probably unnecessary
-  # NTS: Consider removing
-  if (!is.null(pars$wash_water) && !is.na(pars$wash_water) && pars$wash_water != 0) {
-    warning('Fixed wash_water value of ', pars$wash_water, '\nwill be ignored because variable slurry input is used.')
-  }
-
   # Extract washing mass
   wash_water <- getWashWater(pars)
   
@@ -52,30 +45,13 @@ abmVar <-
     pars <- calcKa(pars)
     
     # Create empty (0) y.eff vector because washing could occur, and dat needs columns
-    yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
-    y.eff <- 0 * yy$eff
+    y.eff <- 0 * emptyStore(y)$eff
 
     # If there is a removal event, remove slurry before calling up ODE solver
     if (pars$removal) {
       y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
       y.eff <- y$eff
       y <- y$store
-
-      # Washing, increase slurry mass
-      # Occurs after emptying here 
-      if (wash_water[i] > 0) {
-        y['slurry_mass'] <- y['slurry_mass'] + wash_water[i]
-
-        # And empty again, leaving same residual mass as always, and enriching for particles
-        y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
-        y.eff <- y$eff
-        y <- y$store
-      }
-    }
-
-    # This might not be possible with above code
-    if (t_call <= 0) {
-      stop('t_call < 0. slk409.')
     }
 
     # Get times for lsoda() call
@@ -106,7 +82,7 @@ abmVar <-
     out[nrow(out), names(y.eff)] <- y.eff
  
     # Clean up and stack output with earlier results
-    dat <- addOut(dat, out, t_add = t_run, y.eff = y.eff)
+    dat <- addOut(dat, out)
     
     # Update time remaining and total time run so far
     t_rem <- t_rem - t_call

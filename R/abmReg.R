@@ -88,7 +88,7 @@ abmReg <- function(
         # Extract new state variable vector from last row
         y <- getLastState(outr, y)
         
-        # Add effluent to output
+        # Add effluent columns of 0 to output
         outr <- addEff(outr, 0 * y.eff)
 
         # Correct time in outr and combine with main output
@@ -100,7 +100,7 @@ abmReg <- function(
       
     } else {
       
-      # Make sure there are some effluent columns (with 0)
+      # Add effluent columns with 0
       y.eff <- 0 * emptyStore(y)$eff
       out <- addEff(out, y.eff)
   

@@ -18,7 +18,6 @@ abmReg <- function(
   t_run <- 0
 
   # Start the time (emptying) loop
-  t_add <- 0
   for (i in 1:intervals$n_int) {
 
     # Sort out call duration
@@ -34,7 +33,7 @@ abmReg <- function(
     pars$t_run <- t_run
     pars$t_call <- t_call
     pars$times <- times
-
+    
     # Call up ODE solver
     out <- deSolve::lsoda(y = y, 
                           times = times, 
@@ -55,9 +54,13 @@ abmReg <- function(
       y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
       y.eff <- y$eff
       y <- y$store
+
+      # Add effluent to output
+      out <- addEff(out, y.eff)
    
-      # Washing, increase slurry mass
+      # Optional washing
       if (intervals$wash[i]) {
+        
         y['slurry_mass'] <- y['slurry_mass'] + pars$wash_water
 
         # And empty again, leaving same residual mass as always, and enriching for particles
@@ -65,40 +68,49 @@ abmReg <- function(
         y.eff <- y$eff
         y <- y$store
 
-        # Run for rest period with no influent 
-        if (pars$rest_d > 0) {
-          times <- seq(0, pars$rest_d, delta_t)
-          parsr <- pars
-          parsr$slurry_prod_rate <- 0
-          outr <- deSolve::lsoda(y = y, 
-                                times = times, 
-                                rates, 
-                                parms = parsr)
-          # Extract new state variable vector from last row
-          y <- getLastState(outr, y)
-          
-          # Correct time in outr and combine with main output
-          out <- addOut(main = out, new = outr, t_add = out[nrow(out), 'time'])
-        }
+        # Add post-wash state to output data frame
+        out <- addOut(main = out, new = y)
         
+        # Add washing effluent to output
+        out <- addEff(out, y.eff)
+
+      }
+      
+      # Run for rest period with no influent 
+      if (pars$rest_d > 0) {
+        times <- seq(0, pars$rest_d, delta_t)
+        parsr <- pars
+        parsr$slurry_prod_rate <- 0
+        outr <- deSolve::lsoda(y = y, 
+                              times = times, 
+                              rates, 
+                              parms = parsr)
+        # Extract new state variable vector from last row
+        y <- getLastState(outr, y)
+        
+        # Add effluent to output
+        outr <- addEff(outr, 0 * y.eff)
+
+        # Correct time in outr and combine with main output
+        out <- addOut(main = out, new = outr)
+      
         # Add rest time to t_run
         t_run <- t_run + intervals$wash[i] * pars$rest_d
       }
       
     } else {
       
-      # Get some zeros for effluent to add below
-      y <- emptyStore(y, skip = TRUE, warn = FALSE)
-      y.eff <- y$eff
-      
+      # Make sure there are some effluent columns (with 0)
+      y.eff <- 0 * emptyStore(y)$eff
+      out <- addEff(out, y.eff)
+  
     }
     
-    # Clean up and stack output with earlier results
-    dat <- addOut(main = dat, new = out, t_add = t_add, y.eff = y.eff)
+    # Stack output with earlier results
+    dat <- addOut(main = dat, new = out)
     
     # Update time
     t_rem <- t_rem - t_call - intervals$wash[i] * pars$rest_d
-    t_add <- t_run
     
   }
 

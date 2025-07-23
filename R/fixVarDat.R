@@ -3,6 +3,10 @@
 
 fixVarDat <- function(pars, days) {
 
+  if (is.null(pars$var)) {
+    return(pars)
+  }
+
   # Make sure at least slurry_mass is in pars$var data frame
   if (!'slurry_mass' %in% names(pars$var)) {
     stop('The pars var element is missing a slurry_mass column, which is required.')

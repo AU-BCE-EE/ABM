@@ -2,6 +2,10 @@
 
 calcProdRem <- function(pars) {
   
+  if (is.null(pars$var)) {
+    return(pars)
+  }
+
   # Removals ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Note final 0--alignment is a bit tricky
   if (pars$approx_method %in% c('late', 'mid')) {

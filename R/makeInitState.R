@@ -1,6 +1,6 @@
 makeInitState <- function(pars) {
  
-  if(is.data.frame(pars$var)){
+  if (!is.null(pars$var) && inherits(pars$var, 'data.frame')) {
     # If missing slurry mass at time 0, set to earliest slurry mass value
     if (pars$var[1, 'time'] > 0) {
       pars$var <- rbind(c(0, pars$var$slurry_mass[1]), pars$var)

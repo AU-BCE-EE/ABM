@@ -73,11 +73,6 @@ grp_pars <- list(grps = c('m0', 'm1', 'm2','sr1'),
 
 The `dd_rate_xa` parameter is for "death and decay".
 
-
-```{r}
-mic_pars <- list(dd_rate_xa = 0.02)
-```
-
 These last two arguments are similar to other versions.
 VFA is hard-wired and so has its own elements.
 The name should be `CH3COOH`.
@@ -92,7 +87,6 @@ out1 <- abm(365,
             mng_pars = mng_pars,
             man_pars = man_pars,
             grp_pars = grp_pars,
-            mic_pars = mic_pars,
             sub_pars = sub_pars,
             chem_pars = chem_pars)
 ```

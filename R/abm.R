@@ -37,8 +37,11 @@ abm <- function(
                      ctrl_pars = ctrl_pars,
                      var_pars = var_pars,
                      add_pars = add_pars,
-                     days = days,
-                     starting = starting)
+                     days = days)
+  }
+  
+  if (!is.null(starting) & inherits(starting, 'data.frame')) {
+    pars <- moveStartingPars(pars, starting)
   }
 
   # If startup repetitions are requested, repeat some number of times before returning results
@@ -50,13 +53,15 @@ abm <- function(
                       pars = pars,
                       startup = startup,
                       starting = starting,
-                      value = value,
                       warn = warn)
     return(out)
   } 
 
   # Create initial state variable vector
   y <- makeInitState(pars) 
+  
+  # Temperature-dependent par values
+  pars <- calcTempPars(pars, y)
 
   if (is.null(pars$var)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule

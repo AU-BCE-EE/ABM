@@ -39,7 +39,6 @@ abmVar <-
   # Note: but all except _mass have placeholder in first position
   
   # Start the time (emptying) loop
-
   for (i in 2:n_int) {
 
     # Sort out call duration

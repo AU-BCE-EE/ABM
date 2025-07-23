@@ -6,7 +6,7 @@ date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
 ---
 
 # Overview
-This is a simple demo showing the expected way that `abm()` will be used.
+This is a simple demo showing a proposal for simpler user of `abm()`.
 
 # Prep
 
@@ -14,10 +14,87 @@ This is a simple demo showing the expected way that `abm()` will be used.
 devtools::load_all()
 ```
 
+# 1. abmReg()
+
+```{r}
+mng_pars <- list(slurry_prod_rate = 10000, 
+                 slurry_mass = 10000,     
+                 storage_depth = 4,     
+                 resid_depth = 0.1,      
+                 area = 100,              
+                 empty_int = 100,          
+                 temp_C = 20,
+                 wash_water = 0,            
+                 wash_int = NA,
+                 rest_d = 0,
+                 resid_enrich = 1)
+```
+
+```{r}
+sub_pars <- list(subs = c('cellulose', 'protein', 'lipids'),
+                 forms = c(cellulose = 'C6H10O5', protein = 'C4 H6.1 O1.2 N', 
+                           lipids = 'C57 H104 O6', urea = 'CO(NH2)2'),
+                 T_opt_hyd = c(default = 60),
+                 T_min_hyd = c(default = 0),
+                 T_max_hyd = c(default = 90),
+                 hydrol_opt = c(lipids = 0.01, protein = 0.05, cellulose = 0.1),
+                 sub_fresh = c(lipids = 3, protein = 20, cellulose = 35),
+                 sub_init = c(lipids = 3, protein = 20, cellulose = 35))
+```
+
+```{r}
+grp_pars <- list(grps = c('m0', 'm1', 'm2'),
+                 yield = c(default = 0.05),
+                 xa_fresh = c(default = 0.05),
+                 xa_init = c(default = 0.05),
+                 dd_rate = c(default = 0.02),
+                 ksv = c(default = 1),
+                 qhat_opt = c(m0 = 1, m1 = 1, m2 = 2),
+                 T_opt = c(m0 = 18, m1 = 18, m2 = 28),
+                 T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41),
+                 T_max = c(m0 = 25, m1 = 25, m2 = 38))
+```
+
+```{r}
+man_pars <- list(VFA_fresh = c(CH3COOH = 2), pH = 7, dens = 1000)
+chem_pars <- list(COD_conv = c(CH4 = 1/0.2507))
+```
+
+```{r}
+devtools::load_all()
+out1 <- abm(400.001,
+            mng_pars = mng_pars,
+            man_pars = man_pars,
+            grp_pars = grp_pars,
+            sub_pars = sub_pars,
+            chem_pars = chem_pars,
+            startup = 1)
+```
+
+```{r}
+plot(slurry_mass ~ time, data = out1, type = 'l')
+plot(slurry_mass_eff ~ time, data = out1, type = 'l')
+plot(CH4_emis_rate ~ time, data = out1, type = 'l')
+plot(CH3COOH_conc ~ time, data = out1, type = 'l')
+plot(cellulose_conc ~ time, data = out1, type = 'l')
+```
+
+And methanogens.
+
+```{r}
+line_colors <- c('red', 'blue', 'purple')
+matplot(out1$time, out1[, nn <- c('m0', 'm1', 'm2')]/1000, 
+        type = 'l', lty = c(1:length(nn)), col = line_colors, ylab = 'Microbial biomass (kg)')
+legend("topright", legend = nn, lty = c(1:length(nn)), col = line_colors, lwd = 1, cex = 0.8)
+```
+
+
+
+
 # 1. Intermediate complexity
 My current personal inclination is to give up on trying to simulate CO2 production and emission.
 It complicates the programming problem and the predicted dynamics are approximate at best.
-Now the programming work is done but the speed still suffers.
+Now the programming work is done but the speed still suffers when these processes are included.
 I don't much like ammonia emission or respiration either.
 And the degree or precision with which we predict inhibition is incongrous with available measurements and consistency across microbial communiities.
 It could always be added through parameter values instead.

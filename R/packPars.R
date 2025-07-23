@@ -74,8 +74,10 @@ packPars <- function(mng_pars,
 
   # Finish working with var_pars
   # This must come after add_par block because approx_method (and other relevant pars?) could be set with add_pars
-  pars <- fixVarDat(pars, days)
-  pars <- calcProdRem(pars)
+  if (is.null(pars$var)) {
+    pars <- fixVarDat(pars, days)
+    pars <- calcProdRem(pars)
+  }
 
   # Multiple microbial groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # NTS: need to sort out how this works with above mess for add_pars with grps
@@ -175,23 +177,11 @@ packPars <- function(mng_pars,
   # Conversions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Convert temperature constants to K if needed
   pars <- tempsC2K(pars, cutoff = 200)
-  
+
   # Convert some supplied parameters
   # Maximum slurry mass in kg
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
   pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
-  
-  # Starting conditions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # If starting conditions are provided from a previous simulation, move them to pars
-  # Note that additional state variables are extracted from `starting` in abm_*.R
-  if (!is.null(starting) & is.data.frame(starting)) {
-    message('Using starting conditions from `starting` argument')
-    pars$xa_init[pars$grps] <- as.numeric(starting[nrow(starting), paste0(pars$grps, '_conc')])
-    pars$conc_init['CH3COOH'] <- as.numeric(starting[nrow(starting), 'CH3COOH_conc'])
-    pars$sub_init[pars$subs] <- as.numeric(starting[nrow(starting), paste0(pars$subs, '_conc')])
-    # Set slurry_mass as well?
-    # NTS: Set comp solutes also?
-  }
 
   return(pars)
  

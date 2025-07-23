@@ -7,11 +7,7 @@ abmStartup <- function(days,
                       pars,
                       startup,
                       starting,
-                      value,
                       warn) {
-
-  value.orig <- value
-  value <- 'ts'
 
   for (i in 1:(startup + 1)) {
     if (i > startup) {
@@ -21,23 +17,17 @@ abmStartup <- function(days,
       cat(paste0(i, 'x -> '))
     }
 
-    if (i > startup) {
-      value <- value.orig
-    }
-
     if (i > 1) {
       starting <- out
     } 
-
     
-    # Call abm() with arguments given in outside call except for startup and value
+    # Call abm() with arguments given in outside call except for startup
     out <- abm(days = days,
                delta_t = delta_t,
                times = times,
                pars = pars,
                startup = 0,
                starting = starting,
-               value = value,
                warn = warn)
 
   }

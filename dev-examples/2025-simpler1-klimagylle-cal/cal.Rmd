@@ -1,0 +1,249 @@
+---
+title: 'Parameter estimation with simple1 version and Klimagylle data'
+output: pdf_document
+author: Sasha D. Hafner
+date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
+---
+
+# Prep
+
+```{r}
+devtools::load_all()
+```
+
+```{r}
+library(data.table)
+library(ggplot2)
+```
+
+# Input data
+
+Temperature data.
+
+```{r}
+temp <- fread('data-calc/STM_temp.csv')
+```
+
+Digestate level.
+
+```{r}
+
+level <- fread('data-calc/level.csv')
+
+```
+
+Other inputs.
+
+```{r}
+
+system2(command = 'ssconvert', args = c('-S', 'sim-inputs/sims.ods', 'tmp/sims.csv'), 
+          stdout = FALSE, stderr = FALSE)
+
+sims <- fread('tmp/sims.csv.2', skip = 1)
+tankinfo <- fread('tmp/sims.csv.0', skip = 1)
+
+if (any(duplicated(sims[, ABM_sim]))) {
+  stop('Duplicated ABM_sim values.')
+}
+
+```
+
+# Measured emission
+
+```{r}
+emis <- fread('data-calc/meas_emis_ave_samp.csv')
+```
+
+# Test application to tank AD1
+
+```{r}
+mng_pars <- list(storage_depth = 5.3,     
+                 area = 935,              
+                 resid_enrich = 1)
+```
+
+```{r}
+sub_pars <- list(subs = c('VSd'),
+                 forms = c(VSd = 'C16.6H27.8O10N'),
+                 T_opt_hyd = c(default = 60),
+                 T_min_hyd = c(default = 0),
+                 T_max_hyd = c(default = 90),
+                 hydrol_opt = c(VSd = 0.02),
+                 sub_fresh = c(VSd = 14),
+                 sub_init = c(VSd = 14))
+```
+
+```{r}
+grp_pars <- list(grps = c('m0', 'm1', 'm2'),
+                 yield = c(default = 0.05),
+                 xa_fresh = c(default = 0.05),
+                 xa_init = c(default = 0.05),
+                 dd_rate = c(default = 0.02),
+                 ksv = c(default = 1),
+                 qhat_opt = c(m0 = 1, m1 = 1, m2 = 2),
+                 T_opt = c(m0 = 18, m1 = 18, m2 = 28),
+                 T_min = c(m0 = 0, m1 = 6.41, m2 = 6.41),
+                 T_max = c(m0 = 25, m1 = 25, m2 = 38))
+```
+
+```{r}
+man_pars <- list(VFA_fresh = c(CH3COOH = 0.3), pH = 8, dens = 1000)
+chem_pars <- list(COD_conv = c(CH4 = 1/0.2507))
+```
+
+Temperature and slurry level.
+
+```{r}
+ll <- level[tank == 'AD1' & level_scenario == 'a', ]
+tt <- temp[tank == 'AD1' & STM_scenario == 'a', ]
+tt <- tt[-1:-365, ]
+identical(ll$doy, tt$doy)
+var_dat <- data.frame(time = ll$doy, slurry_mass = 1000 * 935 * ll$level, temp_C = tt$slurry_temp)
+var_pars <- list(var = var_dat)
+```
+
+```{r}
+system.time(
+out1 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars,
+            grp_pars = grp_pars,
+            sub_pars = sub_pars,
+            chem_pars = chem_pars,
+            var_pars = var_pars, 
+            startup = 1)
+)
+```
+
+```{r}
+ee <- emis[tank == 'AD1', ]
+plot(CH4_emis_rate / 1000 ~ time, data = out1, type = 'l')
+points(CH4_emis_rate ~ doy, data = ee, col = 'red', pch = 19)
+```
+
+Try to speed up run by grouping var_dat into periods with constant slurry mass.
+
+```{r}
+var_dat_copy <- var_dat
+setDT(var_dat_copy)
+var_dat_copy[, mass_group := c(0, cumsum(diff(slurry_mass) > 0))]
+var_dat2 <- var_dat_copy[, .(time = mean(time), slurry_mass = slurry_mass[1], temp_C = mean(temp_C)), by = mass_group]
+var_dat2 <- as.data.frame(var_dat2[, -1])
+var_dat2 <- rbind(var_dat[1, ], var_dat2, var_dat[nrow(var_dat), ])
+var_dat2
+var_pars2 <- list(var = as.data.frame(var_dat2))
+```
+
+```{r}
+system.time(
+out2 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars,
+            grp_pars = grp_pars,
+            sub_pars = sub_pars,
+            chem_pars = chem_pars,
+            var_pars = var_pars2, 
+            startup = 1)
+)
+```
+
+```{r}
+plot(CH4_emis_rate / 1000 ~ time, data = out1, type = 'l')
+lines(CH4_emis_rate / 1000 ~ time, data = out2, type = 'l', col = 'blue')
+points(CH4_emis_rate ~ doy, data = ee, col = 'red', pch = 19)
+```
+
+Try by 15 d periods.
+
+
+```{r}
+var_dat_copy <- var_dat
+setDT(var_dat_copy)
+var_dat_copy[, woy := time %/% 15]
+var_dat_copy[, mass_group := c(0, cumsum(diff(slurry_mass) > 0 | diff(woy) > 0))]
+var_dat3 <- var_dat_copy[, .(time = mean(time), slurry_mass = slurry_mass[1], temp_C = mean(temp_C)), by = mass_group]
+var_dat3 <- as.data.frame(var_dat3[, -1])
+var_dat3 <- rbind(var_dat[1, ], var_dat3, var_dat[nrow(var_dat), ])
+var_dat3
+var_pars3 <- list(var = as.data.frame(var_dat3))
+```
+
+```{r}
+system.time(
+out3 <- abm(365,
+            mng_pars = mng_pars,
+            man_pars = man_pars,
+            grp_pars = grp_pars,
+            sub_pars = sub_pars,
+            chem_pars = chem_pars,
+            var_pars = var_pars3, 
+            startup = 1)
+)
+```
+
+```{r}
+plot(CH4_emis_rate / 1000 ~ time, data = out1, type = 'l')
+lines(CH4_emis_rate / 1000 ~ time, data = out2, type = 'l', col = 'blue')
+lines(CH4_emis_rate / 1000 ~ time, data = out3, type = 'l', col = 'orange')
+points(CH4_emis_rate ~ doy, data = ee, col = 'red', pch = 19)
+```
+
+# Application to all four tanks
+
+We need tank area to go from digestate level to mass, but otherwise the values in `mng_pars` do not matter, so we'll make a general set.
+
+```{r}
+mng_pars <- list(storage_depth = 5,     
+                 area = 1000,              
+                 resid_enrich = 1)
+```
+
+Temperature only needs STM scenario a, and we should eliminate the startup year.
+
+```{r}
+vdat <- temp[STM_scenario == 'a' & day > doy, .(tank, doy, slurry_mass, slurry_temp)]
+```
+
+Do the <= 15 d averaging.
+
+```{r}
+vdat[, daygroup := doy %/% 15]
+vdat[, avegroup := c(0, cumsum(diff(slurry_mass) > 0 | diff(daygroup) > 0 | doy[-1] %in% c(1, 365)) + 1)]
+var_dat_all <- vdat[, .(time = mean(doy), slurry_mass = 1000 * slurry_mass[1], temp_C = mean(slurry_temp)), by = .(tank, avegroup)]
+```
+
+
+```{r}
+preds <- list()
+for (i in unique(tankinfo$tank)) {
+
+  cat(i, '\n')
+  var_pars <- list(var = as.data.frame(var_dat_all[tank == i, -1:-2]))
+  
+  print(system.time(
+  out <- abm(365,
+             mng_pars = mng_pars,
+             man_pars = man_pars,
+             grp_pars = grp_pars,
+             sub_pars = sub_pars,
+             chem_pars = chem_pars,
+             var_pars = var_pars, 
+             startup = 1)
+  ))
+
+  out$tank <- i
+  preds[[i]] <- out
+  
+}
+
+preds <- rbindlist(preds)
+```
+
+
+```{r}
+ggplot(preds, aes(time, CH4_emis_rate / 1000)) +
+  geom_line() +
+  geom_point(data = emis, aes(doy, CH4_emis_rate), colour = 'red', pch = 19) +
+  facet_wrap(~ tank) +
+  theme_bw()
+```

@@ -30,34 +30,33 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   NumericVector xa = y[Range(0, n_mic - 1)];
   
   double slurry_mass = y[n_mic];
-  double xa_aer = y[n_mic+1];
-  double xa_bac = y[n_mic+2];
-  double xa_dead = y[n_mic+3];
-  double RFd = y[n_mic+4];
-  double iNDF = y[n_mic+5];
-  double ash = y[n_mic+6];
-  double VSd = y[n_mic+7];
-  double starch = y[n_mic+8];
-  double CPs = y[n_mic+9];
-  double CPf = y[n_mic+10];
-  double Cfat = y[n_mic+11];
-  double VFA = y[n_mic+12];
-  double urea = y[n_mic+13];
-  double TAN = y[n_mic+14];
-  double sulfate = y[n_mic+15];
-  double sulfide = y[n_mic+16];
-  double NH3_emis_cum = y[n_mic+17];
-  double N2O_emis_cum = y[n_mic+18];
-  double CH4_emis_cum = y[n_mic+19];
-  double CO2_emis_cum = y[n_mic+20];
-  double COD_conv_cum = y[n_mic+21];
-  double COD_conv_cum_meth = y[n_mic+22];
-  double COD_conv_cum_respir = y[n_mic+23];
-  double COD_conv_cum_sr = y[n_mic+24];
-  double COD_load_cum = y[n_mic+25];
-  double C_load_cum = y[n_mic+26];
-  double N_load_cum = y[n_mic+27];
-  double slurry_load_cum = y[n_mic+28];
+
+  double xa_dead = y[n_mic+1];
+  double RFd = y[n_mic+2];
+  double iNDF = y[n_mic+3];
+  double ash = y[n_mic+4];
+  double VSd = y[n_mic+5];
+  double starch = y[n_mic+6];
+  double CPs = y[n_mic+7];
+  double CPf = y[n_mic+8];
+  double Cfat = y[n_mic+9];
+  double VFA = y[n_mic+10];
+  double urea = y[n_mic+11];
+  double TAN = y[n_mic+12];
+  double sulfate = y[n_mic+13];
+  double sulfide = y[n_mic+14];
+  double NH3_emis_cum = y[n_mic+15];
+  double N2O_emis_cum = y[n_mic+16];
+  double CH4_emis_cum = y[n_mic+17];
+  double CO2_emis_cum = y[n_mic+18];
+  double COD_conv_cum = y[n_mic+19];
+  double COD_conv_cum_meth = y[n_mic+20];
+  double COD_conv_cum_respir = y[n_mic+21];
+  double COD_conv_cum_sr = y[n_mic+22];
+  double COD_load_cum = y[n_mic+23];
+  double C_load_cum = y[n_mic+24];
+  double N_load_cum = y[n_mic+25];
+  double slurry_load_cum = y[n_mic+26];
 
   // ... (previous includes, namespace, function signature, and variable extractions) ...
   
@@ -289,11 +288,11 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   
   // If it is a DataFrame, we need to declare a temp list for results and use the interpolation function
   // this step is extremely slow, but works.
-    Rcpp::List temp_new_list_from_df(16);
+    Rcpp::List temp_new_list_from_df(14);
   // Need to add the names of the list first. 
     temp_new_list_from_df.names() = Rcpp::CharacterVector::create(
       "sulfide", "urea", "sulfate", "TAN", "starch", "VFA", 
-      "xa_aer", "xa_bac", "xa_dead", "Cfat", "CPs", "CPf", 
+      "xa_dead", "Cfat", "CPs", "CPf", 
       "RFd", "iNDF", "VSd", "ash"
     );
 
@@ -303,8 +302,6 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
     //temp_new_list_from_df["TAN"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_TAN"])(time_sum));
     //temp_new_list_from_df["starch"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_starch"])(time_sum));
     //temp_new_list_from_df["VFA"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_VFA"])(time_sum));
-    //temp_new_list_from_df["xa_aer"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_aer"])(time_sum));
-    //temp_new_list_from_df["xa_bac"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_bac"])(time_sum));
     //temp_new_list_from_df["xa_dead"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_dead"])(time_sum));
     //temp_new_list_from_df["Cfat"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_Cfat"])(time_sum));
     //temp_new_list_from_df["CPs"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_CPs"])(time_sum));
@@ -320,16 +317,14 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
     temp_new_list_from_df[3] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_TAN"])(time_sum));
     temp_new_list_from_df[4] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_starch"])(time_sum));
     temp_new_list_from_df[5] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_VFA"])(time_sum));
-    temp_new_list_from_df[6] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_aer"])(time_sum));
-    temp_new_list_from_df[7] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_bac"])(time_sum));
-    temp_new_list_from_df[8] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_dead"])(time_sum));
-    temp_new_list_from_df[9] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_Cfat"])(time_sum));
-    temp_new_list_from_df[10] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_CPs"])(time_sum));
-    temp_new_list_from_df[11] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_CPf"])(time_sum));
-    temp_new_list_from_df[12] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_RFd"])(time_sum));
-    temp_new_list_from_df[13] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_iNDF"])(time_sum));
-    temp_new_list_from_df[14] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_VSd"])(time_sum));
-    temp_new_list_from_df[15] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_ash"])(time_sum)); // Added ash
+    temp_new_list_from_df[6] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_dead"])(time_sum));
+    temp_new_list_from_df[7] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_Cfat"])(time_sum));
+    temp_new_list_from_df[8] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_CPs"])(time_sum));
+    temp_new_list_from_df[9] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_CPf"])(time_sum));
+    temp_new_list_from_df[10] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_RFd"])(time_sum));
+    temp_new_list_from_df[11] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_iNDF"])(time_sum));
+    temp_new_list_from_df[12] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_VSd"])(time_sum));
+    temp_new_list_from_df[13] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_ash"])(time_sum)); // Added ash
     
     
     // After populating the new list, assign it to the 'conc_fresh' variable
@@ -348,16 +343,14 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
    double conc_fresh_TAN = as<double>(conc_fresh[3]);
    double conc_fresh_starch = as<double>(conc_fresh[4]);
    double conc_fresh_VFA = as<double>(conc_fresh[5]);
-   double conc_fresh_xa_aer = as<double>(conc_fresh[6]);
-   double conc_fresh_xa_bac = as<double>(conc_fresh[7]);
-   double conc_fresh_xa_dead = as<double>(conc_fresh[8]);
-   double conc_fresh_Cfat = as<double>(conc_fresh[9]);
-   double conc_fresh_CPs = as<double>(conc_fresh[10]);
-   double conc_fresh_CPf = as<double>(conc_fresh[11]);
-   double conc_fresh_RFd = as<double>(conc_fresh[12]);
-   double conc_fresh_iNDF = as<double>(conc_fresh[13]);
-   double conc_fresh_VSd = as<double>(conc_fresh[14]);
-   double conc_fresh_ash = as<double>(conc_fresh[15]); // Adjusted index
+   double conc_fresh_xa_dead = as<double>(conc_fresh[6]);
+   double conc_fresh_Cfat = as<double>(conc_fresh[7]);
+   double conc_fresh_CPs = as<double>(conc_fresh[8]);
+   double conc_fresh_CPf = as<double>(conc_fresh[9]);
+   double conc_fresh_RFd = as<double>(conc_fresh[10]);
+   double conc_fresh_iNDF = as<double>(conc_fresh[11]);
+   double conc_fresh_VSd = as<double>(conc_fresh[12]);
+   double conc_fresh_ash = as<double>(conc_fresh[13]); // Adjusted index
 
 // fermentation stoichiometry
    double mol_carb = (alpha_RFd * RFd + alpha_starch * starch) * 0.005208333;
@@ -403,7 +396,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
      hyd_sr_ferm[i] = hyd_sr[i] * H2;
    }
   
-   double xa_bac_rate = ferm[5] * 160;
+   //double xa_bac_rate = ferm[5] * 160;
    double VFA_H2_ferm = C2H4O2 * 64 + H2 * 16;
    double TAN_min_ferm = ferm[3] * 14.007;
   
@@ -425,7 +418,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
     respir[i] = mol_carb_resp * carb_resp[i] + mol_pro_resp * pro_resp[i] + mol_lip_resp * lip_resp[i];
   }
   
-  double xa_aer_rate = respir[7] * 160;
+  //double xa_aer_rate = respir[7] * 160;
   double TAN_min_resp = respir[3] * 14.007;
   double CO2_resp = (respir[8] + respir[4]) * 44.01; 
   
@@ -480,44 +473,42 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   double N2O_emis_rate = parms[p_idx[54]];
   
   derivatives[n_mic] = slurry_prod_rate + (rain - evap) * area;
-  derivatives[n_mic+1] = slurry_prod_rate * conc_fresh_xa_aer + xa_aer_rate - decay_rate_double * xa_aer;
-  derivatives[n_mic+2] = slurry_prod_rate * conc_fresh_xa_bac + xa_bac_rate - decay_rate_double * xa_bac;
-  derivatives[n_mic+3] = slurry_prod_rate * conc_fresh_xa_dead - alpha_xa_dead * xa_dead + decay_rate_double * std::accumulate(xa.begin(), xa.end(), 0.0) + decay_rate_double * (xa_bac + xa_aer) * (1 - COD_conv_frac_CP_xa);
-  derivatives[n_mic+4] = slurry_prod_rate * conc_fresh_RFd - alpha_RFd * RFd - respiration * RFd / sub_resp;
-  derivatives[n_mic+5] = slurry_prod_rate * conc_fresh_iNDF;
-  derivatives[n_mic+6] = slurry_prod_rate * conc_fresh_ash;
-  derivatives[n_mic+7] = slurry_prod_rate * conc_fresh_VSd - alpha_VSd * VSd - respiration * VSd / sub_resp;
-  derivatives[n_mic+8] = slurry_prod_rate * conc_fresh_starch - alpha_starch * starch - respiration * starch / sub_resp;
-  derivatives[n_mic+9] = slurry_prod_rate * conc_fresh_CPs - alpha_CPs * CPs - respiration * CPs / sub_resp + decay_rate_double * (xa_bac + xa_aer) * COD_conv_frac_CP_xa;
-  derivatives[n_mic+10] = slurry_prod_rate * conc_fresh_CPf - alpha_CPf * CPf - respiration * CPf / sub_resp;
-  derivatives[n_mic+11] = slurry_prod_rate * conc_fresh_Cfat - alpha_Cfat * Cfat - respiration * Cfat / sub_resp;
-  derivatives[n_mic+12] = alpha_xa_dead * xa_dead + VFA_H2_ferm - sum_rut + slurry_prod_rate * conc_fresh_VFA;
-  derivatives[n_mic+13] = slurry_prod_rate * conc_fresh_urea - rut_urea;
-  derivatives[n_mic+14] = slurry_prod_rate * conc_fresh_TAN + rut_urea + TAN_min_ferm + TAN_min_resp - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate;
-  derivatives[n_mic+15] = slurry_prod_rate * conc_fresh_sulfate - sum_rutsr / COD_conv_S;
-  derivatives[n_mic+16] = slurry_prod_rate * conc_fresh_sulfide + sum_rutsr / COD_conv_S - H2S_emis_rate;
-  derivatives[n_mic+17] = NH3_emis_rate_pit + NH3_emis_rate_floor;
-  derivatives[n_mic+18] = N2O_emis_rate;
-  derivatives[n_mic+19] = sum_rutmeth / COD_conv_CH4;
-  derivatives[n_mic+20] = CO2_ferm_meth_sr + CO2_resp + rut_urea / COD_conv_CO2_ureo;
-  derivatives[n_mic+21] = sum_rut + respiration;
-  derivatives[n_mic+22] = sum_rutmeth;
-  derivatives[n_mic+23] = respiration;
-  derivatives[n_mic+24] = sum_rutsr;
-  derivatives[n_mic+25] = slurry_prod_rate * (conc_fresh_starch + conc_fresh_VFA + conc_fresh_xa_aer + conc_fresh_xa_bac + conc_fresh_xa_dead + conc_fresh_Cfat + conc_fresh_CPs + conc_fresh_CPf + conc_fresh_RFd + conc_fresh_iNDF + conc_fresh_VSd + (sum_xa_fresh * scale_xa_fresh));
-  derivatives[n_mic+26] = slurry_prod_rate * ((conc_fresh_starch + conc_fresh_RFd + conc_fresh_iNDF)/COD_conv_C_starch + conc_fresh_VFA/COD_conv_C_VFA + (conc_fresh_xa_aer + conc_fresh_xa_bac + conc_fresh_xa_dead)/COD_conv_C_xa + 
+  derivatives[n_mic+1] = slurry_prod_rate * conc_fresh_xa_dead - alpha_xa_dead * xa_dead + decay_rate_double * std::accumulate(xa.begin(), xa.end(), 0.0);
+  derivatives[n_mic+2] = slurry_prod_rate * conc_fresh_RFd - alpha_RFd * RFd - respiration * RFd / sub_resp;
+  derivatives[n_mic+3] = slurry_prod_rate * conc_fresh_iNDF;
+  derivatives[n_mic+4] = slurry_prod_rate * conc_fresh_ash;
+  derivatives[n_mic+5] = slurry_prod_rate * conc_fresh_VSd - alpha_VSd * VSd - respiration * VSd / sub_resp;
+  derivatives[n_mic+6] = slurry_prod_rate * conc_fresh_starch - alpha_starch * starch - respiration * starch / sub_resp;
+  derivatives[n_mic+7] = slurry_prod_rate * conc_fresh_CPs - alpha_CPs * CPs - respiration * CPs / sub_resp;
+  derivatives[n_mic+8] = slurry_prod_rate * conc_fresh_CPf - alpha_CPf * CPf - respiration * CPf / sub_resp;
+  derivatives[n_mic+9] = slurry_prod_rate * conc_fresh_Cfat - alpha_Cfat * Cfat - respiration * Cfat / sub_resp;
+  derivatives[n_mic+10] = alpha_xa_dead * xa_dead + VFA_H2_ferm - sum_rut + slurry_prod_rate * conc_fresh_VFA;
+  derivatives[n_mic+11] = slurry_prod_rate * conc_fresh_urea - rut_urea;
+  derivatives[n_mic+12] = slurry_prod_rate * conc_fresh_TAN + rut_urea + TAN_min_ferm + TAN_min_resp - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate;
+  derivatives[n_mic+13] = slurry_prod_rate * conc_fresh_sulfate - sum_rutsr / COD_conv_S;
+  derivatives[n_mic+14] = slurry_prod_rate * conc_fresh_sulfide + sum_rutsr / COD_conv_S - H2S_emis_rate;
+  derivatives[n_mic+15] = NH3_emis_rate_pit + NH3_emis_rate_floor;
+  derivatives[n_mic+16] = N2O_emis_rate;
+  derivatives[n_mic+17] = sum_rutmeth / COD_conv_CH4;
+  derivatives[n_mic+18] = CO2_ferm_meth_sr + CO2_resp + rut_urea / COD_conv_CO2_ureo;
+  derivatives[n_mic+19] = sum_rut + respiration;
+  derivatives[n_mic+20] = sum_rutmeth;
+  derivatives[n_mic+21] = respiration;
+  derivatives[n_mic+22] = sum_rutsr;
+  derivatives[n_mic+23] = slurry_prod_rate * (conc_fresh_starch + conc_fresh_VFA + conc_fresh_xa_dead + conc_fresh_Cfat + conc_fresh_CPs + conc_fresh_CPf + conc_fresh_RFd + conc_fresh_iNDF + conc_fresh_VSd + (sum_xa_fresh * scale_xa_fresh));
+  derivatives[n_mic+24] = slurry_prod_rate * ((conc_fresh_starch + conc_fresh_RFd + conc_fresh_iNDF)/COD_conv_C_starch + conc_fresh_VFA/COD_conv_C_VFA + conc_fresh_xa_dead/COD_conv_C_xa + 
     conc_fresh_Cfat/COD_conv_C_Cfat + (conc_fresh_CPs + conc_fresh_CPf)/COD_conv_C_CP + 
     conc_fresh_VSd/COD_conv_C_VSd + conc_fresh_urea/COD_conv_C_N_urea + (sum_xa_fresh * scale_xa_fresh)/(COD_conv_C_xa));
-  derivatives[n_mic+27] =  slurry_prod_rate * ((conc_fresh_CPs + conc_fresh_CPf)/COD_conv_CP_N + conc_fresh_TAN + conc_fresh_urea);
-  derivatives[n_mic+28] = slurry_prod_rate;
+  derivatives[n_mic+25] =  slurry_prod_rate * ((conc_fresh_CPs + conc_fresh_CPf)/COD_conv_CP_N + conc_fresh_TAN + conc_fresh_urea);
+  derivatives[n_mic+26] = slurry_prod_rate;
  
     // Return the main list containing both derivatives and rates
     return List::create(Named("derivatives") = derivatives,
-                        Named("COD_load_rate") = derivatives[n_mic + 25],
-                        Named("C_load_rate") = derivatives[n_mic + 26],
-                        Named("N_load_rate") = derivatives[n_mic + 27],
-                        Named("CH4_emis_rate") = derivatives[n_mic + 19],
-                        Named("CO2_emis_rate") = derivatives[n_mic + 20],
+                        Named("COD_load_rate") = derivatives[n_mic + 23],
+                        Named("C_load_rate") = derivatives[n_mic + 24],
+                        Named("N_load_rate") = derivatives[n_mic + 25],
+                        Named("CH4_emis_rate") = derivatives[n_mic + 17],
+                        Named("CO2_emis_rate") = derivatives[n_mic + 18],
                         Named("H2S_emis_rate") = H2S_emis_rate,
                         Named("NH3_emis_rate_pit") = NH3_emis_rate_pit,
                         Named("NH3_emis_rate_floor") = NH3_emis_rate_floor,

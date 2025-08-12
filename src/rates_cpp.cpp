@@ -458,7 +458,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   
   double sum_xa_fresh = std::accumulate(xa_fresh.begin(), xa_fresh.end(), 0.0);
 
-  int nn = n_mic + 29;
+  int nn = n_mic + 27;
   
   NumericVector derivatives(nn);
   

@@ -72,8 +72,6 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     # Call up ODE solver
     #cat(t_rem, '\n')
 
-
-
     out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, p_idx = p_idx,
                           temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
                           conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp,

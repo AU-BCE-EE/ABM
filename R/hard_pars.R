@@ -30,27 +30,48 @@ hard_pars <- function(pars){
   pars$N2O_emis_rate <- as.numeric(pars$area * pars$EF_N2O)
   
   # calculations moved from stoich to here to speed up model
+  # with cell synthesis
+  #pars$carb <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
+  #               NH3 = -0.1400892, H2O = -2.3396911, C5H7O2N = 0.1400892,
+  #               C2H4O2 = 1.7509058, H2 = 3.5198056, CO2 = 1.7603468)
+  # without cell synthesis
   pars$carb <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
-                 NH3 = -0.1400892, H2O = -2.3396911, C5H7O2N = 0.1400892,
-                 C2H4O2 = 1.7509058, H2 = 3.5198056, CO2 = 1.7603468)
+                 NH3 = 0, H2O = -2.992714, C5H7O2N = 0,
+                 C2H4O2 = 2.003743, H2 = 3.985329, CO2 = 1.993114)
   
+  
+  # with cell synthesis
+  #pars$pro <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
+  #              NH3 = 0.9098195, H2O = -2.91011939, C5H7O2N = 0.09091805,
+  #              C2H4O2 = 1.32238963, H2 = 1.24392800, CO2 = 0.53512875)
+  # without cell synthesis
   pars$pro <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
-                NH3 = 0.9098195, H2O = -2.91011939, C5H7O2N = 0.09091805,
-                C2H4O2 = 1.32238963, H2 = 1.24392800, CO2 = 0.53512875)
-  
+                NH3 = 1, H2O = -3.2521987, C5H7O2N = 0,
+                C2H4O2 = 1.4774587, H2 = 1.402611, CO2 = 0.6004123)
+  # with cell synthesis
+  #pars$lip <- c(C6H10O5 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
+  #              NH3 = -0.9111515, H2O = -41.2980881, C5H7O2N = 0.9111515,
+  #              C2H4O2 = 23.7180355, H2 = 40.9726177, CO2 = 1.4659059)
+  # without cell synthesis
   pars$lip <- c(C6H10O5 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
-                NH3 = -0.9111515, H2O = -41.2980881, C5H7O2N = 0.9111515,
-                C2H4O2 = 23.7180355, H2 = 40.9726177, CO2 = 1.4659059)
+                NH3 = 0, H2O = -45.4119381, C5H7O2N = 0,
+                C2H4O2 = 25.3171914, H2 = 43.7334158, CO2 = 0.3667798)
   
+  # with cell synthesis
+  #carb_resp <- c(C6H12O6 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
+  #                    NH4 = -0.78, HCO3 = -0.78, O2 =  -2.1, H2O = 5.22, C5H7O2N = 0.78,
+  #                    CO2 = 2.88) # 
   carb_resp <- c(C6H12O6 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
-                      NH4 = -0.78, HCO3 = -0.78, O2 =  -2.1, H2O = 5.22, C5H7O2N = 0.78,
-                      CO2 = 2.88) # 
+                      NH4 = 0, HCO3 = 0, O2 = -6, H2O = 6, C5H7O2N = 0,
+                      CO2 = 6) # 
+  
   pro_resp <- c(C6H12O6 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
-                     NH4 = 0.45725, HCO3 = 0.45725, O2 = -1.46125, H2O = 0.007249637, C5H7O2N = 0.54275,
-                     CO2 = 0.829) #
+                     NH4 = 0, HCO3 = 0, O2 = -4.175, H2O = 1.55, C5H7O2N = 0,
+                     CO2 = 4) #
+  
   lip_resp <- c(C6H12O6 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
-                     NH4 = -9.425, HCO3 = -9.425, O2 = -25.375, H2O = 39.575, C5H7O2N = 9.425,
-                     CO2 = 13.3) #
+                     NH4 = 0, HCO3 = 0, O2 = -74.5, H2O = 49, C5H7O2N = 0,
+                     CO2 = 51) #
 
   pars$carb_resp <- carb_resp # delete later if new rates_cpp works
   pars$pro_resp <- pro_resp # delete later if new rates_cpp works
@@ -60,18 +81,6 @@ hard_pars <- function(pars){
   pars$hyd <- c(H2 = -1, C2H4O2 = 0, CO2 = -1/4, CH4 = 1/4, H2O = 2/4)
   pars$ace_sr <- c(H2 = 0, C2H4O2 = -1, H2SO4 = -1, CO2 = 2, H2O = 2, H2S = 1) 
   pars$hyd_sr <- c(H2 = -1, C2H4O2 = 0, H2SO4 = -1/4, CO2 = 0, H2O = 1, H2S = 1/4) 
-
-  # these should be factored by "respiration" inside rates call.
-  # below hardcoded stuff shuld be removed since they are now implemented in rates_cpp
-  # pars$TAN_min_resp <- 0
-  # pars$CO2_resp <- 0
-  # pars$xa_aer_rate <- 0
-  #pars$xa_bac_rate <- 1.1 
-  #pars$TAN_min_ferm <- 2.1
-  #pars$VFA_H2_ferm <- 3.1
-  #pars$CO2_ferm = 4.1
-  #pars$COD_conv_meth_CO2 <- 2.926 # gCOD consumed /gCO2 produced from methanogenesis
-  #pars$COD_conv_sr_CO2 <- 0.971 # gCOD consumed /gCO2 produced from sulfate reduction
 
   return(pars)
 }

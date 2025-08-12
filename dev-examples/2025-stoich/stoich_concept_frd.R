@@ -41,6 +41,7 @@ y <- c(xa = 0,
 # create COD stoichiometry matrix for all compounds involved in hydrolysis
 cc_test <- stoich_species(acefrac = 0.66, fs = 0.1175, y = y)
 
+predFerm('C6H12O6','')
 
 # cc_t should be passed into rates environment
 # alpha should be calculated and depends on e.g. 

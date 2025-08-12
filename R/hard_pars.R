@@ -63,15 +63,15 @@ hard_pars <- function(pars){
 
   # these should be factored by "respiration" inside rates call.
   # below hardcoded stuff shuld be removed since they are now implemented in rates_cpp
-  pars$TAN_min_resp <- 0
-  pars$CO2_resp <- 0
-  pars$xa_aer_rate <- 0
-  pars$xa_bac_rate <- 1.1 
-  pars$TAN_min_ferm <- 2.1
-  pars$VFA_H2_ferm <- 3.1
-  pars$CO2_ferm = 4.1
-  pars$COD_conv_meth_CO2 <- 2.926 # gCOD consumed /gCO2 produced from methanogenesis
-  pars$COD_conv_sr_CO2 <- 0.971 # gCOD consumed /gCO2 produced from sulfate reduction
+  # pars$TAN_min_resp <- 0
+  # pars$CO2_resp <- 0
+  # pars$xa_aer_rate <- 0
+  #pars$xa_bac_rate <- 1.1 
+  #pars$TAN_min_ferm <- 2.1
+  #pars$VFA_H2_ferm <- 3.1
+  #pars$CO2_ferm = 4.1
+  #pars$COD_conv_meth_CO2 <- 2.926 # gCOD consumed /gCO2 produced from methanogenesis
+  #pars$COD_conv_sr_CO2 <- 0.971 # gCOD consumed /gCO2 produced from sulfate reduction
 
   return(pars)
 }

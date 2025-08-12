@@ -28,7 +28,7 @@ mic_pars2.0 <- list(ks_SO4 = 0.00694,
                     decay_rate_xa = 0.02)
 
 man_pars2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 5.25, 
-                                  VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CPs = 21.1 * 0.55, CPf =  21.1 * 0.45,
+                                  VFA = 1.7, xa_dead = 0, Cfat = 27.6, CPs = 21.1 * 0.55, CPf =  21.1 * 0.45,
                                   RFd = 25.4, iNDF = 11.3, VSd = 0, VSd_A = 55, VSnd_A = 23.5, ash = 15), 
                     pH = 7, dens = 1000)
 
@@ -74,7 +74,7 @@ grp_pars1.0 <- list(grps = c('m0','m1','m2', 'sr1'),
                                pH_LL = c(default = 6.5, sr1 = 5.5))
 
 man_pars1.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2, TAN = 0.0, starch = 0, 
-                                      VFA = 2, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 0, CPs = 0, CPf = 0, RFd = 0, iNDF = 0, VSd = 75, 
+                                      VFA = 2, xa_dead = 0, Cfat = 0, CPs = 0, CPf = 0, RFd = 0, iNDF = 0, VSd = 75, 
                                       VSd_A = 55, VSnd_A = 22, ash = 15), pH = 7, dens = 1000)
 
 save(grp_pars1.0, file = '../data/grp_pars1.0.rda')
@@ -192,15 +192,15 @@ grp_pars_VS_digestate2.0 <- list(grps = c('m0', 'm1', 'm2', 'm3', 'sr1'),
                                  pH_LL = c(default = 6.5, sr1 = 5.5))
 
 man_pars_pig2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.01, TAN = 0.0, starch = 5.25, 
-                                      VFA = 1.7, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 27.6, CPs = 21.1 * 0.55, CPf = 21.1 * 0.45, RFd = 25.4, iNDF = 11.3, VSd = 0, 
+                                      VFA = 1.7, xa_dead = 0, Cfat = 27.6, CPs = 21.1 * 0.55, CPf = 21.1 * 0.45, RFd = 25.4, iNDF = 11.3, VSd = 0, 
                                       VSd_A = 55, VSnd_A = 23.5, ash = 15), pH = 7, dens = 1000)
 
 man_pars_cattle2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 2.116, sulfate = 0.01, TAN = 0.0, starch = 1.4864, 
-                                          VFA = 2.54, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 16.04, CPs = 30*0.55, CPf = 30*0.45, RFd = 44.4, iNDF = 21.465, VSd = 0, 
+                                          VFA = 2.54, xa_dead = 0, Cfat = 16.04, CPs = 30*0.55, CPf = 30*0.45, RFd = 44.4, iNDF = 21.465, VSd = 0, 
                                           VSd_A = 32.86, VSnd_A = 45.4, ash = 15), pH = 7, dens = 1000)
 
 man_pars_digestate2.0 <- list(conc_fresh = list(sulfide = 0, urea = 0, sulfate = 0, TAN = 3, starch = 0.29, 
-                                             VFA = 0.5, xa_aer = 0, xa_bac = 0, xa_dead = 0, Cfat = 3.18, CPs = 5.95, CPf = 0, RFd = 8.8, iNDF = 21.47, VSd = 0, 
+                                             VFA = 0.5, xa_dead = 0, Cfat = 3.18, CPs = 5.95, CPf = 0, RFd = 8.8, iNDF = 21.47, VSd = 0, 
                                              VSd_A = 12.6, VSnd_A = 18.13, ash = 15), pH = 8, dens = 1000)
 
 man_pars_VS_pig2.0 <- man_pars_pig2.0

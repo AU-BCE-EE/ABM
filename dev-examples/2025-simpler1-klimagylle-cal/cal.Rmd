@@ -94,11 +94,9 @@ chem_pars <- list(COD_conv = c(CH4 = 1/0.2507))
 Temperature and slurry level.
 
 ```{r}
-ll <- level[tank == 'AD1' & level_scenario == 'a', ]
 tt <- temp[tank == 'AD1' & STM_scenario == 'a', ]
 tt <- tt[-1:-365, ]
-identical(ll$doy, tt$doy)
-var_dat <- data.frame(time = ll$doy, slurry_mass = 1000 * 935 * ll$level, temp_C = tt$slurry_temp)
+var_dat <- data.frame(time = tt$doy, slurry_mass = 1000 * tt$slurry_mass, temp_C = tt$slurry_temp)
 var_pars <- list(var = var_dat)
 ```
 
@@ -117,7 +115,7 @@ out1 <- abm(365,
 
 ```{r}
 ee <- emis[tank == 'AD1', ]
-plot(CH4_emis_rate / 1000 ~ time, data = out1, type = 'l')
+plot(CH4_emis_rate / 1000 ~ time, data = out1, type = 'l', ylab = 'CH4 emission rate (kg/d)')
 points(CH4_emis_rate ~ doy, data = ee, col = 'red', pch = 19)
 ```
 
@@ -190,7 +188,7 @@ points(CH4_emis_rate ~ doy, data = ee, col = 'red', pch = 19)
 
 # Application to all four tanks
 
-We need tank area to go from digestate level to mass, but otherwise the values in `mng_pars` do not matter, so we'll make a general set.
+The values in `mng_pars` do not matter, so we'll make a general set.
 
 ```{r}
 mng_pars <- list(storage_depth = 5,     
@@ -198,7 +196,7 @@ mng_pars <- list(storage_depth = 5,
                  resid_enrich = 1)
 ```
 
-Temperature only needs STM scenario a, and we should eliminate the startup year.
+Temperature only needs STM scenario a, and we should eliminate the startup year with a `doy` and `day` comparison.
 
 ```{r}
 vdat <- temp[STM_scenario == 'a' & day > doy, .(tank, doy, slurry_mass, slurry_temp)]
@@ -212,6 +210,7 @@ vdat[, avegroup := c(0, cumsum(diff(slurry_mass) > 0 | diff(daygroup) > 0 | doy[
 var_dat_all <- vdat[, .(time = mean(doy), slurry_mass = 1000 * slurry_mass[1], temp_C = mean(slurry_temp)), by = .(tank, avegroup)]
 ```
 
+And get predictions for all four tanks.
 
 ```{r}
 preds <- list()
@@ -239,6 +238,7 @@ for (i in unique(tankinfo$tank)) {
 preds <- rbindlist(preds)
 ```
 
+Under 1 second per tank seems pretty good.
 
 ```{r}
 ggplot(preds, aes(time, CH4_emis_rate / 1000)) +
@@ -247,3 +247,61 @@ ggplot(preds, aes(time, CH4_emis_rate / 1000)) +
   facet_wrap(~ tank) +
   theme_bw()
 ```
+
+# Sort out residuals
+
+Measured emission rates are averaged over some period.
+Model predictions should use the same periods.
+
+```{r}
+emis[, doy_min := format(date_time_min, '%j')]
+emis[, doy_max := format(date_time_max, '%j')]
+emis[, yr2 := doy_max < doy_min]
+emis[, meas_grp := 1:nrow(emis)]
+```
+
+```{r}
+names(emis)
+emis[meas_grp %in% c(6, 8), ]
+emis[, doy_min := as.integer(doy_min)]
+emis[, doy_max := as.integer(doy_max)]
+meas_grps <- expand.grid(tank = unique(emis$tank), doy = 1:365, meas_grp = NA)
+i = 6
+i = 8
+for (i in 1:nrow(emis)) {
+  if (isTRUE(emis[i, yr2])) {
+    meas_grps[meas_grps$tank == emis[i, tank] & (meas_grps$doy >= emis[i, doy_min] | meas_grps$doy <= emis[i, doy_max]), 'meas_grp'] <- emis[i, meas_grp]
+  } else {
+    meas_grps[meas_grps$tank == emis[i, tank] & meas_grps$doy >= emis[i, doy_min] & meas_grps$doy <= emis[i, doy_max], 'meas_grp'] <- emis[i, meas_grp]
+    print(meas_grps[meas_grps$tank == 'AD2' & meas_grps$doy == 239, ])
+  }
+}
+print(meas_grps[meas_grps$tank == 'AD2' & meas_grps$doy == 239, ])
+setDT(meas_grps)
+meas_grps <- meas_grps[!is.na(meas_grp), ]
+table(meas_grps$meas_grp)
+```
+
+Merge in measurement groups with predictions.
+
+```{r}
+setnames(preds, 'time', 'doy')
+preds <- merge(preds, meas_grps, by = c('tank', 'doy'))
+table(preds$meas_grp)
+```
+
+Get means.
+
+```{r}
+predmn <- preds[, .(CH4_emis_rate = mean(CH4_emis_rate / 1000)), by = .(tank, meas_grp)]
+setorder(predmn, meas_grp)
+emis
+merge(predmn, emis, by = 'meas_grp', all.y = TRUE)
+
+```
+
+
+
+
+
+

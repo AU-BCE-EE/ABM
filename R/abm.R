@@ -214,7 +214,7 @@ abm <- function(
   # add time to xa_fresh and get xa_fresh funs
   if(is.data.frame(pars$xa_fresh)) pars$xa_fresh$time <- xa_fresh_time
   xa_fresh_fun <- makeXaFreshFunc(pars$xa_fresh)
-  
+
   # NTS Inhibition function. Can be exported as separate function (like H2SO4_titrate)!
   td <- data.frame(SO4_conc = c(0, 0.09, 0.392251223, 0.686439641, 1.046003263, 1.470942088, 1.961256117, 4), 
                    SO4_inhib = c(1, 1, 0.85, 0.3172, 0.29, 0.1192, 0.05, 0.001))

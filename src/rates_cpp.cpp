@@ -4,14 +4,14 @@ using namespace Rcpp;
 using namespace std;
 // [[Rcpp::export]]
 List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp::Function temp_C_fun, Rcpp::Function pH_fun, 
-                  Rcpp::Function SO4_inhibition_fun, List conc_fresh_fun, NumericVector xa_fresh_fun, Rcpp::Function CTM_cpp, 
-                  Rcpp::Function H2SO4_titrate){
+               Rcpp::Function SO4_inhibition_fun, List conc_fresh_fun, List xa_fresh_fun, Rcpp::Function CTM_cpp, 
+               Rcpp::Function H2SO4_titrate){
   
   //y[y < 1E-10] <- 1E-10
   std::transform(y.begin(), y.end(), y.begin(), [](double value) {
     return (value < 1E-10) ? 1E-10 : value;
   });
-
+  
   double slurry_prod_rate = parms[p_idx[0]];
   double t_run = parms[p_idx[1]];
   int n_mic = parms[p_idx[2]];
@@ -30,7 +30,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   NumericVector xa = y[Range(0, n_mic - 1)];
   
   double slurry_mass = y[n_mic];
-
+  
   double xa_dead = y[n_mic+1];
   double RFd = y[n_mic+2];
   double iNDF = y[n_mic+3];
@@ -57,7 +57,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   double C_load_cum = y[n_mic+24];
   double N_load_cum = y[n_mic+25];
   double slurry_load_cum = y[n_mic+26];
-
+  
   // ... (previous includes, namespace, function signature, and variable extractions) ...
   
   double time_sum = t + t_run; // This calculation is necessary as it's the input to pH_fun
@@ -65,18 +65,18 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   double pH = as<double>(pH_fun(time_sum)); // Necessary call to pH_fun to get the result
   
   if (pH == -1.0) {
-      double conc_SO4_arg = sulfate / slurry_mass;
-      
-      // Call the R H2SO4_titrate function - necessary call ONLY in this branch
-      List titration_result = as<List>(H2SO4_titrate(
-        Rcpp::Named("conc_SO4") = conc_SO4_arg,
-        Rcpp::Named("pH_target") = 7, // not used, but must be stated
-        Rcpp::Named("class_anim") = "pig"
-      ));
-      
-      pH = titration_result[0]; // Assign the result from H2SO4_titrate
-    }
-
+    double conc_SO4_arg = sulfate / slurry_mass;
+    
+    // Call the R H2SO4_titrate function - necessary call ONLY in this branch
+    List titration_result = as<List>(H2SO4_titrate(
+      Rcpp::Named("conc_SO4") = conc_SO4_arg,
+      Rcpp::Named("pH_target") = 7, // not used, but must be stated
+      Rcpp::Named("class_anim") = "pig"
+    ));
+    
+    pH = titration_result[0]; // Assign the result from H2SO4_titrate
+  }
+  
   double temp_C = as<double>(temp_C_fun(time_sum));
   double temp_K = temp_C + 273.15;
   double temp_standard = parms[p_idx[3]];
@@ -100,7 +100,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   NumericVector alpha = A * exp(-E / (R * temp_K));
   alpha[Rcpp::Range(0,6)] = alpha[Rcpp::Range(0,6)] * scale_alpha_opt * alpha_opt_scale_type;
   alpha[Rcpp::Range(3,4)] = alpha[Rcpp::Range(3,4)] * alpha_opt_scale_CP;
-
+  
   NumericVector T_opt = parms[p_idx[10]];
   NumericVector T_min = parms[p_idx[11]];
   NumericVector T_max = parms[p_idx[12]];
@@ -208,7 +208,7 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
       cum_inhib[i] = HAC_inhib[i] * NH3_inhib[i] * NH4_inhib[i] * H2S_inhib[i];
     }
   }
-
+  
   
   // Henry's constant for NH3
   double H_NH3 = 1431 * pow(1.053, (293 - temp_K));
@@ -285,31 +285,16 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   
   // Check if the element is a DataFrame
   if (Rcpp::is<Rcpp::DataFrame>(conc_fresh_object)){
-  
-  // If it is a DataFrame, we need to declare a temp list for results and use the interpolation function
-  // this step is extremely slow, but works.
+    
+    // If it is a DataFrame, we need to declare a temp list for results and use the interpolation function
+    // this step is extremely slow, but works.
     Rcpp::List temp_new_list_from_df(14);
-  // Need to add the names of the list first. 
+    // Need to add the names of the list first. 
     temp_new_list_from_df.names() = Rcpp::CharacterVector::create(
       "sulfide", "urea", "sulfate", "TAN", "starch", "VFA", 
       "xa_dead", "Cfat", "CPs", "CPf", 
       "RFd", "iNDF", "VSd", "ash"
     );
-
-   // temp_new_list_from_df["sulfide"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_sulfide"])(time_sum));
-    //temp_new_list_from_df["urea"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_urea"])(time_sum));
-    //temp_new_list_from_df["sulfate"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_sulfate"])(time_sum));
-    //temp_new_list_from_df["TAN"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_TAN"])(time_sum));
-    //temp_new_list_from_df["starch"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_starch"])(time_sum));
-    //temp_new_list_from_df["VFA"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_VFA"])(time_sum));
-    //temp_new_list_from_df["xa_dead"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_xa_dead"])(time_sum));
-    //temp_new_list_from_df["Cfat"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_Cfat"])(time_sum));
-    //temp_new_list_from_df["CPs"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_CPs"])(time_sum));
-    //temp_new_list_from_df["CPf"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_CPf"])(time_sum));
-    //temp_new_list_from_df["RFd"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_RFd"])(time_sum));
-    //temp_new_list_from_df["iNDF"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_iNDF"])(time_sum));
-    //temp_new_list_from_df["VSd"] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_VSd"])(time_sum));
-    
     
     temp_new_list_from_df[0] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_sulfide"])(time_sum));
     temp_new_list_from_df[1] = as<double>(as<Rcpp::Function>(conc_fresh_fun["conc_fresh_fun_urea"])(time_sum));
@@ -334,75 +319,75 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   } else {
     
     conc_fresh = as<Rcpp::List>(conc_fresh_object); // Assign to the outer 'conc_fresh'
-  
+    
   }
   
-   double conc_fresh_sulfide = as<double>(conc_fresh[0]);
-   double conc_fresh_urea = as<double>(conc_fresh[1]);
-   double conc_fresh_sulfate = as<double>(conc_fresh[2]);
-   double conc_fresh_TAN = as<double>(conc_fresh[3]);
-   double conc_fresh_starch = as<double>(conc_fresh[4]);
-   double conc_fresh_VFA = as<double>(conc_fresh[5]);
-   double conc_fresh_xa_dead = as<double>(conc_fresh[6]);
-   double conc_fresh_Cfat = as<double>(conc_fresh[7]);
-   double conc_fresh_CPs = as<double>(conc_fresh[8]);
-   double conc_fresh_CPf = as<double>(conc_fresh[9]);
-   double conc_fresh_RFd = as<double>(conc_fresh[10]);
-   double conc_fresh_iNDF = as<double>(conc_fresh[11]);
-   double conc_fresh_VSd = as<double>(conc_fresh[12]);
-   double conc_fresh_ash = as<double>(conc_fresh[13]); // Adjusted index
-
-// fermentation stoichiometry
-   double mol_carb = (alpha_RFd * RFd + alpha_starch * starch) * 0.005208333;
-   double mol_pro = (alpha_CPf * CPf + alpha_CPs * CPs) * 0.00748503;
-   double mol_lip = alpha_Cfat * Cfat * 0.0004194631;
+  double conc_fresh_sulfide = as<double>(conc_fresh[0]);
+  double conc_fresh_urea = as<double>(conc_fresh[1]);
+  double conc_fresh_sulfate = as<double>(conc_fresh[2]);
+  double conc_fresh_TAN = as<double>(conc_fresh[3]);
+  double conc_fresh_starch = as<double>(conc_fresh[4]);
+  double conc_fresh_VFA = as<double>(conc_fresh[5]);
+  double conc_fresh_xa_dead = as<double>(conc_fresh[6]);
+  double conc_fresh_Cfat = as<double>(conc_fresh[7]);
+  double conc_fresh_CPs = as<double>(conc_fresh[8]);
+  double conc_fresh_CPf = as<double>(conc_fresh[9]);
+  double conc_fresh_RFd = as<double>(conc_fresh[10]);
+  double conc_fresh_iNDF = as<double>(conc_fresh[11]);
+  double conc_fresh_VSd = as<double>(conc_fresh[12]);
+  double conc_fresh_ash = as<double>(conc_fresh[13]); // Adjusted index
   
-   NumericVector carb = parms[p_idx[39]];
-   NumericVector pro = parms[p_idx[40]];
-   NumericVector lip = parms[p_idx[41]];
-   NumericVector ace = parms[p_idx[42]];
-   NumericVector hyd = parms[p_idx[43]];
-   NumericVector ace_sr = parms[p_idx[44]];
-   NumericVector hyd_sr = parms[p_idx[45]];
-   
-   NumericVector ferm(carb.size()); 
-   
-   for(int i = 0; i < carb.size(); ++i) {
-     ferm[i] = mol_carb * carb[i] + mol_pro * pro[i] + mol_lip * lip[i];
-   }
+  // fermentation stoichiometry
+  double mol_carb = (alpha_RFd * RFd + alpha_starch * starch) * 0.005208333;
+  double mol_pro = (alpha_CPf * CPf + alpha_CPs * CPs) * 0.00748503;
+  double mol_lip = alpha_Cfat * Cfat * 0.0004194631;
   
-   double C2H4O2 = ferm[6];
-   double H2 = ferm[7];
+  NumericVector carb = parms[p_idx[39]];
+  NumericVector pro = parms[p_idx[40]];
+  NumericVector lip = parms[p_idx[41]];
+  NumericVector ace = parms[p_idx[42]];
+  NumericVector hyd = parms[p_idx[43]];
+  NumericVector ace_sr = parms[p_idx[44]];
+  NumericVector hyd_sr = parms[p_idx[45]];
   
-   NumericVector ace_ferm(ace.size());
-   NumericVector ace_sr_ferm(ace_sr.size());
+  NumericVector ferm(carb.size()); 
   
-   for(int i = 0; i < ace.size(); ++i) {
-     ace_ferm[i] = ace[i] * C2H4O2;
-   }
-   
-   for(int i = 0; i < ace_sr.size(); ++i) {
-     ace_sr_ferm[i] = ace_sr[i] * C2H4O2;
-   }
+  for(int i = 0; i < carb.size(); ++i) {
+    ferm[i] = mol_carb * carb[i] + mol_pro * pro[i] + mol_lip * lip[i];
+  }
   
-   NumericVector hyd_ferm(hyd.size());
-   NumericVector hyd_sr_ferm(hyd_sr.size());
+  double C2H4O2 = ferm[6];
+  double H2 = ferm[7];
   
-   for(int i = 0; i < hyd.size(); ++i) {
-     hyd_ferm[i] = hyd[i] * H2;
-   }
-   
-   for(int i = 0; i < hyd_sr.size(); ++i) {
-     hyd_sr_ferm[i] = hyd_sr[i] * H2;
-   }
+  NumericVector ace_ferm(ace.size());
+  NumericVector ace_sr_ferm(ace_sr.size());
   
-   //double xa_bac_rate = ferm[5] * 160;
-   double VFA_H2_ferm = C2H4O2 * 64 + H2 * 16;
-   double TAN_min_ferm = ferm[3] * 14.007;
+  for(int i = 0; i < ace.size(); ++i) {
+    ace_ferm[i] = ace[i] * C2H4O2;
+  }
   
-   double COD_conv_meth_CO2 = -(ace[1] * 64 + hyd[0] * 16)/((ace[2] + hyd[2]) * 44.01);
-   double COD_conv_sr_CO2 = -(ace_sr[1] * 64 + hyd_sr[0] * 16)/((ace_sr[3]) * 44.01);
-   double CO2_ferm = ferm[8] * 44.01;
+  for(int i = 0; i < ace_sr.size(); ++i) {
+    ace_sr_ferm[i] = ace_sr[i] * C2H4O2;
+  }
+  
+  NumericVector hyd_ferm(hyd.size());
+  NumericVector hyd_sr_ferm(hyd_sr.size());
+  
+  for(int i = 0; i < hyd.size(); ++i) {
+    hyd_ferm[i] = hyd[i] * H2;
+  }
+  
+  for(int i = 0; i < hyd_sr.size(); ++i) {
+    hyd_sr_ferm[i] = hyd_sr[i] * H2;
+  }
+  
+  //double xa_bac_rate = ferm[5] * 160;
+  double VFA_H2_ferm = C2H4O2 * 64 + H2 * 16;
+  double TAN_min_ferm = ferm[3] * 14.007;
+  
+  double COD_conv_meth_CO2 = -(ace[1] * 64 + hyd[0] * 16)/((ace[2] + hyd[2]) * 44.01);
+  double COD_conv_sr_CO2 = -(ace_sr[1] * 64 + hyd_sr[0] * 16)/((ace_sr[3]) * 44.01);
+  double CO2_ferm = ferm[8] * 44.01;
   
   // respiration
   double mol_carb_resp = respiration * (RFd + starch)/sub_resp * 0.005208333;
@@ -454,10 +439,34 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
   // this calculates the CO2 produced from combined fermentation, methanogenesis and sulfate reduction
   double CO2_ferm_meth_sr = CO2_ferm + sum_rutmeth/COD_conv_meth_CO2 + sum_rutsr/COD_conv_sr_CO2;
   
-  NumericVector xa_fresh = parms[p_idx[50]];
+  // add variable xa_fresh here
+  // Using user's name 'xa_fresh_object'
+  Rcpp::RObject xa_fresh_object = parms[p_idx[50]];
+  
+  Rcpp::NumericVector xa_fresh;
+  // If it is a DataFrame, we need to declare a temp list for results and use the interpolation function
+  // this step is extremely slow, but works.
+  if (Rcpp::is<Rcpp::DataFrame>(xa_fresh_object)){
+    
+    Rcpp::NumericVector temp_new_xa_vector_from_df(4);
+    
+    temp_new_xa_vector_from_df[0] = as<double>(as<Rcpp::Function>(xa_fresh_fun["xa_fresh_fun_m0"])(time_sum));
+    temp_new_xa_vector_from_df[1] = as<double>(as<Rcpp::Function>(xa_fresh_fun["xa_fresh_fun_m1"])(time_sum));
+    temp_new_xa_vector_from_df[2] = as<double>(as<Rcpp::Function>(xa_fresh_fun["xa_fresh_fun_m2"])(time_sum));
+    temp_new_xa_vector_from_df[3] = as<double>(as<Rcpp::Function>(xa_fresh_fun["xa_fresh_fun_sr1"])(time_sum));
+    
+    // After populating the new list, assign it to the 'xa_fresh' variable
+    // declared BEFORE the if/else. This makes the list available afterwards.
+    xa_fresh = temp_new_xa_vector_from_df; // Assign the NEWLY CREATED list to the outer 'xa_fresh'
+    
+  } else {
+    
+    xa_fresh = as<Rcpp::NumericVector>(xa_fresh_object); // Assign to the outer 'xa_fresh'
+    
+  }
   
   double sum_xa_fresh = std::accumulate(xa_fresh.begin(), xa_fresh.end(), 0.0);
-
+  
   int nn = n_mic + 27;
   
   NumericVector derivatives(nn);
@@ -501,28 +510,28 @@ List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp:
     conc_fresh_VSd/COD_conv_C_VSd + conc_fresh_urea/COD_conv_C_N_urea + (sum_xa_fresh * scale_xa_fresh)/(COD_conv_C_xa));
   derivatives[n_mic+25] =  slurry_prod_rate * ((conc_fresh_CPs + conc_fresh_CPf)/COD_conv_CP_N + conc_fresh_TAN + conc_fresh_urea);
   derivatives[n_mic+26] = slurry_prod_rate;
- 
-    // Return the main list containing both derivatives and rates
-    return List::create(Named("derivatives") = derivatives,
-                        Named("COD_load_rate") = derivatives[n_mic + 23],
-                        Named("C_load_rate") = derivatives[n_mic + 24],
-                        Named("N_load_rate") = derivatives[n_mic + 25],
-                        Named("CH4_emis_rate") = derivatives[n_mic + 17],
-                        Named("CO2_emis_rate") = derivatives[n_mic + 18],
-                        Named("H2S_emis_rate") = H2S_emis_rate,
-                        Named("NH3_emis_rate_pit") = NH3_emis_rate_pit,
-                        Named("NH3_emis_rate_floor") = NH3_emis_rate_floor,
-                        Named("N2O_emis_rate") = N2O_emis_rate,
-                        Named("conc_fresh") = conc_fresh,
-                        Named("xa_fresh") = xa_fresh * scale_xa_fresh,
-                        Named("slurry_prod_rate") = slurry_prod_rate,
-                        Named("rain") = rain,
-                        Named("evap") = evap,
-                        Named("sum_rut") = sum_rut,
-                        Named("rut") = rut,
-                        Named("xa") = xa,
-                        Named("qhat") = qhat,
-                        Named("qhat_opt") = qhat_opt);
-  }
   
+  // Return the main list containing both derivatives and rates
+  return List::create(Named("derivatives") = derivatives,
+                      Named("COD_load_rate") = derivatives[n_mic + 23],
+                                                          Named("C_load_rate") = derivatives[n_mic + 24],
+                                                                                            Named("N_load_rate") = derivatives[n_mic + 25],
+                                                                                                                              Named("CH4_emis_rate") = derivatives[n_mic + 17],
+                                                                                                                                                                  Named("CO2_emis_rate") = derivatives[n_mic + 18],
+                                                                                                                                                                                                      Named("H2S_emis_rate") = H2S_emis_rate,
+                                                                                                                                                                                                      Named("NH3_emis_rate_pit") = NH3_emis_rate_pit,
+                                                                                                                                                                                                      Named("NH3_emis_rate_floor") = NH3_emis_rate_floor,
+                                                                                                                                                                                                      Named("N2O_emis_rate") = N2O_emis_rate,
+                                                                                                                                                                                                      Named("conc_fresh") = conc_fresh,
+                                                                                                                                                                                                      Named("xa_fresh") = xa_fresh * scale_xa_fresh,
+                                                                                                                                                                                                      Named("slurry_prod_rate") = slurry_prod_rate,
+                                                                                                                                                                                                      Named("rain") = rain,
+                                                                                                                                                                                                      Named("evap") = evap,
+                                                                                                                                                                                                      Named("sum_rut") = sum_rut,
+                                                                                                                                                                                                      Named("rut") = rut,
+                                                                                                                                                                                                      Named("xa") = xa,
+                                                                                                                                                                                                      Named("qhat") = qhat,
+                                                                                                                                                                                                      Named("qhat_opt") = qhat_opt);
+}
+
 

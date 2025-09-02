@@ -20,7 +20,7 @@ makeXaFreshFunc <- function(dat) {
 
   } else {
 
-    funcs <- dat
+    funcs <- list(dat)
 
   }
  

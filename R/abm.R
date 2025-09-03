@@ -254,8 +254,6 @@ abm <- function(
 
   y <- c(xa = pars$xa_init * slurry_mass_init,
          slurry_mass = slurry_mass_init, 
-         xa_aer = pars$conc_init[['xa_aer']] * slurry_mass_init,
-         xa_bac = pars$conc_init[['xa_bac']] * slurry_mass_init,
          xa_dead = pars$conc_init[['xa_dead']] * slurry_mass_init, 
          RFd = pars$conc_init[['RFd']] * slurry_mass_init,
          iNDF = pars$conc_init[['iNDF']] * slurry_mass_init,
@@ -287,7 +285,7 @@ abm <- function(
          slurry_load_cum = 0)
   
   if (!is.null(starting) & is.data.frame(starting)) {
-    start.vars <- c('slurry_mass', 'xa_aer', 'xa_bac', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')
+    start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')
     y[start.vars]  <- as.numeric(starting[nrow(starting), start.vars])
   }  
 
@@ -312,7 +310,7 @@ abm <- function(
   mic_names <- pars$grps
   eff_names <- names(dat[grepl("_eff$", names(dat))])
   eff_conc_names <- eff_names[eff_names != "slurry_mass_eff"]
-  conc_names <-  c('TAN', 'xa_aer', 'xa_bac', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'Cfat', 'CPs', 'CPf', 'VFA', 'sulfide', 'sulfate', 'VSd_A', 'VSnd_A', mic_names)
+  conc_names <-  c('TAN', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'Cfat', 'CPs', 'CPf', 'VFA', 'sulfide', 'sulfate', 'VSd_A', 'VSnd_A', mic_names)
   dat_conc <- dat[, conc_names]/(dat$slurry_mass)
   dat_eff_conc <- dat[, eff_conc_names]/(dat$slurry_mass_eff)
   names(dat_conc) <- paste0(names(dat_conc), '_conc')
@@ -364,27 +362,27 @@ abm <- function(
   # Calculate COD/VS flows
   # First concentrations in g/kg
 
-  dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_aer + dat$conc_fresh_xa_bac + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))])
-  dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_aer + dat$conc_fresh_xa_bac + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) + dat$conc_fresh_iNDF
+  dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))])
+  dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) + dat$conc_fresh_iNDF
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
-  dat$C_conc_fresh <- dat$conc_fresh_VFA / pars$COD_conv[['C_VFA']] + dat$conc_fresh_xa_aer / pars$COD_conv[['C_xa']] + dat$conc_fresh_xa_bac / pars$COD_conv[['C_xa']] + dat$conc_fresh_xa_dead / pars$COD_conv[['C_xa']] + dat$conc_fresh_RFd / pars$COD_conv[["C_RFd"]] +
+  dat$C_conc_fresh <- dat$conc_fresh_VFA / pars$COD_conv[['C_VFA']] + dat$conc_fresh_xa_dead / pars$COD_conv[['C_xa']] + dat$conc_fresh_RFd / pars$COD_conv[["C_RFd"]] +
                       dat$conc_fresh_starch / pars$COD_conv[['C_starch']] + dat$conc_fresh_CPs / pars$COD_conv[['C_CP']] + dat$conc_fresh_CPf / pars$COD_conv[['C_CP']] + dat$conc_fresh_Cfat / pars$COD_conv[['C_Cfat']] +
                       dat$conc_fresh_VSd / pars$COD_conv[['C_VSd']] + dat$conc_fresh_iNDF / pars$COD_conv[['C_iNDF']] + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) / pars$COD_conv[['C_xa']] +
                       dat$conc_fresh_urea / pars$COD_conv[['C_N_urea']]
   
   # ndCOD is almost conserved, same everywhere always - some problem here with water evap and water precipitation?
   dat$ndCOD_conc <- ndCOD_conc <- dat$COD_conc_fresh - dat$dCOD_conc_fresh 
-  dat$dCOD_conc <- dCOD_conc <- dat$xa_aer_conc + dat$xa_bac_conc + dat$xa_dead_conc + dat$RFd_conc + dat$Cfat_conc + dat$CPs_conc + dat$CPf_conc + dat$starch_conc + dat$VFA_conc + dat$VSd_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
+  dat$dCOD_conc <- dCOD_conc <- dat$xa_dead_conc + dat$RFd_conc + dat$Cfat_conc + dat$CPs_conc + dat$CPf_conc + dat$starch_conc + dat$VFA_conc + dat$VSd_conc + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE])
   dat$COD_conc <- COD_conc <- ndCOD_conc + dCOD_conc
   
   dat$VS_conc <- dat$COD_conc/pars$COD_conv[['VS']]
 
-  dat$C_conc <- dat$VFA_conc / pars$COD_conv[['C_VFA']] + dat$xa_aer_conc / pars$COD_conv[['C_xa']] + dat$xa_bac_conc / pars$COD_conv[['C_xa']] + dat$xa_dead_conc / pars$COD_conv[['C_xa']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
+  dat$C_conc <- dat$VFA_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_conc / pars$COD_conv[['C_xa']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_conc / pars$COD_conv[['C_starch']] + dat$CPs_conc / pars$COD_conv[['C_CP']] + dat$CPf_conc / pars$COD_conv[['C_CP']] + dat$Cfat_conc / pars$COD_conv[['C_Cfat']] +
                 dat$VSd_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
                 dat$urea_conc / pars$COD_conv[['C_N_urea']]
   
-  dat$C_eff_conc <- dat$VFA_eff_conc / pars$COD_conv[['C_VFA']] + dat$xa_aer_eff_conc / pars$COD_conv[['C_xa']] + dat$xa_bac_eff_conc / pars$COD_conv[['C_xa']] + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
+  dat$C_eff_conc <- dat$VFA_eff_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_eff_conc / pars$COD_conv[['C_starch']] + dat$CPs_eff_conc / pars$COD_conv[['C_CP']] + dat$CPf_eff_conc / pars$COD_conv[['C_CP']] + dat$Cfat_eff_conc / pars$COD_conv[['C_Cfat']] +
                 dat$VSd_eff_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
                 dat$urea_eff_conc / pars$COD_conv[['C_N_urea']]
@@ -393,13 +391,13 @@ abm <- function(
   # specifically the N stored in xa_bac needs to be transfered to the CP pool when it degrades.  
   
   dat$Ninorg_conc_fresh <- dat$conc_fresh_urea + dat$conc_fresh_TAN
-  dat$Norg_conc_fresh <- dat$conc_fresh_CPs / pars$COD_conv[['CP_N']] + dat$conc_fresh_CPf / pars$COD_conv[['CP_N']] + dat$conc_fresh_xa_bac / pars$COD_conv[['N_xa']] + dat$conc_fresh_xa_aer / pars$COD_conv[['N_xa']]# Note that the input CP is typically measured and therefore includes.
+  dat$Norg_conc_fresh <- dat$conc_fresh_CPs / pars$COD_conv[['CP_N']] + dat$conc_fresh_CPf / pars$COD_conv[['CP_N']]# Note that the input CP is typically measured and therefore includes.
   dat$N_conc_fresh <- dat$Ninorg_conc_fresh + dat$Norg_conc_fresh
   dat$Ninorg_conc <- Ninorg_conc <- dat$urea_conc + dat$TAN_conc
-  dat$Norg_conc <- Norg_conc <- dat$CPs_conc / pars$COD_conv[['CP_N']] + dat$CPf_conc / pars$COD_conv[['CP_N']] + dat$xa_bac_conc / pars$COD_conv[['N_xa']] + dat$xa_aer_conc / pars$COD_conv[['N_xa']]
+  dat$Norg_conc <- Norg_conc <- dat$CPs_conc / pars$COD_conv[['CP_N']] + dat$CPf_conc / pars$COD_conv[['CP_N']]
   dat$N_conc <- N_conc <- dat$Ninorg_conc + dat$Norg_conc
   dat$Ninorg_eff_conc <- Ninorg_eff_conc <- dat$urea_eff_conc + dat$TAN_eff_conc
-  dat$N_eff_conc <- Ninorg_eff_conc + dat$CPs_eff_conc / pars$COD_conv[['CP_N']] + dat$CPf_eff_conc / pars$COD_conv[['CP_N']] +dat$xa_bac_eff_conc / pars$COD_conv[['N_xa']] + dat$xa_aer_eff_conc / pars$COD_conv[['N_xa']]
+  dat$N_eff_conc <- Ninorg_eff_conc + dat$CPs_eff_conc / pars$COD_conv[['CP_N']] + dat$CPf_eff_conc / pars$COD_conv[['CP_N']]
   
   # And flows in g/d
   dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate

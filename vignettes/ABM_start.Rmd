@@ -296,7 +296,7 @@ man_pars <- list(conc_fresh = data.frame(time = c(0, 100, 101, 365), sulfide = c
                                         urea = 0, 
                                         sulfate = 0.2, TAN = c(0, 3, 5, 6), starch = 1, 
                                         VFA = c(2.83, 2.83, 6, 6), 
-                                        xa_dead = 0, xa_bac = 0, xa_aer = 0, 
+                                        xa_dead = 0, 
                                         Cfat = 12, CPs = 10, CPf = 10, RFd = 29, iNDF = 10, VSd = 0, 
                                         VSd_A = 44.4, VSnd_A = 20, ash = 15), pH = 7, dens = 1000)
 

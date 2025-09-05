@@ -293,7 +293,7 @@ abm <- function(
   # hard wired parameters, that will not change during a rates call
   # and was moved from rates to here to speed up model. These parameters are added in the hard_pars().
   pars <- hard_pars(pars)
-
+#browser()
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
     dat <- abm_regular(days = days, delta_t = delta_t, times_regular = times, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  
@@ -303,9 +303,9 @@ abm <- function(
     dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
                         SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx = approx_method['slurry_mass'])
   } 
-
+#browser()
   colnames(dat) <- gsub("conc_fresh.","conc_fresh_", colnames(dat))
-  
+#browser()  
   # Calculate concentrations where relevant
   #conc.names <- names(dat)[!grepl('conc|time|slurry_mass|inhib|qhat|CH4_emis_cum', names(dat))]
   mic_names <- pars$grps

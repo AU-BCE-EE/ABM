@@ -71,12 +71,20 @@ abm_variable <-
   } else if (slurry_mass_approx == 'early') {
     removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0
   } else if (slurry_mass_approx == 'mid') {
+  
     # Get midpoint time
     ir <- which(- c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0)
     tt <- (pars$slurry_mass[ir, 'time']  + pars$slurry_mass[ir - 1, 'time']) / 2
     # And copy slurry mass
     mm <- pars$slurry_mass[ir, 'slurry_mass']
-    pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm))
+    
+    # if wash_water exists for some reason, we need to add it when rbinding.
+    if("wash_water" %in% colnames(pars$slurry_mass)){
+      pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm, wash_water = 0))
+    } else{
+      pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm))
+    }
+    
     pars$slurry_mass <- pars$slurry_mass[order(pars$slurry_mass$time), ]
     # Then apply late removal method
     removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0

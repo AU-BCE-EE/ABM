@@ -58,7 +58,7 @@ chem_pars <- list(COD_conv = c(CH4 = 1/0.2507))
 ```
 
 ```{r}
-devtools::load_all()
+system.time({
 out1 <- abm(400.001,
             mng_pars = mng_pars,
             man_pars = man_pars,
@@ -66,6 +66,7 @@ out1 <- abm(400.001,
             sub_pars = sub_pars,
             chem_pars = chem_pars,
             startup = 1)
+})
 ```
 
 ```{r}

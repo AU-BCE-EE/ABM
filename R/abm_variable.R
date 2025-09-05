@@ -80,7 +80,11 @@ abm_variable <-
     
     # if wash_water exists for some reason, we need to add it when rbinding.
     if("wash_water" %in% colnames(pars$slurry_mass)){
-      pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm, wash_water = 0))
+      if(length(mm) == 0) {
+        wash_water_fill <- mm
+      }else{wash_water_fill <- 0}
+    
+      pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm, wash_water = wash_water_fill))
     } else{
       pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm))
     }

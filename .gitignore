@@ -1,3 +1,6 @@
+# Stupid Windows
+*Zone.Identifier*
+
 # Files from devtools::load_all()
 src/*.o
 src/*.so

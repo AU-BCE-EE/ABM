@@ -1,4 +1,14 @@
-# Run benchmark scenarios with simpler1 branch
+# Run benchmark scenarios with simpler1 and dev (with rates in Rcpp) branch
+# Note that this script downloads and uses 
+
+# Locations for dev Rcpp version
+
+devloc <- '../../../tmp/ABM-dev'
+simploc <- '../../../tmp/ABM-simp'
+
+# Install different versions to different locations
+devtools::install_github('AU-BCE-EE/ABM', ref = 'dev', lib = devloc, force = TRUE)
+devtools::install_github('AU-BCE-EE/ABM', ref = 'simpler1', lib = simploc, force = TRUE)
 
 # Function
 source('interpm.R')

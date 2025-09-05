@@ -60,6 +60,16 @@ system.time({
 out1 <- abm(365, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars, sub_pars = sub_pars, chem_pars = chem_pars, var_pars = var_pars)
 })
 
+library(profvis)
+
+profvis::profvis({
+  abm(365, mng_pars = mng_pars, man_pars = man_pars, grp_pars = grp_pars, sub_pars = sub_pars, chem_pars = chem_pars, var_pars = var_pars)
+  
+})
+
+Rp
+
+
 png('mass1.png')
   plot(slurry_mass ~ time, type = 'l', data = out1)
 dev.off()

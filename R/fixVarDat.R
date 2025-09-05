@@ -23,6 +23,12 @@ fixVarDat <- function(pars, days) {
     stop('Column `time` must be sorted when time-variable parameters are used (pars), but it is not: ',
          head(pars$var$time))
   }
+
+  # Check for duplicate times
+  if (any(duplicated(pars$var$time))) {
+    stop('Column `time` has duplicates, which is not allowed. See rows: ',
+         paste0(which(duplicated(pars$var$time)), collape = ', '))
+  }
   
   # If simulation continues past pars data frame time, extend last row all the way
   if (pars$var[nrow(pars$var), 'time'] < days) {

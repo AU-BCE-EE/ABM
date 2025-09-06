@@ -173,7 +173,7 @@ grp_pars_VS_digestate2.0 <- list(grps = c('m0', 'm1', 'm2', 'm3', 'sr1'),
                                  xa_init = c(all = 0.3),
                                  decay_rate = c(all = 0.02),
                                  ks_coefficient = c(default = 1.153337, sr1 = 0.461335),
-                                 qhat_opt = c(m0 = 0.5, m1 = 0.8, m2 = 1.2, m3 = 3.4, sr1 = 9),
+                                 qhat_opt = c(m0 = 0.11, m1 = 1.92, m2 = 1.46, m3 = 3.4, sr1 = 9),
                                  T_opt = c(m0 = 18, m1 = 18, m2 = 28, m3 = 36, sr1 = 44),
                                  T_min = c(m0 = 0,  m1 = 11.36,  m2 = 11.36,  m3 = 15, sr1 = 0),
                                  T_max = c(m0 = 25, m1 = 25, m2 = 38, m3 = 45, sr1 = 51),
@@ -262,7 +262,7 @@ arrh_pars_digestate2.0 <- list(A = c(xa_dead= 22497134.8, starch = 5.86*10^18, C
                                E = c(xa_dead= 55609, starch = 109400, Cfat = 0, CPs = 87515.5450, CPf = 69361.3, RFd = 57867, VSd = 55609, urea = 81559),
                                R = 8.314,
                                VS_CH4 = 6.67,
-                               scale_alpha_opt = list(VSd = 1, notVSd = 1, CP = 1),
+                               scale_alpha_opt = list(VSd = 2.95, notVSd = 1, CP = 1),
                                kl = c(NH3 = 64*8, NH3_floor = 36*8, H2S = 0.02),
                                scale_EF_NH3 = 0.0000048)
 

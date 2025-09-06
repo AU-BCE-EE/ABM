@@ -1,7 +1,7 @@
 Package: ABM
 Type: Package
 Title: Simulate Anaerobic Biodegradation
-Version: 2.0.3
+Version: 2.0.30
 Date: 2025-06-09
 Author: Sasha D. Hafner and Frederik Dalby
 Maintainer: Sasha D. Hafner <sasha.hafner@bce.au.dk> and Frederik R. Dalby <fd@bce.au.dk>

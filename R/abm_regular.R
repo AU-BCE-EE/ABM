@@ -66,8 +66,9 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     pars$t_run <- t_run
     pars$t_call <- t_call
     pars$times <- times
-
-    pars$p_idx <- pars_indices(pars)
+    
+    p_idx <- pars_indices(pars)
+    pars$p_idx <- p_idx
     pars$temp_C_fun <- temp_C_fun
     pars$pH_fun <- pH_fun
     pars$SO4_inhibition_fun <- SO4_inhibition_fun

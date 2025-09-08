@@ -3,14 +3,22 @@
 using namespace Rcpp;
 using namespace std;
 // [[Rcpp::export]]
-List rates_cpp(double t, NumericVector y, List parms, NumericVector p_idx, Rcpp::Function temp_C_fun, Rcpp::Function pH_fun, 
-               Rcpp::Function SO4_inhibition_fun, List conc_fresh_fun, List xa_fresh_fun, Rcpp::Function CTM_cpp, 
-               Rcpp::Function H2SO4_titrate){
+List rates_cpp(double t, NumericVector y, List parms){
   
   //y[y < 1E-10] <- 1E-10
   std::transform(y.begin(), y.end(), y.begin(), [](double value) {
     return (value < 1E-10) ? 1E-10 : value;
   });
+  
+  
+  NumericVector p_idx  = parms["p_idx"];
+  Function temp_C_fun   = parms["temp_C_fun"];
+  Function pH_fun       = parms["pH_fun"];
+  Function SO4_inhibition_fun = parms["SO4_inhibition_fun"];
+  Function CTM_cpp = parms["CTM_cpp"];
+  Function H2SO4_titrate = parms["H2SO4_titrate"];
+  List xa_fresh_fun = parms["xa_fresh_fun"];
+  List conc_fresh_fun = parms["conc_fresh_fun"];
   
   double slurry_prod_rate = parms[p_idx[0]];
   double t_run = parms[p_idx[1]];

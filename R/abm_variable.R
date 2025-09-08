@@ -207,13 +207,18 @@ abm_variable <-
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
     
-    p_idx <- pars_indices(pars)
-    
+    pars$p_idx <- pars_indices(pars)
+    pars$temp_C_fun <- temp_C_fun
+    pars$pH_fun <- pH_fun
+    pars$SO4_inhibition_fun <- SO4_inhibition_fun
+    pars$CTM_cpp <- CTM_cpp
+    pars$H2SO4_titrate <- H2SO4_titrat
+    pars$xa_fresh_fun <- xa_fresh_fun
+    pars$conc_fresh_fun <- conc_fresh_fun
     # Call up ODE solver
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, p_idx = p_idx, temp_C_fun = temp_C_fun, 
-                          pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp, 
-                          H2SO4_titrat = H2SO4_titrat)
+    #cat(t_rem, '\n')
+    
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars)
     
     # Change format of output and drop first (time 0) row (duplicated in last row of previous)
     if (i == 2) {

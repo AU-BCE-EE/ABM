@@ -67,15 +67,18 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     pars$t_call <- t_call
     pars$times <- times
 
-    p_idx <- pars_indices(pars)
-
+    pars$p_idx <- pars_indices(pars)
+    pars$temp_C_fun <- temp_C_fun
+    pars$pH_fun <- pH_fun
+    pars$SO4_inhibition_fun <- SO4_inhibition_fun
+    pars$CTM_cpp <- CTM_cpp
+    pars$H2SO4_titrate <- H2SO4_titrat
+    pars$xa_fresh_fun <- xa_fresh_fun
+    pars$conc_fresh_fun <- conc_fresh_fun
     # Call up ODE solver
     #cat(t_rem, '\n')
 
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, p_idx = p_idx,
-                          temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp,
-                          H2SO4_titrat = H2SO4_titrat)
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars)
 
         #out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
     #                      temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 

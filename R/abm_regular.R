@@ -67,8 +67,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     pars$t_call <- t_call
     pars$times <- times
     
-    p_idx <- pars_indices(pars)
-    pars$p_idx <- p_idx
+    pars$p_idx <- pars_indices(pars)
     pars$temp_C_fun <- temp_C_fun
     pars$pH_fun <- pH_fun
     pars$SO4_inhibition_fun <- SO4_inhibition_fun
@@ -112,9 +111,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
         times <- seq(0, pars$rest_d, delta_t)
         parsr <- pars
         parsr$slurry_prod_rate <- 0
-        outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, p_idx = p_idx, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                               SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, 
-                               xa_fresh_fun = xa_fresh_fun, CTM_cpp = CTM_cpp, H2SO4_titrat = H2SO4_titrat)
+        outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr)
         # Extract new state variable vector from last row
         y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 27) + 1]
         # Correct time in outr and combine with main output

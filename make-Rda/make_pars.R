@@ -147,7 +147,7 @@ grp_pars_VS_cattle2.0 <- list(grps = c('m0', 'm1', 'm2','sr1'),
 
 grp_pars_cattle2.0 <- list(grps = c('m0', 'm1', 'm2','m3','m4','m5', 'sr1'),
                            yield = c(default = 0.05, sr1 = 0.065),
-                           xa_fresh = c(m0 = 0.06, m1 = 0.06, m2 = 0.06, sr1 = 0.06),
+                           xa_fresh = c(m0 = 0.06, m1 = 0.06, m2 = 0.06, m3 = 0.06, m4 = 0.06, m5 = 0.05, sr1 = 0.06),
                            xa_init = c(all = 0.06),
                            decay_rate = c(all = 0.02),
                            ks_coefficient = c(default = 1.153337, sr1 = 0.461335),

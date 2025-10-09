@@ -218,7 +218,7 @@ abm_variable <-
     # Call up ODE solver
     #cat(t_rem, '\n')
     
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars)
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, rtol = 1E-4, atol = 1E-4)
     
     # Change format of output and drop first (time 0) row (duplicated in last row of previous)
     if (i == 2) {

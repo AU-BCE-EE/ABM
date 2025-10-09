@@ -86,6 +86,7 @@ List rates_cpp(double t, NumericVector y, List parms){
   }
   
   double temp_C = as<double>(temp_C_fun(time_sum));
+  if (temp_C <= 0.0) temp_C = 0.00001;
   double temp_K = temp_C + 273.15;
   double temp_standard = parms[p_idx[3]];
   

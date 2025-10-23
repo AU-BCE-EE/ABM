@@ -7,7 +7,7 @@ pars_indices <- function(pars){
   'T_opt','T_min','T_max','qhat_opt','decay_rate','g_NH4','pH_inhib_overrule','pH_floor','pH_LL','pH_UL','ki_NH3_min',
   'ki_NH3_max','ki_NH4_min','ki_NH4_max','ki_HAC','ki_H2S_slope','ki_H2S_int','ki_H2S_min','IC50_low','area','floor_area',
   'resp','kl','i_meth','i_sr', 'ks_coefficient','ks_SO4','km_urea','conc_fresh', 'carb','pro','lip','ace', 'hyd', 'ace_sr', 'hyd_sr',
-  'carb_resp', 'pro_resp', 'lip_resp','COD_conv','xa_fresh','yield', 'rain', 'evap', 'N2O_emis_rate')
+  'carb_resp', 'pro_resp', 'lip_resp','COD_conv','xa_fresh','yield', 'rain', 'evap', 'N2O_emis_rate', 'OM','OM_resp')
   
   p_idx <- vector(mode = "numeric", length = length(pars_elem_ordered)) 
   p_idx <- match(pars_elem_ordered, names(pars))

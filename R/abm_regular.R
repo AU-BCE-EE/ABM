@@ -61,7 +61,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     
     # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
     times <- sort(unique(round(c(seq(0, t_call, by = min(t_rem, delta_t)), t_call), 5)))
-    
+
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
     pars$t_call <- t_call
@@ -78,7 +78,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     # Call up ODE solver
     #cat(t_rem, '\n')
 
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars,rtol = 1E-4, atol = 1E-4)
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars,rtol = 1E-5, atol = 1E-5)
 
         #out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
     #                      temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
@@ -111,7 +111,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
         times <- seq(0, pars$rest_d, delta_t)
         parsr <- pars
         parsr$slurry_prod_rate <- 0
-        outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, rtol = 1E-4, atol = 1E-4)
+        outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, rtol = 1E-5, atol = 1E-5)
         # Extract new state variable vector from last row
         y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 27) + 1]
         # Correct time in outr and combine with main output

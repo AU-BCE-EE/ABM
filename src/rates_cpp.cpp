@@ -350,10 +350,12 @@ List rates_cpp(double t, NumericVector y, List parms){
   double mol_carb = (alpha_RFd * RFd + alpha_starch * starch) * 0.005208333;
   double mol_pro = (alpha_CPf * CPf + alpha_CPs * CPs) * 0.00748503;
   double mol_lip = alpha_Cfat * Cfat * 0.0004194631;
+  double mol_OM = alpha_VSd * VSd * 0.001833952;
   
   NumericVector carb = parms[p_idx[39]];
   NumericVector pro = parms[p_idx[40]];
   NumericVector lip = parms[p_idx[41]];
+  NumericVector OM = parms[p_idx[55]];
   NumericVector ace = parms[p_idx[42]];
   NumericVector hyd = parms[p_idx[43]];
   NumericVector ace_sr = parms[p_idx[44]];
@@ -362,7 +364,7 @@ List rates_cpp(double t, NumericVector y, List parms){
   NumericVector ferm(carb.size()); 
   
   for(int i = 0; i < carb.size(); ++i) {
-    ferm[i] = mol_carb * carb[i] + mol_pro * pro[i] + mol_lip * lip[i];
+    ferm[i] = mol_carb * carb[i] + mol_pro * pro[i] + mol_lip * lip[i] + mol_OM * OM[i];
   }
   
   double C2H4O2 = ferm[6];
@@ -402,14 +404,17 @@ List rates_cpp(double t, NumericVector y, List parms){
   double mol_carb_resp = respiration * (RFd + starch)/sub_resp * 0.005208333;
   double mol_pro_resp = respiration * (CPs + CPf)/sub_resp * 0.00748503;
   double mol_lip_resp = respiration * Cfat/sub_resp * 0.0004194631;
+  double mol_OM_resp = respiration * VSd/sub_resp * 0.001833952;
   
   NumericVector carb_resp = parms[p_idx[46]];
   NumericVector pro_resp = parms[p_idx[47]];
   NumericVector lip_resp = parms[p_idx[48]];
+  NumericVector OM_resp = parms[p_idx[56]];
+  
   NumericVector respir(carb_resp.size());
   
   for(int i = 0; i < carb_resp.size(); ++i) {
-    respir[i] = mol_carb_resp * carb_resp[i] + mol_pro_resp * pro_resp[i] + mol_lip_resp * lip_resp[i];
+    respir[i] = mol_carb_resp * carb_resp[i] + mol_pro_resp * pro_resp[i] + mol_lip_resp * lip_resp[i] + mol_OM_resp * OM_resp[i];
   }
   
   //double xa_aer_rate = respir[7] * 160;

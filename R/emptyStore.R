@@ -7,11 +7,22 @@ emptyStore <- function(y, resid_mass, resid_enrich,
                        enrich_names = c('^xa', '^m[0-9]', '^sr[0-9]', '^RFd$', '^CPs$', '^iNDF$', '^VSd$', '^Cfat$', '^starch$', '^ash$'),
                        ignore_names = c('_cum_', '_conv_', 'cum$')) {
 
+  
+  
   y <- unlist(y)
   slurry_mass <- y['slurry_mass']
 
+  #print(slurry_mass)
   which.ignore <- grepl(paste(ignore_names, collapse = '|'), names(y))
 
+  #if(!exists('slurry_mass')) browser()
+  #if(is.null(slurry_mass)) browser()
+  #if (!is.finite(slurry_mass) || !is.finite(resid_mass) || is.null(slurry_mass)) {
+  #  cat("Non-finite detected: slurry_mass =", slurry_mass,
+  #      ", resid_mass =", resid_mass, "\n")
+  #  browser()
+  #}
+  
   if (slurry_mass > resid_mass) {
     # Masses before emptying
     y.before <- y

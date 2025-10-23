@@ -218,7 +218,7 @@ abm_variable <-
     # Call up ODE solver
     #cat(t_rem, '\n')
     
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, rtol = 1E-4, atol = 1E-4)
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, rtol = 1E-5, atol = 1E-5)
     
     # Change format of output and drop first (time 0) row (duplicated in last row of previous)
     if (i == 2) {
@@ -237,6 +237,7 @@ abm_variable <-
     out$time <- out$time + t_run
     
     # Create empty (0) y.eff vector because washing could occur, and dat needs columns
+
     yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
     y.eff <- 0 * yy[grepl('_eff$', names(yy))]
 

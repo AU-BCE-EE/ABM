@@ -94,7 +94,12 @@ abm <- function(
     # Return only final values
     return(out)
   } 
-
+  
+  #if anim_pars are used adjust initial concentration to init in anim_pars
+  if(!is.null(anim_pars)){
+    init_pars = list(conc_init = anim_pars$conc_fresh)
+  }
+  
   # If starting conditions are provided from a previous simulation, move them to pars
   # Note that additional state variables are extracted from starting in abm_*.R
   if (!is.null(starting) & is.data.frame(starting)) {

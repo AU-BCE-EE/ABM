@@ -241,7 +241,15 @@ abm <- function(
   if(is.data.frame(pars$slurry_mass)){
     # If missing slurry mass at time 0, set to earliest slurry mass value
     if (pars$slurry_mass[1, 'time'] > 0) {
+      if(!"wash_water" %in% colnames(pars$slurry_mass)){
       pars$slurry_mass <- rbind(c(0, pars$slurry_mass$slurry_mass[1]), pars$slurry_mass)
+      }
+      if("wash_water" %in% colnames(pars$slurry_mass)){
+        pars$slurry_mass <- rbind(c(0, pars$slurry_mass$slurry_mass[1], 0), pars$slurry_mass)
+        if(all(pars$slurry_mass$wash_water == 0)){
+          pars$slurry_mass$wash_water <- NULL
+        }
+      }
     }
     slurry_mass_init <- pars$slurry_mass[1, 'slurry_mass']
   } else {

@@ -14,7 +14,6 @@ List rates_cpp(double t, NumericVector y, List parms){
   NumericVector p_idx  = parms["p_idx"];
   Function temp_C_fun   = parms["temp_C_fun"];
   Function pH_fun       = parms["pH_fun"];
-  Function SO4_inhibition_fun = parms["SO4_inhibition_fun"];
   Function CTM_cpp = parms["CTM_cpp"];
   Function H2SO4_titrate = parms["H2SO4_titrate"];
   List xa_fresh_fun = parms["xa_fresh_fun"];

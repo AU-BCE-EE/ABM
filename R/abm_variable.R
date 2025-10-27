@@ -1,6 +1,6 @@
 abm_variable <-
   function(days, delta_t, times, y, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-           SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx) {
+           conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx) {
     
   #initialize dat for storage of results to speed up bind_rows
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) # slow speed, but much faster than before
@@ -210,7 +210,6 @@ abm_variable <-
     pars$p_idx <- pars_indices(pars)
     pars$temp_C_fun <- temp_C_fun
     pars$pH_fun <- pH_fun
-    pars$SO4_inhibition_fun <- SO4_inhibition_fun
     pars$CTM_cpp <- CTM_cpp
     pars$H2SO4_titrate <- H2SO4_titrat
     pars$xa_fresh_fun <- xa_fresh_fun

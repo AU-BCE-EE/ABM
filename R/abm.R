@@ -219,11 +219,6 @@ abm <- function(
   # add time to xa_fresh and get xa_fresh funs
   if(is.data.frame(pars$xa_fresh)) pars$xa_fresh$time <- xa_fresh_time
   xa_fresh_fun <- makeXaFreshFunc(pars$xa_fresh)
-
-  # NTS Inhibition function. Can be exported as separate function (like H2SO4_titrate)!
-  td <- data.frame(SO4_conc = c(0, 0.09, 0.392251223, 0.686439641, 1.046003263, 1.470942088, 1.961256117, 4), 
-                   SO4_inhib = c(1, 1, 0.85, 0.3172, 0.29, 0.1192, 0.05, 0.001))
-  SO4_inhibition_fun <- approxfun(td$SO4_conc, td$SO4_inhib, rule = 2)
   
   # Convert some supplied parameters
   # Maximum slurry mass in kg
@@ -298,19 +293,19 @@ abm <- function(
   # hard wired parameters, that will not change during a rates call
   # and was moved from rates to here to speed up model. These parameters are added in the hard_pars().
   pars <- hard_pars(pars)
-#browser()
+
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
     dat <- abm_regular(days = days, delta_t = delta_t, times_regular = times, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  
-                       SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+                       conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
     dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                        SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx = approx_method['slurry_mass'])
+                        conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx = approx_method['slurry_mass'])
   } 
-#browser()
+
   colnames(dat) <- gsub("conc_fresh.","conc_fresh_", colnames(dat))
-#browser()  
+ 
   # Calculate concentrations where relevant
   #conc.names <- names(dat)[!grepl('conc|time|slurry_mass|inhib|qhat|CH4_emis_cum', names(dat))]
   mic_names <- pars$grps

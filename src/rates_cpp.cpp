@@ -485,7 +485,7 @@ List rates_cpp(double t, NumericVector y, List parms){
   
   double sum_xa_fresh = std::accumulate(xa_fresh.begin(), xa_fresh.end(), 0.0);
   
-  int nn = n_mic + 27;
+  int nn = n_mic + 30;
   
   NumericVector derivatives(nn);
   
@@ -514,12 +514,12 @@ List rates_cpp(double t, NumericVector y, List parms){
   derivatives[n_mic+12] = slurry_prod_rate * conc_fresh_TAN + rut_urea + TAN_min_ferm + TAN_min_resp - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate;
   derivatives[n_mic+13] = slurry_prod_rate * conc_fresh_sulfate - sum_rutsr / COD_conv_S;
   derivatives[n_mic+14] = slurry_prod_rate * conc_fresh_sulfide + sum_rutsr / COD_conv_S - H2S_emis_rate;
-  derivatives[n_mic+15] = slurry_prod_rate * conc_fresh_VSd_A
-  derivatives[n_mic+16] = slurry_prod_rate * conc_fresh_VSnd_A
+  derivatives[n_mic+15] = - VSd_A * ((exp(parms[p_idx[57]] - parms[p_idx[58]] / (R * temp_K))) * 24 / 1000 * 6.67) + slurry_prod_rate * conc_fresh_VSd_A;
+  derivatives[n_mic+16] = - 0.01 * VSnd_A * ((exp(parms[p_idx[57]] - parms[p_idx[58]] / (R * temp_K))) * 24 / 1000 * 6.67) + slurry_prod_rate * conc_fresh_VSnd_A;
   derivatives[n_mic+17] = NH3_emis_rate_pit + NH3_emis_rate_floor;
   derivatives[n_mic+18] = N2O_emis_rate;
   derivatives[n_mic+19] = sum_rutmeth / COD_conv_CH4;
-  derivatives[n_mic+20] = slurry_prod_rate * conc_fresh_VSd_A
+  derivatives[n_mic+20] = VSd_A * (exp(parms[p_idx[57]] - parms[p_idx[58]] / (R * temp_K))) * 24 / 1000;
   derivatives[n_mic+21] = CO2_ferm_meth_sr + CO2_resp + rut_urea / COD_conv_CO2_ureo;
   derivatives[n_mic+22] = sum_rut + respiration;
   derivatives[n_mic+23] = sum_rutmeth;
@@ -534,18 +534,19 @@ List rates_cpp(double t, NumericVector y, List parms){
   
   // Return the main list containing both derivatives and rates
   return List::create(Named("derivatives") = derivatives,
-                      Named("COD_load_rate") = derivatives[n_mic + 23],
-                                                          Named("C_load_rate") = derivatives[n_mic + 24],
-                                                                                            Named("N_load_rate") = derivatives[n_mic + 25],
-                                                                                                                              Named("CH4_emis_rate") = derivatives[n_mic + 17],
-                                                                                                                                                                  Named("CO2_emis_rate") = derivatives[n_mic + 18],
-                                                                                                                                                                                                      Named("H2S_emis_rate") = H2S_emis_rate,
-                                                                                                                                                                                                      Named("NH3_emis_rate_pit") = NH3_emis_rate_pit,
-                                                                                                                                                                                                      Named("NH3_emis_rate_floor") = NH3_emis_rate_floor,
-                                                                                                                                                                                                      Named("N2O_emis_rate") = N2O_emis_rate,
-                                                                                                                                                                                                      Named("conc_fresh") = conc_fresh,
-                                                                                                                                                                                                      Named("xa_fresh") = xa_fresh * scale_xa_fresh,
-                                                                                                                                                                                                      Named("slurry_prod_rate") = slurry_prod_rate,
+                      Named("COD_load_rate") = derivatives[n_mic + 26],
+                      Named("C_load_rate") = derivatives[n_mic + 27],
+                      Named("N_load_rate") = derivatives[n_mic + 28],
+                      Named("CH4_emis_rate") = derivatives[n_mic + 19],
+                      Named("CH4_emis_rate_A") = derivatives[n_mic + 20],
+                                                         Named("CO2_emis_rate") = derivatives[n_mic + 21],
+                                                                                                  Named("H2S_emis_rate") = H2S_emis_rate,
+                                                                                        Named("NH3_emis_rate_pit") = NH3_emis_rate_pit,
+                                                                              Named("NH3_emis_rate_floor") = NH3_emis_rate_floor,
+                                                                          Named("N2O_emis_rate") = N2O_emis_rate,
+                                                             Named("conc_fresh") = conc_fresh,
+                                                                                     Named("xa_fresh") = xa_fresh * scale_xa_fresh,
+                                                                           Named("slurry_prod_rate") = slurry_prod_rate,
                                                                                                                                                                                                       Named("rain") = rain,
                                                                                                                                                                                                       Named("evap") = evap,
                                                                                                                                                                                                       Named("sum_rut") = sum_rut,

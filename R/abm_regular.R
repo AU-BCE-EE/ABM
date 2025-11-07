@@ -83,7 +83,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     n_mic <- length(pars$n_mic)
 
     # Extract new state variable vector from last row
-    y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 27) + 1]
+    y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 30) + 1]
 
     
     # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
@@ -108,7 +108,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
         parsr$slurry_prod_rate <- 0
         outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, rtol = 1E-5, atol = 1E-5)
         # Extract new state variable vector from last row
-        y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 27) + 1]
+        y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 30) + 1]
         # Correct time in outr and combine with main output
         outr[, 'time'] <- outr[, 'time'] + out[nrow(out), 'time']
         out <- rbind(out, outr)

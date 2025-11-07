@@ -94,7 +94,7 @@ abm <- function(
     # Return only final values
     return(out)
   } 
-  
+
   #if anim_pars are used adjust initial concentration to init in anim_pars
   if(!is.null(anim_pars)){
     init_pars = list(conc_init = anim_pars$conc_fresh)
@@ -227,7 +227,6 @@ abm <- function(
 
   # Cover effect on NH3 emission rate and N2O
   # reduction from cover 
-
   pars$EF_NH3 <- coverfun(pars$cover, pars$scale_EF_NH3)
   pars$EF_N2O <- ifelse(pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
   

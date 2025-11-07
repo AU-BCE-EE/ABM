@@ -268,9 +268,12 @@ abm <- function(
          TAN = pars$conc_init[['TAN']] * slurry_mass_init, 
          sulfate = pars$conc_init[['sulfate']] * slurry_mass_init, 
          sulfide = pars$conc_init[['sulfide']] * slurry_mass_init, 
+         VSd_A = pars$conc_init[['VSd_A']] * slurry_mass_init, 
+         VSnd_A = pars$conc_init[['VSnd_A']] * slurry_mass_init, 
          NH3_emis_cum = 0, 
          N2O_emis_cum = 0, 
          CH4_emis_cum = 0, 
+         CH4_emis_cum_A = 0,
          CO2_emis_cum = 0, 
          COD_conv_cum = 0, 
          COD_conv_cum_meth = 0, 
@@ -342,7 +345,10 @@ abm <- function(
   
   dat$rCH4 <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
   dat$CH4_emis_rate <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
- 
+  
+  dat$rCH4_A <- c(0, diff(dat$CH4_emis_cum_A))/c(1, diff(dat$time))
+  dat$CH4_emis_rate_A <- c(0, diff(dat$CH4_emis_cum_A))/c(1, diff(dat$time))
+  
   dat$rCO2 <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
   dat$CO2_emis_rate <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
   }
@@ -496,7 +502,9 @@ abm <- function(
   N2O_emis_N <- N2O_emis_cum / N_load
   
   CH4_emis_cum <- dat$CH4_emis_cum[nrow(dat)]
+  CH4_emis_cum_A <- dat$CH4_emis_cum_A[nrow(dat)]
   CH4_emis_rate <- CH4_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
+  CH4_emis_rate_A <- CH4_emis_cum_A / (dat$time[nrow(dat)] - dat$time[1])
   CH4_emis_COD <- CH4_emis_cum / COD_load
   CH4_emis_dCOD <- CH4_emis_cum / dCOD_load
   CH4_emis_VS <- CH4_emis_cum / VS_load
@@ -521,7 +529,7 @@ abm <- function(
   summ <- c(C_load = C_load, COD_load = COD_load, dCOD_load = dCOD_load, ndCOD_load = ndCOD_load, VS_load = VS_load, Ninorg_load = Ninorg_load, Norg_load = Norg_load, 
             N_load = N_load, NH3_emis_cum = NH3_emis_cum, NH3_emis_rate = NH3_emis_rate, NH3_emis_Ninorg = NH3_emis_Ninorg, NH3_emis_Norg = NH3_emis_Norg,
             NH3_emis_N = NH3_emis_N, N2O_emis_cum = N2O_emis_cum, N2O_emis_rate = N2O_emis_rate, N2O_emis_Ninorg = N2O_emis_Ninorg, N2O_emis_Norg = N2O_emis_Norg,
-            N2O_emis_N = N2O_emis_N, CH4_emis_cum = CH4_emis_cum, CH4_emis_rate = CH4_emis_rate,
+            N2O_emis_N = N2O_emis_N, CH4_emis_cum = CH4_emis_cum, CH4_emis_cum_A = CH4_emis_cum_A, CH4_emis_rate = CH4_emis_rate, CH4_emis_rate_A = CH4_emis_rate_A, 
             CH4_emis_COD = CH4_emis_COD, CH4_emis_dCOD = CH4_emis_dCOD, CH4_emis_VS = CH4_emis_VS, CH4_emis_C = CH4_emis_C, CH4_emis_slurry = CH4_emis_slurry,
             CO2_emis_cum = CO2_emis_cum, CO2_emis_rate = CO2_emis_rate, CO2_emis_COD = CO2_emis_COD, CO2_emis_dCOD = CO2_emis_dCOD, CO2_emis_VS = CO2_emis_VS, CO2_emis_C = CO2_emis_C, CO2_emis_slurry = CO2_emis_slurry,
             COD_conv_meth = COD_conv_meth, COD_conv_respir = COD_conv_respir, COD_conv_sr = COD_conv_sr,

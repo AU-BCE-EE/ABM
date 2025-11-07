@@ -13,14 +13,6 @@ call_int <- function(temp_C_fun, x) {
     .Call('_ABM_call_int', PACKAGE = 'ABM', temp_C_fun, x)
 }
 
-combined_cpp <- function(g_NH4, pH_inhib_overrule, pH, pH_floor, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low, temp_K, temp_C, temp_standard, area, floor_area, Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, qhat, i_meth, i_sr, xa, ks_coefficient, scale_ks, ks_SO4, sulfate, urea, alpha_urea, km_urea) {
-    .Call('_ABM_combined_cpp', PACKAGE = 'ABM', g_NH4, pH_inhib_overrule, pH, pH_floor, TAN, VFA, sulfide, slurry_mass, pH_LL, pH_UL, ki_NH3_min, ki_NH3_max, ki_NH4_min, ki_NH4_max, ki_HAC, ki_H2S_slope, ki_H2S_int, ki_H2S_min, IC50_low, temp_K, temp_C, temp_standard, area, floor_area, Cfat, CPs, CPf, RFd, starch, VSd, resp, kl, qhat, i_meth, i_sr, xa, ks_coefficient, scale_ks, ks_SO4, sulfate, urea, alpha_urea, km_urea)
-}
-
-derivatives_cpp <- function(yield, rut, slurry_prod_rate, decay_rate, scale, xa_fresh, conc_fresh, ferm, alpha, COD_conv, rain, evap, area, respiration, sub_resp, rut_urea, NH3_emis_rate_pit, NH3_emis_rate_floor, N2O_emis_rate, rutsr, H2S_emis_rate, R, temp_K, i_meth, i_sr, CO2_ferm_meth_sr, xa, slurry_mass, xa_bac, xa_aer, xa_dead, RFd, iNDF, ash, VSd, starch, CPs, CPf, Cfat, VFA, urea, TAN, sulfate, sulfide, qhat) {
-    .Call('_ABM_derivatives_cpp', PACKAGE = 'ABM', yield, rut, slurry_prod_rate, decay_rate, scale, xa_fresh, conc_fresh, ferm, alpha, COD_conv, rain, evap, area, respiration, sub_resp, rut_urea, NH3_emis_rate_pit, NH3_emis_rate_floor, N2O_emis_rate, rutsr, H2S_emis_rate, R, temp_K, i_meth, i_sr, CO2_ferm_meth_sr, xa, slurry_mass, xa_bac, xa_aer, xa_dead, RFd, iNDF, ash, VSd, starch, CPs, CPf, Cfat, VFA, urea, TAN, sulfate, sulfide, qhat)
-}
-
 extract_xa_cpp <- function(y, n_mic) {
     .Call('_ABM_extract_xa_cpp', PACKAGE = 'ABM', y, n_mic)
 }

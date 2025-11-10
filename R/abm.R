@@ -25,7 +25,7 @@ abm <- function(
   grp_pars = ABM::grp_pars2.0,
   mic_pars = ABM::mic_pars2.0,
   chem_pars = ABM::chem_pars2.0,
-  arrh_pars = ABM::arrh_pars2.0,
+  arrh_pars = ABM::arrh_pars_pig2.0,
   anim_pars = NULL,
   resp = TRUE,
   pH_inhib_overrule = FALSE, 

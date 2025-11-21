@@ -498,6 +498,8 @@ List rates_cpp(double t, NumericVector y, List parms){
   double rain = parms[p_idx[52]];
   double evap = parms[p_idx[53]];
   double N2O_emis_rate = parms[p_idx[54]];
+  double lnA = parms[p_idx[57]];
+  double Ea = parms[p_idx[58]];
   
   derivatives[n_mic] = slurry_prod_rate + (rain - evap) * area;
   derivatives[n_mic+1] = slurry_prod_rate * conc_fresh_xa_dead - alpha_xa_dead * xa_dead + decay_rate_double * std::accumulate(xa.begin(), xa.end(), 0.0);
@@ -514,12 +516,12 @@ List rates_cpp(double t, NumericVector y, List parms){
   derivatives[n_mic+12] = slurry_prod_rate * conc_fresh_TAN + rut_urea + TAN_min_ferm + TAN_min_resp - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate;
   derivatives[n_mic+13] = slurry_prod_rate * conc_fresh_sulfate - sum_rutsr / COD_conv_S;
   derivatives[n_mic+14] = slurry_prod_rate * conc_fresh_sulfide + sum_rutsr / COD_conv_S - H2S_emis_rate;
-  derivatives[n_mic+15] = - VSd_A * ((exp(parms[p_idx[57]] - parms[p_idx[58]] / (R * temp_K))) * 24 / 1000 * 6.67) + slurry_prod_rate * conc_fresh_VSd_A;
-  derivatives[n_mic+16] = - 0.01 * VSnd_A * ((exp(parms[p_idx[57]] - parms[p_idx[58]] / (R * temp_K))) * 24 / 1000 * 6.67) + slurry_prod_rate * conc_fresh_VSnd_A;
+  derivatives[n_mic+15] = - VSd_A * ((exp(lnA - Ea / (R * temp_K))) * 24 / 1000 * 6.67) + slurry_prod_rate * conc_fresh_VSd_A;
+  derivatives[n_mic+16] = - 0.01 * VSnd_A * ((exp(lnA - Ea / (R * temp_K))) * 24 / 1000 * 6.67) + slurry_prod_rate * conc_fresh_VSnd_A;
   derivatives[n_mic+17] = NH3_emis_rate_pit + NH3_emis_rate_floor;
   derivatives[n_mic+18] = N2O_emis_rate;
   derivatives[n_mic+19] = sum_rutmeth / COD_conv_CH4;
-  derivatives[n_mic+20] = VSd_A * (exp(parms[p_idx[57]] - parms[p_idx[58]] / (R * temp_K))) * 24 / 1000;
+  derivatives[n_mic+20] = VSd_A * (exp(lnA - Ea / (R * temp_K))) * 24 / 1000;
   derivatives[n_mic+21] = CO2_ferm_meth_sr + CO2_resp + rut_urea / COD_conv_CO2_ureo;
   derivatives[n_mic+22] = sum_rut + respiration;
   derivatives[n_mic+23] = sum_rutmeth;

@@ -52,16 +52,16 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
   t_rem <- days
   # Time that has already run
   t_run <- 0
-
+  
   # Start the time (emptying) loop
   for (i in 1:n_int) {
-
+    
     # Sort out call duration
     t_call <- t_int[i]
     
     # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
     times <- sort(unique(round(c(seq(0, t_call, by = min(t_rem, delta_t)), t_call), 5)))
-
+    
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
     pars$t_call <- t_call
@@ -78,20 +78,20 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     #cat(t_rem, '\n')
 
     out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars,rtol = 1E-5, atol = 1E-5)
-
+    
     # Get number of microbial groups
     n_mic <- length(pars$n_mic)
-
+    
     # Extract new state variable vector from last row
     y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 27) + 1]
-
+    
     
     # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
     y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
     y.eff <- y[grepl('_eff$', names(y))]
     y <- y[!grepl('_eff$', names(y))]
     #y[which.effluent] <- (y.before - y)[gsub('_eff$', '', names(y)[which.effluent])]
-   
+    
     # Washing, increase slurry mass
     if (wash[i]) {
       y['slurry_mass'] <- y['slurry_mass'] + pars$wash_water

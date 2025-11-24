@@ -91,8 +91,10 @@ hard_pars <- function(pars){
   pars$hyd <- c(H2 = -1, C2H4O2 = 0, CO2 = -1/4, CH4 = 1/4, H2O = 2/4)
   pars$ace_sr <- c(H2 = 0, C2H4O2 = -1, H2SO4 = -1, CO2 = 2, H2O = 2, H2S = 1) 
   pars$hyd_sr <- c(H2 = -1, C2H4O2 = 0, H2SO4 = -1/4, CO2 = 0, H2O = 1, H2S = 1/4) 
-  
 
+  pars$t_min_graze <- min(pars$graze_int)
+  pars$t_max_graze <- max(pars$graze_int)
+  pars$slurry_graze_reduc <- 1 - as.numeric(pars$graze[['hours_day']])/ 24
 
   return(pars)
 }

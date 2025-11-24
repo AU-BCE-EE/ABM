@@ -69,6 +69,23 @@ List rates_cpp(double t, NumericVector y, List parms){
   
   double time_sum = t + t_run; // This calculation is necessary as it's the input to pH_fun
   
+  // .. adjust slurry_prod_rate if grazing
+  double t_max_graze = parms[p_idx[58]];
+  
+  if (t_max_graze != 0.0){
+    
+    double t_year = time_sum - floor(time_sum/365) * 365;
+    double t_min_graze = parms[p_idx[57]];
+    double slurry_graze_reduc = parms[p_idx[59]];
+    
+    if(t_year >= t_min_graze && t_year <= t_max_graze){
+      
+      slurry_prod_rate *= slurry_graze_reduc;
+      
+    }
+    
+  }
+  
   double pH = as<double>(pH_fun(time_sum)); // Necessary call to pH_fun to get the result
   
   if (pH == -1.0) {

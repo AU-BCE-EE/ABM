@@ -113,12 +113,12 @@ abm <- function(
   if (is.null(pars)) { 
     pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
   }
-
+  
   if (!is.null(anim_pars)) {
     pars <- c(wthr_pars, evap_pars, mng_pars, init_pars, chem_pars, mic_pars, anim_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
     warning('Using anim_pars instead of grp_pars, arrh_pars and man_pars')
   } 
-
+  
   # if variable conc fresh, we need to modify the conc_init a little
   if (is.data.frame(pars$conc_fresh) & (length(pars$conc_init) == length(pars$conc_fresh))) {
     pars$conc_init <- pars$conc_fresh[1, -which(names(pars$conc_fresh) == "time")]
@@ -143,7 +143,7 @@ abm <- function(
     pe.pars <- split(pe.pars, pnames)
     add_pars <- c(sa.pars, pe.pars)
   }
-
+  
   # If any additional parameters were added (or modified) using add_pars, update them in pars list here
   # Needs to work in a case where default is all but e.g., m1 is given in add_pars (see def stuff below)
   grp_par_nms <- names(grp_pars)
@@ -211,11 +211,11 @@ abm <- function(
   
   # Create time-variable functions
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
-
+  
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
   pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method['pH'])
   conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
-
+  
   # add time to xa_fresh and get xa_fresh funs
   if(is.data.frame(pars$xa_fresh)) pars$xa_fresh$time <- xa_fresh_time
   xa_fresh_fun <- makeXaFreshFunc(pars$xa_fresh)
@@ -224,20 +224,21 @@ abm <- function(
   # Maximum slurry mass in kg
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
   pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
-
+  
   # Cover effect on NH3 emission rate and N2O
   # reduction from cover 
-
+  
   pars$EF_NH3 <- coverfun(pars$cover, pars$scale_EF_NH3)
   pars$EF_N2O <- ifelse(pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
   
   # calculate grazing interval of year if needed
+  
   if(pars$graze[['duration']] > 0){
-    pars$graze_int <- c(doy(pars$graze[['start']])$day, doy(pars$graze[['start']])$day + pars$graze[['duration']])
+    pars$graze_int <- c(doy(pars$graze[['start']])$day, doy(pars$graze[['start']])$day + as.numeric(pars$graze[['duration']]))
   } else {
     pars$graze_int <- 0
   }
-
+  
   if(is.data.frame(pars$slurry_mass)){
     # If missing slurry mass at time 0, set to earliest slurry mass value
     if (pars$slurry_mass[1, 'time'] > 0) {

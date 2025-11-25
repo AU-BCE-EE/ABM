@@ -23,11 +23,6 @@ List rates_cpp(double t, NumericVector y, List parms){
   double t_run = parms[p_idx[1]];
   int n_mic = parms[p_idx[2]];
   
-  //# NOT IMPLEMENTED YET
-  //#if(!is.null(graze_int) & any(graze_int != 0)){
-  //#  slurry_prod_rate <- graze_fun(t,  t_run, days, slurry_prod_rate, graze_int, graze_hours = graze[['hours_day']])
-  //#}
-  
   // not implemented variable conc_fresh and variable xa_fresh either
   // variable conc_fresh should be calculated from the List conc_fresh_fun
   // variable xa_fresh should be calculated from the xa_fresh_fun, which currently is a numeric vector or a data.frame.

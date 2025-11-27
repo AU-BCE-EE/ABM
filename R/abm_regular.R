@@ -1,10 +1,8 @@
 abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                        SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) { 
+                        conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun) { 
   
   #initialize dat for storage of results to speed up bind_rows
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) 
-   
-  pars$abm_regular <- TRUE
   
   empty_int <- pars$empty_int
   
@@ -54,10 +52,10 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
   t_rem <- days
   # Time that has already run
   t_run <- 0
-
+  
   # Start the time (emptying) loop
   for (i in 1:n_int) {
-
+    
     # Sort out call duration
     t_call <- t_int[i]
     
@@ -69,25 +67,31 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
     pars$t_call <- t_call
     pars$times <- times
     
+    pars$p_idx <- pars_indices(pars)
+    pars$temp_C_fun <- temp_C_fun
+    pars$pH_fun <- pH_fun
+    pars$CTM_cpp <- CTM_cpp
+    pars$H2SO4_titrate <- H2SO4_titrat
+    pars$xa_fresh_fun <- xa_fresh_fun
+    pars$conc_fresh_fun <- conc_fresh_fun
     # Call up ODE solver
     #cat(t_rem, '\n')
-    
-    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, 
-                          temp_C_fun = temp_C_fun, pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars,rtol = 1E-5, atol = 1E-5)
     
     # Get number of microbial groups
-    n_mic <- length(pars$qhat_opt)
-
+    n_mic <- length(pars$n_mic)
+    
     # Extract new state variable vector from last row
-    y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 30) + 1]
-
+    y <- out[nrow(out), 1:(length(c(pars$qhat_opt)) + 27) + 1]
+    
+    
     # Empty channel (instantaneous changes at end of day) in preparation for next lsoda call
     y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
     y.eff <- y[grepl('_eff$', names(y))]
     y <- y[!grepl('_eff$', names(y))]
     #y[which.effluent] <- (y.before - y)[gsub('_eff$', '', names(y)[which.effluent])]
-   
+    
     # Washing, increase slurry mass
     if (wash[i]) {
       y['slurry_mass'] <- y['slurry_mass'] + pars$wash_water
@@ -102,10 +106,9 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL, 
         times <- seq(0, pars$rest_d, delta_t)
         parsr <- pars
         parsr$slurry_prod_rate <- 0
-        outr <- deSolve::lsoda(y = y, times = times, rates, parms = parsr, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                               SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+        outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, rtol = 1E-5, atol = 1E-5)
         # Extract new state variable vector from last row
-        y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 30) + 1]
+        y <- outr[nrow(outr), 1:(length(c(pars$qhat_opt)) + 27) + 1]
         # Correct time in outr and combine with main output
         outr[, 'time'] <- outr[, 'time'] + out[nrow(out), 'time']
         out <- rbind(out, outr)

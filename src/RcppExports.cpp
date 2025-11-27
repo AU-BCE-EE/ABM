@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // Arrh_func_cpp
-NumericVector Arrh_func_cpp(NumericVector A, NumericVector E, double R, double temp_K);
-RcppExport SEXP _ABM_Arrh_func_cpp(SEXP ASEXP, SEXP ESEXP, SEXP RSEXP, SEXP temp_KSEXP) {
+NumericVector Arrh_func_cpp(NumericVector A, NumericVector E, double R, double temp_K, double scale_alpha_opt, double alpha_opt_scale_type, double alpha_opt_scale_CP);
+RcppExport SEXP _ABM_Arrh_func_cpp(SEXP ASEXP, SEXP ESEXP, SEXP RSEXP, SEXP temp_KSEXP, SEXP scale_alpha_optSEXP, SEXP alpha_opt_scale_typeSEXP, SEXP alpha_opt_scale_CPSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -20,29 +20,72 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type E(ESEXP);
     Rcpp::traits::input_parameter< double >::type R(RSEXP);
     Rcpp::traits::input_parameter< double >::type temp_K(temp_KSEXP);
-    rcpp_result_gen = Rcpp::wrap(Arrh_func_cpp(A, E, R, temp_K));
+    Rcpp::traits::input_parameter< double >::type scale_alpha_opt(scale_alpha_optSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_opt_scale_type(alpha_opt_scale_typeSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_opt_scale_CP(alpha_opt_scale_CPSEXP);
+    rcpp_result_gen = Rcpp::wrap(Arrh_func_cpp(A, E, R, temp_K, scale_alpha_opt, alpha_opt_scale_type, alpha_opt_scale_CP));
     return rcpp_result_gen;
 END_RCPP
 }
 // CTM_cpp
-NumericVector CTM_cpp(NumericVector tt, NumericVector top, NumericVector tmin, NumericVector tmax, NumericVector yopt);
+Rcpp::NumericVector CTM_cpp(Rcpp::NumericVector tt, Rcpp::NumericVector top, Rcpp::NumericVector tmin, Rcpp::NumericVector tmax, Rcpp::NumericVector yopt);
 RcppExport SEXP _ABM_CTM_cpp(SEXP ttSEXP, SEXP topSEXP, SEXP tminSEXP, SEXP tmaxSEXP, SEXP yoptSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type tt(ttSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type top(topSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type tmin(tminSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type tmax(tmaxSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type yopt(yoptSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type tt(ttSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type top(topSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type tmin(tminSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type tmax(tmaxSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type yopt(yoptSEXP);
     rcpp_result_gen = Rcpp::wrap(CTM_cpp(tt, top, tmin, tmax, yopt));
+    return rcpp_result_gen;
+END_RCPP
+}
+// call_int
+NumericVector call_int(Rcpp::Function temp_C_fun, double x);
+RcppExport SEXP _ABM_call_int(SEXP temp_C_funSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::Function >::type temp_C_fun(temp_C_funSEXP);
+    Rcpp::traits::input_parameter< double >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(call_int(temp_C_fun, x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// extract_xa_cpp
+NumericVector extract_xa_cpp(NumericVector y, int n_mic);
+RcppExport SEXP _ABM_extract_xa_cpp(SEXP ySEXP, SEXP n_micSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type n_mic(n_micSEXP);
+    rcpp_result_gen = Rcpp::wrap(extract_xa_cpp(y, n_mic));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rates_cpp
+List rates_cpp(double t, NumericVector y, List parms);
+RcppExport SEXP _ABM_rates_cpp(SEXP tSEXP, SEXP ySEXP, SEXP parmsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type t(tSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< List >::type parms(parmsSEXP);
+    rcpp_result_gen = Rcpp::wrap(rates_cpp(t, y, parms));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 4},
+    {"_ABM_Arrh_func_cpp", (DL_FUNC) &_ABM_Arrh_func_cpp, 7},
     {"_ABM_CTM_cpp", (DL_FUNC) &_ABM_CTM_cpp, 5},
+    {"_ABM_call_int", (DL_FUNC) &_ABM_call_int, 2},
+    {"_ABM_extract_xa_cpp", (DL_FUNC) &_ABM_extract_xa_cpp, 2},
+    {"_ABM_rates_cpp", (DL_FUNC) &_ABM_rates_cpp, 3},
     {NULL, NULL, 0}
 };
 

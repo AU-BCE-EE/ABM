@@ -18,7 +18,6 @@ abm <- function(
                   rest_d = 5,
                   cover = 'none',
                   resid_enrich = 0.9,
-                  slopes = c(urea = NA, slurry_prod_rate = NA),
                   graze = c(start = 'May', duration = 0, hours_day = 0),
                   scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
   man_pars = ABM::man_pars2.0,
@@ -95,13 +94,18 @@ abm <- function(
     # Return only final values
     return(out)
   } 
-
+  
+  #if anim_pars are used adjust initial concentration to init in anim_pars
+  if(!is.null(anim_pars)){
+    init_pars = list(conc_init = anim_pars$conc_fresh)
+  }
+  
   # If starting conditions are provided from a previous simulation, move them to pars
   # Note that additional state variables are extracted from starting in abm_*.R
   if (!is.null(starting) & is.data.frame(starting)) {
     message('Using starting conditions from `starting` argument')
-    grp_pars[['xa_init']] <- as.numeric(starting[nrow(starting), paste0(grp_pars[['grps']], '_conc')])
-    names(grp_pars[['xa_init']]) <- grp_pars[['grps']]
+    grp_pars[['xa_init']] <- as.numeric(starting[nrow(starting), paste0(names(grp_pars[['qhat_opt']]), '_conc')])
+    names(grp_pars[['xa_init']]) <- names(grp_pars[['qhat_opt']])
     mng_pars['slurry_mass'] <- starting[nrow(starting), 'slurry_mass']
   }
   
@@ -109,17 +113,19 @@ abm <- function(
   if (is.null(pars)) { 
     pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
   }
-
+  
   if (!is.null(anim_pars)) {
     pars <- c(wthr_pars, evap_pars, mng_pars, init_pars, chem_pars, mic_pars, anim_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
     warning('Using anim_pars instead of grp_pars, arrh_pars and man_pars')
   } 
-
+  
   # if variable conc fresh, we need to modify the conc_init a little
   if (is.data.frame(pars$conc_fresh) & (length(pars$conc_init) == length(pars$conc_fresh))) {
     pars$conc_init <- pars$conc_fresh[1, -which(names(pars$conc_fresh) == "time")]
   } 
   
+  
+  # Combine pars to make extraction and pass to rates() easier
   # Sort out parameter inputs
   # Note: pe.pars = add_pars that use par.element approach, these are converted to normal (simple) add_par elements here
   # Note: sa.pars = normal (simple) add_pars that do not need to be converted
@@ -137,7 +143,7 @@ abm <- function(
     pe.pars <- split(pe.pars, pnames)
     add_pars <- c(sa.pars, pe.pars)
   }
-
+  
   # If any additional parameters were added (or modified) using add_pars, update them in pars list here
   # Needs to work in a case where default is all but e.g., m1 is given in add_pars (see def stuff below)
   grp_par_nms <- names(grp_pars)
@@ -202,29 +208,23 @@ abm <- function(
   
   # Convert temperature constants to K if needed
   pars <- tempsC2K(pars, ll = 200)
-
+  
   # Create time-variable functions
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
-  # Need to decide if pH = 'calc' should be an option. Then need to ix below.  
+  
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
-
-  pH_fun <- ifelse(any(pars$pH != 'calc'), makeTimeFunc(pars$pH, approx_method = approx_method['pH']), pars$pH)
+  pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method['pH'])
   conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
   
   # add time to xa_fresh and get xa_fresh funs
   if(is.data.frame(pars$xa_fresh)) pars$xa_fresh$time <- xa_fresh_time
   xa_fresh_fun <- makeXaFreshFunc(pars$xa_fresh)
   
-  # Inhibition function. Not used currently. Instead we use inhibition from NH3, NH4, H2S and VFA
-  td <- data.frame(SO4_conc = c(0, 0.09, 0.392251223, 0.686439641, 1.046003263, 1.470942088, 1.961256117, 4), 
-                   SO4_inhib = c(1, 1, 0.85, 0.3172, 0.29, 0.1192, 0.05, 0.001))
-  SO4_inhibition_fun <- approxfun(td$SO4_conc, td$SO4_inhib, rule = 2)
-  
   # Convert some supplied parameters
   # Maximum slurry mass in kg
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
   pars$resid_mass <- pars$resid_depth / pars$storage_depth * pars$max_slurry_mass
-
+  
   # Cover effect on NH3 emission rate and N2O
   # reduction from cover 
   
@@ -232,34 +232,27 @@ abm <- function(
   pars$EF_N2O <- ifelse(pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
   
   # calculate grazing interval of year if needed
+  
   if(pars$graze[['duration']] > 0){
-    pars$graze_int <- c(doy(pars$graze[['start']])$day, doy(pars$graze[['start']])$day + pars$graze[['duration']])
+    pars$graze_int <- c(doy(pars$graze[['start']])$day, doy(pars$graze[['start']])$day + as.numeric(pars$graze[['duration']]))
   } else {
     pars$graze_int <- 0
   }
-
+  
   if(is.data.frame(pars$slurry_mass)){
     # If missing slurry mass at time 0, set to earliest slurry mass value
     if (pars$slurry_mass[1, 'time'] > 0) {
-      if(!"wash_water" %in% colnames(pars$slurry_mass)){
       pars$slurry_mass <- rbind(c(0, pars$slurry_mass$slurry_mass[1]), pars$slurry_mass)
-      }
-      if("wash_water" %in% colnames(pars$slurry_mass)){
-        pars$slurry_mass <- rbind(c(0, pars$slurry_mass$slurry_mass[1], 0), pars$slurry_mass)
-        if(all(pars$slurry_mass$wash_water == 0)){
-          pars$slurry_mass$wash_water <- NULL
-        }
-      }
     }
     slurry_mass_init <- pars$slurry_mass[1, 'slurry_mass']
   } else {
     slurry_mass_init <- pars$slurry_mass
   }
-
+  
   if (slurry_mass_init == 0) {
     slurry_mass_init <- 1E-10
   }
-
+  
   y <- c(xa = pars$xa_init * slurry_mass_init,
          slurry_mass = slurry_mass_init, 
          xa_dead = pars$conc_init[['xa_dead']] * slurry_mass_init, 
@@ -276,9 +269,6 @@ abm <- function(
          TAN = pars$conc_init[['TAN']] * slurry_mass_init, 
          sulfate = pars$conc_init[['sulfate']] * slurry_mass_init, 
          sulfide = pars$conc_init[['sulfide']] * slurry_mass_init, 
-         VSd_A = pars$conc_init[['VSd_A']] * slurry_mass_init,
-         VSnd_A = pars$conc_init[['VSnd_A']] * slurry_mass_init,
-         CH4_A_emis_cum = 0,
          NH3_emis_cum = 0, 
          N2O_emis_cum = 0, 
          CH4_emis_cum = 0, 
@@ -293,38 +283,42 @@ abm <- function(
          slurry_load_cum = 0)
   
   if (!is.null(starting) & is.data.frame(starting)) {
-    start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')
-    y[start.vars]  <- as.numeric(starting[nrow(starting), start.vars])
+    start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide')
+    y[start.vars]  <- starting[nrow(starting), start.vars]
   }  
 
   if (any(pars$conc_fresh[['VSd']] > 2e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$A)[!names(pars$A) %in% c('VSd','urea')]] > 2)) {
     stop('Cannot have both VSd and other organic matter components being above 0')
   }
   
+  # hard wired parameters, that will not change during a rates call
+  # and was moved from rates to here to speed up model. These parameters are added in the hard_pars().
+  pars <- hard_pars(pars)
+
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
     dat <- abm_regular(days = days, delta_t = delta_t, times_regular = times, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  
-                       SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+                       conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
     dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                        SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx = approx_method['slurry_mass'])
+                        conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx = approx_method['slurry_mass'])
   } 
-  
+
   colnames(dat) <- gsub("conc_fresh.","conc_fresh_", colnames(dat))
-  
+ 
   # Calculate concentrations where relevant
   #conc.names <- names(dat)[!grepl('conc|time|slurry_mass|inhib|qhat|CH4_emis_cum', names(dat))]
   mic_names <- pars$grps
   eff_names <- names(dat[grepl("_eff$", names(dat))])
   eff_conc_names <- eff_names[eff_names != "slurry_mass_eff"]
-  conc_names <-  c('TAN', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'Cfat', 'CPs', 'CPf', 'VFA', 'sulfide', 'sulfate', 'VSd_A', 'VSnd_A', mic_names)
+  conc_names <-  c('TAN', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'Cfat', 'CPs', 'CPf', 'VFA', 'sulfide', 'sulfate', mic_names)
   dat_conc <- dat[, conc_names]/(dat$slurry_mass)
   dat_eff_conc <- dat[, eff_conc_names]/(dat$slurry_mass_eff)
   names(dat_conc) <- paste0(names(dat_conc), '_conc')
   names(dat_eff_conc) <- paste0(names(dat_eff_conc), '_conc')
   dat <- cbind(dat, dat_conc, dat_eff_conc)
-  
+
   # Add temperature and pH
   dat$temp_C <- temp_C_fun(dat$time)
   if (is.numeric(pars$pH) | is.data.frame(pars$pH)) {
@@ -349,9 +343,6 @@ abm <- function(
   
   dat$rCH4 <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
   dat$CH4_emis_rate <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
-  
-  dat$rCH4_A <- c(0, diff(dat$CH4_A_emis_cum))/c(1, diff(dat$time))
-  dat$CH4_A_emis_rate <- c(0, diff(dat$CH4_A_emis_cum))/c(1, diff(dat$time))
  
   dat$rCO2 <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
   dat$CO2_emis_rate <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
@@ -365,7 +356,7 @@ abm <- function(
   dat$CH4_flux <- dat$CH4_emis_rate / pars$area
   dat$CO2_emis_rate_slurry <- dat$CO2_emis_rate / (dat$slurry_mass / 1000)
   dat$CO2_flux <- dat$CO2_emis_rate / pars$area
-  
+  dat$area <- pars$area
   ## NTS: Add others, e.g., mu
   # Calculate COD/VS flows
   # First concentrations in g/kg
@@ -506,9 +497,7 @@ abm <- function(
   N2O_emis_N <- N2O_emis_cum / N_load
   
   CH4_emis_cum <- dat$CH4_emis_cum[nrow(dat)]
-  CH4_A_emis_cum <- dat$CH4_A_emis_cum[nrow(dat)]
   CH4_emis_rate <- CH4_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
-  CH4_A_emis_rate <- CH4_A_emis_cum / (dat$time[nrow(dat)] - dat$time[1])
   CH4_emis_COD <- CH4_emis_cum / COD_load
   CH4_emis_dCOD <- CH4_emis_cum / dCOD_load
   CH4_emis_VS <- CH4_emis_cum / VS_load
@@ -533,7 +522,7 @@ abm <- function(
   summ <- c(C_load = C_load, COD_load = COD_load, dCOD_load = dCOD_load, ndCOD_load = ndCOD_load, VS_load = VS_load, Ninorg_load = Ninorg_load, Norg_load = Norg_load, 
             N_load = N_load, NH3_emis_cum = NH3_emis_cum, NH3_emis_rate = NH3_emis_rate, NH3_emis_Ninorg = NH3_emis_Ninorg, NH3_emis_Norg = NH3_emis_Norg,
             NH3_emis_N = NH3_emis_N, N2O_emis_cum = N2O_emis_cum, N2O_emis_rate = N2O_emis_rate, N2O_emis_Ninorg = N2O_emis_Ninorg, N2O_emis_Norg = N2O_emis_Norg,
-            N2O_emis_N = N2O_emis_N, CH4_emis_cum = CH4_emis_cum, CH4_emis_rate = CH4_emis_rate, CH4_A_emis_rate = CH4_A_emis_rate, CH4_A_emis_cum = CH4_A_emis_cum, 
+            N2O_emis_N = N2O_emis_N, CH4_emis_cum = CH4_emis_cum, CH4_emis_rate = CH4_emis_rate,
             CH4_emis_COD = CH4_emis_COD, CH4_emis_dCOD = CH4_emis_dCOD, CH4_emis_VS = CH4_emis_VS, CH4_emis_C = CH4_emis_C, CH4_emis_slurry = CH4_emis_slurry,
             CO2_emis_cum = CO2_emis_cum, CO2_emis_rate = CO2_emis_rate, CO2_emis_COD = CO2_emis_COD, CO2_emis_dCOD = CO2_emis_dCOD, CO2_emis_VS = CO2_emis_VS, CO2_emis_C = CO2_emis_C, CO2_emis_slurry = CO2_emis_slurry,
             COD_conv_meth = COD_conv_meth, COD_conv_respir = COD_conv_respir, COD_conv_sr = COD_conv_sr,

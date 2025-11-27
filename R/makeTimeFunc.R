@@ -8,7 +8,9 @@ makeTimeFunc <- function(dat, x = 1, y = 2, approx_method = 'linear') {
     func <- approxfun(x, y, method = approx_method, rule = 2)
   } else if (is.numeric(dat)) {
     func <- function(x) return(dat)
-  } else {
+  } else if (dat == 'calc') {
+    func <- function(x) return(-1)
+  } else{
     stop('Input to makeTimeFunc must be numeric or data frame.')
   }
 

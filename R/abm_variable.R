@@ -1,6 +1,6 @@
 abm_variable <-
   function(days, delta_t, times, y, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-           SO4_inhibition_fun = SO4_inhibition_fun, conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx) {
+           conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx) {
     
   #initialize dat for storage of results to speed up bind_rows
   dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) # slow speed, but much faster than before
@@ -60,24 +60,35 @@ abm_variable <-
     }
     pars$rain <- pars$evap <- 0
   }
+
   if (any(pars$slurry_mass$slurry_mass < 0)) {
-    stop('Negative slurry mass values after adjustment for rain and evaporation.\n  Check parameters and try again.')
+    warning('Negative slurry mass values after adjustment for rain and evaporation.\n  Check parameters and try again.')
   }
-  
   # Determine slurry removal quantity in each time interval
   # Note final 0--alignment is a bit tricky
-
   if (slurry_mass_approx == 'late') {
     removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0
   } else if (slurry_mass_approx == 'early') {
     removals <- - c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0
   } else if (slurry_mass_approx == 'mid') {
+  
     # Get midpoint time
     ir <- which(- c(0, diff(pars$slurry_mass[, 'slurry_mass'])) > 0)
     tt <- (pars$slurry_mass[ir, 'time']  + pars$slurry_mass[ir - 1, 'time']) / 2
     # And copy slurry mass
     mm <- pars$slurry_mass[ir, 'slurry_mass']
-    pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm))
+    
+    # if wash_water exists for some reason, we need to add it when rbinding.
+    if("wash_water" %in% colnames(pars$slurry_mass)){
+      if(length(mm) == 0) {
+        wash_water_fill <- mm
+      }else{wash_water_fill <- 0}
+    
+      pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm, wash_water = wash_water_fill))
+    } else{
+      pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm))
+    }
+    
     pars$slurry_mass <- pars$slurry_mass[order(pars$slurry_mass$time), ]
     # Then apply late removal method
     removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0
@@ -85,7 +96,7 @@ abm_variable <-
 
   # Extract slurry_mass for use in emptying calculations
   slurry_mass <- pars$slurry_mass[, 'slurry_mass']
-  
+
   # For removal/emptying events, which are instant, set slurry_mass back to original
   if (slurry_mass_approx == 'late') {
     slurry_mass[c(removals[-1], FALSE)] <- slurry_mass_orig[c(removals[-1], FALSE)]
@@ -94,7 +105,7 @@ abm_variable <-
   } else if (slurry_mass_approx == 'mid') {
     slurry_mass_approx <- 'late'
   }
-  
+
   # Extract washing mass
   if ('wash_water' %in% names(pars$slurry_mass)) {
     wash_water <- pars$slurry_mass[, 'wash_water']
@@ -195,11 +206,18 @@ abm_variable <-
 
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
-
+    
+    pars$p_idx <- pars_indices(pars)
+    pars$temp_C_fun <- temp_C_fun
+    pars$pH_fun <- pH_fun
+    pars$CTM_cpp <- CTM_cpp
+    pars$H2SO4_titrate <- H2SO4_titrat
+    pars$xa_fresh_fun <- xa_fresh_fun
+    pars$conc_fresh_fun <- conc_fresh_fun
     # Call up ODE solver
-    out <- deSolve::lsoda(y = y, times = times, rates, parms = pars, temp_C_fun = temp_C_fun, 
-                          pH_fun = pH_fun, SO4_inhibition_fun = SO4_inhibition_fun, 
-                          conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+    #cat(t_rem, '\n')
+    
+    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, rtol = 1E-5, atol = 1E-5)
     
     # Change format of output and drop first (time 0) row (duplicated in last row of previous)
     if (i == 2) {
@@ -212,12 +230,13 @@ abm_variable <-
     names(out)[1:length(pars$qhat_opt) + 1] <- names(pars$qhat_opt)
 
     # Extract new state variable vector from last row of lsoda output
-    y <- unlist(out[nrow(out), 1:(length(c(pars$qhat_opt)) + 30) + 1])
+    y <- unlist(out[nrow(out), 1:(length(c(pars$qhat_opt)) + 27) + 1])
 
     # Change time in output to cumulative time for complete simulation
     out$time <- out$time + t_run
     
     # Create empty (0) y.eff vector because washing could occur, and dat needs columns
+
     yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
     y.eff <- 0 * yy[grepl('_eff$', names(yy))]
 

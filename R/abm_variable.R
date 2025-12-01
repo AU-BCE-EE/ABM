@@ -206,7 +206,7 @@ abm_variable <-
 
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
-    
+
     pars$p_idx <- pars_indices(pars)
     pars$temp_C_fun <- temp_C_fun
     pars$pH_fun <- pH_fun

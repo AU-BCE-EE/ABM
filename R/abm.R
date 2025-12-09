@@ -232,7 +232,7 @@ abm <- function(
   pars$EF_N2O <- ifelse(pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
   
   # calculate grazing interval of year if needed
-  browser()
+  
   if(pars$graze[['duration']] > 0){
     pars$graze_int <- c(doy(pars$graze[['start']])$day, doy(pars$graze[['start']])$day + as.numeric(pars$graze[['duration']]))
   } else {

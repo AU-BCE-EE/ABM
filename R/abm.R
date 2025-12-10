@@ -25,7 +25,7 @@ abm <- function(
   grp_pars = ABM::grp_pars2.0,
   mic_pars = ABM::mic_pars2.0,
   chem_pars = ABM::chem_pars2.0,
-  arrh_pars = ABM::arrh_pars2.0,
+  arrh_pars = ABM::arrh_pars_pig2.0,
   anim_pars = NULL,
   resp = TRUE,
   pH_inhib_overrule = FALSE, 
@@ -232,7 +232,7 @@ abm <- function(
   pars$EF_N2O <- ifelse(pars$cover == 'none', 0, ifelse(pars$cover == 'tent', 0.05093388, 0.2546694)) # from D. S. Chianese, C. A. Rotz, T. L. Richard, 2009
   
   # calculate grazing interval of year if needed
-  
+
   if(pars$graze[['duration']] > 0){
     pars$graze_int <- c(doy(pars$graze[['start']])$day, doy(pars$graze[['start']])$day + as.numeric(pars$graze[['duration']]))
   } else {
@@ -286,7 +286,7 @@ abm <- function(
          slurry_load_cum = 0)
   
   if (!is.null(starting) & is.data.frame(starting)) {
-    start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide','VSd_A', 'VSnd_A')
+    start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide', 'VSd_A', 'VSnd_A')
     y[start.vars]  <- starting[nrow(starting), start.vars]
   }  
 
@@ -315,7 +315,7 @@ abm <- function(
   mic_names <- pars$grps
   eff_names <- names(dat[grepl("_eff$", names(dat))])
   eff_conc_names <- eff_names[eff_names != "slurry_mass_eff"]
-  conc_names <-  c('TAN', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'Cfat', 'CPs', 'CPf', 'VFA', 'sulfide', 'sulfate','VSd_A','VSnd_A', mic_names)
+  conc_names <-  c('TAN', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'Cfat', 'CPs', 'CPf', 'VFA', 'sulfide', 'sulfate', 'VSd_A', 'VSnd_A', mic_names)
   dat_conc <- dat[, conc_names]/(dat$slurry_mass)
   dat_eff_conc <- dat[, eff_conc_names]/(dat$slurry_mass_eff)
   names(dat_conc) <- paste0(names(dat_conc), '_conc')

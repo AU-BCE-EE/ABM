@@ -109,7 +109,7 @@ List rates_cpp(double t, NumericVector y, List parms){
   //# Hydrolysis rate with Arrhenius function cpp. 
   NumericVector alpha = A * exp(-E / (R * temp_K));
   alpha[Rcpp::Range(0,6)] = alpha[Rcpp::Range(0,6)] * scale_alpha_opt * alpha_opt_scale_type;
-  alpha[Rcpp::Range(3,4)] = alpha[Rcpp::Range(3,4)] * alpha_opt_scale_CP;
+  alpha[Rcpp::Range(2,4)] = alpha[Rcpp::Range(2,4)] * alpha_opt_scale_CP;
   
   NumericVector T_opt = parms[p_idx[10]];
   NumericVector T_min = parms[p_idx[11]];

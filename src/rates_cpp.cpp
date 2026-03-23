@@ -549,6 +549,7 @@ List rates_cpp(double t, NumericVector y, List parms){
                                                              Named("conc_fresh") = conc_fresh,
                                                                                      Named("xa_fresh") = xa_fresh * scale_xa_fresh,
                                                                            Named("slurry_prod_rate") = slurry_prod_rate,
+                                                                           Named("cum_inhib") = cum_inhib,
                                                                                                                                                                                                       Named("rain") = rain,
                                                                                                                                                                                                       Named("evap") = evap,
                                                                                                                                                                                                       Named("sum_rut") = sum_rut,

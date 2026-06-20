@@ -70,6 +70,8 @@ abm <- function(
                  grp_pars = grp_pars, mic_pars = mic_pars, chem_pars = chem_pars, arrh_pars = arrh_pars,
                  add_pars = add_pars, pars = pars, anim_pars = anim_pars,
                  startup = 0, 
+                 resp = resp,
+                 pH_inhib_overrule = pH_inhib_overrule,
                  starting = starting, 
                  approx_method = approx_method, 
                  par_key = par_key, value = value, warn = warn)

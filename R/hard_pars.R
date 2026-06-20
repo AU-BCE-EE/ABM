@@ -38,24 +38,22 @@ hard_pars <- function(pars){
   pars$carb <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
                  NH3 = 0, H2O = -2.992714, C5H7O2N = 0,
                  C2H4O2 = 2.003743, H2 = 3.985329, CO2 = 1.993114)
-  
-  
+  pars$pro <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
+                NH3 = 1, H2O = -3.2521987, C5H7O2N = 0,
+                C2H4O2 = 1.4774587, H2 = 1.402611, CO2 = 0.6004123)
+  pars$lip <- c(C6H10O5 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
+                NH3 = 0, H2O = -45.4119381, C5H7O2N = 0,
+                C2H4O2 = 25.3171914, H2 = 43.7334158, CO2 = 0.3667798)
   # with cell synthesis
   #pars$pro <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
   #              NH3 = 0.9098195, H2O = -2.91011939, C5H7O2N = 0.09091805,
   #              C2H4O2 = 1.32238963, H2 = 1.24392800, CO2 = 0.53512875)
   # without cell synthesis
-  pars$pro <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
-                NH3 = 1, H2O = -3.2521987, C5H7O2N = 0,
-                C2H4O2 = 1.4774587, H2 = 1.402611, CO2 = 0.6004123)
   # with cell synthesis
   #pars$lip <- c(C6H10O5 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
   #              NH3 = -0.9111515, H2O = -41.2980881, C5H7O2N = 0.9111515,
   #              C2H4O2 = 23.7180355, H2 = 40.9726177, CO2 = 1.4659059)
   # without cell synthesis
-  pars$lip <- c(C6H10O5 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
-                NH3 = 0, H2O = -45.4119381, C5H7O2N = 0,
-                C2H4O2 = 25.3171914, H2 = 43.7334158, CO2 = 0.3667798)
   
   # VSd without cell synthesis (based on C15.89H26.3O9.2N)  
   pars$OM <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = 0, 

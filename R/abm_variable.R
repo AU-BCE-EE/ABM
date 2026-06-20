@@ -159,7 +159,7 @@ abm_variable <-
   # Start the time (emptying) loop
 
   for (i in 2:n_int) {
-
+    
     # Sort out call duration
     t_call <- min(max(timelist[[i]]), t_rem)
 

@@ -148,11 +148,11 @@ List rates_cpp(double t, NumericVector y, List parms){
   NumericVector ki_NH3_max = parms[p_idx[21]];
   NumericVector ki_NH4_min = parms[p_idx[22]];
   NumericVector ki_NH4_max = parms[p_idx[23]];
-  NumericVector ki_HAC = parms[p_idx[24]];
-  NumericVector ki_H2S_slope = parms[p_idx[25]];
-  NumericVector ki_H2S_int = parms[p_idx[26]];
-  NumericVector ki_H2S_min = parms[p_idx[27]];
-  NumericVector IC50_low = parms[p_idx[28]];
+  NumericVector ki_HAC_min = parms[p_idx[24]];
+  NumericVector ki_HAC = parms[p_idx[25]];
+  NumericVector ki_H2S_min = parms[p_idx[26]];
+  NumericVector ki_H2S_max = parms[p_idx[27]];
+
   double area = parms[p_idx[29]];
   double floor_area = parms[p_idx[30]];
   bool resp = parms[p_idx[31]];
@@ -200,7 +200,7 @@ List rates_cpp(double t, NumericVector y, List parms){
     double NH3_conc = NH3_frac * TAN / slurry_mass;
     double NH4_conc = (1 - NH3_frac) * TAN / slurry_mass;
     double HAC_conc = HAC_frac * VFA / slurry_mass;
-    double x = H2S_frac * sulfide / slurry_mass;
+    double H2S_conc = H2S_frac * sulfide / slurry_mass;
     
     for (int i = 0; i < n_mic; ++i) {
       // NH3 inhibition
@@ -212,17 +212,13 @@ List rates_cpp(double t, NumericVector y, List parms){
         exp(-2.77259 * pow((NH4_conc - ki_NH4_min[i]) / (ki_NH4_max[i] - ki_NH4_min[i]), 2));
       
       // HAC inhibition
-      HAC_inhib[i] = (HAC_conc >= 0.05) ? 
-      ((2 - ki_HAC[i] / (ki_HAC[i] + 0.05)) * ki_HAC[i] / (ki_HAC[i] + HAC_conc)) : 
+      HAC_inhib[i] = (HAC_conc >= ki_HAC_min[i]) ? 
+      (1.16 * ki_HAC[i] / (ki_HAC[i] + HAC_conc)) :
         1.0;
       
-      // H2S inhibitionki_H2S_min
-      double IC50 = (pH >= 6.8) ? (ki_H2S_slope[i] * pH + ki_H2S_int[i]) : IC50_low[i];
-      double a = -0.5 / (IC50 - (H2S_frac * ki_H2S_min[i]));
-      double b = 1 - (-0.5 / (IC50 - (H2S_frac * ki_H2S_min[i])) * H2S_frac * ki_H2S_min[i] / slurry_mass);
-      
-      H2S_inhib[i] = a * x + b;
-      H2S_inhib[i] = std::max(0.0, std::min(1.0, H2S_inhib[i]));  // Clamp between 0 and 1
+      // H2S inhibition
+      H2S_inhib[i] = (H2S_conc <= ki_H2S_min[i]) ? 1.0 :
+        exp(-2.77259 * pow((H2S_conc - ki_H2S_min[i]) / (ki_H2S_max[i] - ki_H2S_min[i]), 2));
       
       // Compute cumulative inhibition
       cum_inhib[i] = HAC_inhib[i] * NH3_inhib[i] * NH4_inhib[i] * H2S_inhib[i];

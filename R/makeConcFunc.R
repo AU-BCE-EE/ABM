@@ -1,4 +1,4 @@
-makeConcFunc <- function(dat) {
+makeConcFunc <- function(dat, approx_method = 'constant') {
   
   if(is.data.frame(dat)){
   
@@ -11,7 +11,7 @@ makeConcFunc <- function(dat) {
   
   for (i in 1:(length(dat) - 1)) {
     fun_name <- paste0('conc_fresh_fun_', names[i])
-    fun <- approxfun(ttime, tconc_fresh[i, ], method = 'constant', f = 0,
+    fun <- approxfun(ttime, tconc_fresh[i, ], method = approx_method, f = 0,
                      yleft = tconc_fresh[i, 1], yright = tconc_fresh[i, ncol(tconc_fresh)], rule = 2)
     
     # Assign the function to the list using the function name as a list element name

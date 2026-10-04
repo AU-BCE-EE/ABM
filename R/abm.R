@@ -33,7 +33,7 @@ abm <- function(
   pars = NULL,
   startup = 0, # Now number of times complete simulation should be run before returning results
   starting = NULL,
-  approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'early'), 
+  approx_method = c(temp = 'linear', pH = 'linear', slurry_mass = 'early', conc_fresh = 'constant'), 
   par_key = '\\.',
   value = 'ts',   # Type of output
   rates_calc = 'instant',# Type of rate output (instantaneuous or average)
@@ -216,7 +216,7 @@ abm <- function(
   
   temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
   pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method['pH'])
-  conc_fresh_fun <- makeConcFunc(pars$conc_fresh)
+  conc_fresh_fun <- makeConcFunc(pars$conc_fresh, approx_method = approx_method['conc_fresh'])
   
   # add time to xa_fresh and get xa_fresh funs
   if(is.data.frame(pars$xa_fresh)) pars$xa_fresh$time <- xa_fresh_time

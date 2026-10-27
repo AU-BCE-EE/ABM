@@ -4,11 +4,12 @@
 # Note: enrich_names could also be length 1 vector: '^xa|^RFd$|^iNDF$' etc.
 
 emptyStore <- function(y, resid_mass, resid_enrich, 
-                       enrich_names = c('^xa', '^m[0-9]', '^sr[0-9]', '^RFd$', '^CPs$', '^iNDF$', '^VSd$', '^Cfat$', '^starch$', '^ash$'),
+                       enrich_names_mic = c('^xa', '^m[0-9]', '^sr[0-9]'),
+                       enrich_names_OM = c('^RFd$', '^CPs$', '^iNDF$', '^VSd$', '^Cfat$', '^starch$', '^ash$'),
                        ignore_names = c('_cum_', '_conv_', 'cum$')) {
 
   
-  
+  #browser()
   y <- unlist(y)
   slurry_mass <- y['slurry_mass']
 
@@ -28,10 +29,16 @@ emptyStore <- function(y, resid_mass, resid_enrich,
     y.before <- y
     # Calculate mass of each variable remaining in storage
     resid_frac <- resid_mass / slurry_mass
-    resid_par <- logistic(logit(resid_frac) + resid_enrich)
-    which.enrich <- grepl(paste(enrich_names, collapse = '|'), names(y))
-    y[which.enrich] <- y[which.enrich] * resid_par
-    y[!which.enrich & !which.ignore] <- y[!which.enrich & !which.ignore] * resid_frac
+    
+    resid_par_OM <- logistic(logit(resid_frac) + resid_enrich[['OM']])
+    resid_par_mic <- logistic(logit(resid_frac) + resid_enrich[['mic']])
+    
+    which.enrich_OM <- grepl(paste(enrich_names_OM, collapse = '|'), names(y)) & !which.ignore
+    y[which.enrich_OM] <- y[which.enrich_OM] * resid_par_OM
+    which.enrich_mic <- grepl(paste(enrich_names_mic, collapse = '|'), names(y)) & !which.ignore & !which.enrich_OM
+    y[which.enrich_mic] <- y[which.enrich_mic] * resid_par_mic
+    
+    y[!which.enrich_mic & !which.enrich_OM & !which.ignore] <- y[!which.enrich_OM & !which.enrich_mic & !which.ignore] * resid_frac
     # Effluent
     y.eff <- y.before - y
     y.eff <- y.eff[!which.ignore]

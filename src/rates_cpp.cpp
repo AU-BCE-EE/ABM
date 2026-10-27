@@ -558,6 +558,10 @@ List rates_cpp(double t, NumericVector y, List parms){
                       Named("qhat") = qhat,
                       Named("qhat_opt") = qhat_opt,
                       Named("cum_inhib") = cum_inhib,
+                      Named("HAC_inhib") = HAC_inhib,
+                      Named("NH3_inhib") = NH3_inhib,
+                      Named("NH4_inhib") = NH4_inhib,
+                      Named("H2S_inhib") = H2S_inhib,
                       Named("sat_index") = VFA/slurry_mass/ks,
                       Named("VFA_supply_VFA_demand") = (VFA_H2_ferm + alpha_xa_dead * xa_dead)/sum_rut);
 }

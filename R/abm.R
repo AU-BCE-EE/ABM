@@ -17,7 +17,7 @@ abm <- function(
                   wash_int = NA,
                   rest_d = 5,
                   cover = 'none',
-                  resid_enrich = 0.9,
+                  resid_enrich = c(OM = 0.9, mic = 0.9),
                   graze = c(start = 'May', duration = 0, hours_day = 0),
                   scale = c(ks_coefficient = 1, qhat_opt = 1, xa_fresh = 1, yield = 1, alpha_opt = 1)),
   man_pars = ABM::man_pars2.0,
@@ -556,6 +556,7 @@ abm <- function(
   }
   # Return results
   # Average only
+  
   if (substring(value, 1, 3) == 'sum') return(summ)
   # ts = time series
   if (value == 'ts') return(dat)

@@ -236,8 +236,8 @@ abm_variable <-
     out$time <- out$time + t_run
     
     # Create empty (0) y.eff vector because washing could occur, and dat needs columns
-
-    yy <- emptyStore(y, resid_mass = 0, resid_enrich = 0)
+    
+    yy <- emptyStore(y, resid_mass = 0, resid_enrich = c(OM = 0, mic = 0))
     y.eff <- 0 * yy[grepl('_eff$', names(yy))]
 
     # Add effluent results

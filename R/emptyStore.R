@@ -8,8 +8,6 @@ emptyStore <- function(y, resid_mass, resid_enrich,
                        enrich_names_OM = c('^RFd$', '^CPs$', '^iNDF$', '^VSd$', '^Cfat$', '^starch$', '^ash$'),
                        ignore_names = c('_cum_', '_conv_', 'cum$')) {
 
-  
-  #browser()
   y <- unlist(y)
   slurry_mass <- y['slurry_mass']
 

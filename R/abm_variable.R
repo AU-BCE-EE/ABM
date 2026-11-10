@@ -153,13 +153,12 @@ abm_variable <-
   t_rem <- days
   # Time that has already run
   t_run <- 0
-
+  
   # Note: Removals, slurry_mass, wash_water, slurry_prod_rate_t, and t_ints all have same length,
   # Note: but all except _mass have placeholder in first position
   # Start the time (emptying) loop
-
   for (i in 2:n_int) {
-    
+    #if(i == 41) browser()
     # Sort out call duration
     t_call <- min(max(timelist[[i]]), t_rem)
 
@@ -175,11 +174,13 @@ abm_variable <-
 
     # If there is a removal event, remove slurry before calling up ODE solver
     if (removals[i]) {
+      
       if (slurry_mass_approx == 'late') {
         j <- i - 1
       } else {
         j <- i
       }
+      
       y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
       y.eff <- y[grepl('_eff$', names(y))]
       y <- y[!grepl('_eff$', names(y))]
@@ -187,11 +188,12 @@ abm_variable <-
       # Washing, increase slurry mass
       # Typically occurs after emptying here (wash_int ignored)
       # But could take place at the *end* of *any* interval
+      
       if (wash_water[i] > 0) {
         y['slurry_mass'] <- y['slurry_mass'] + wash_water[i]
-
+        
         # And empty again, leaving same residual mass as always, and enriching for particles
-        y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
+        y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = c(OM = 0, mic = 0))
         y.eff <- y.eff + y[grepl('_eff$', names(y))]
         y <- y[!grepl('_eff$', names(y))]
         out[nrow(out), names(y)] <- y
@@ -203,7 +205,7 @@ abm_variable <-
 
     # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
     times <- timelist[[i]]
-
+    
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
 

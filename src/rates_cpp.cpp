@@ -387,13 +387,13 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double COD_conv_CP_N = COD_conv[13];
   double COD_conv_C_RFd = COD_conv[15];
   double COD_conv_C_iNDF = COD_conv[16];
-  double COD_conv_C_starch = COD_conv[18];
-  double COD_conv_C_VFA = COD_conv[21];
+  double COD_conv_C_starch = COD_conv[17];
+  double COD_conv_C_VFA = COD_conv[20];
   double COD_conv_C_xa = COD_conv[14];
-  double COD_conv_C_Cfat = COD_conv[19];
-  double COD_conv_C_CP = COD_conv[20];
-  double COD_conv_C_VSd = COD_conv[22];
-  double COD_conv_C_N_urea = COD_conv[23];
+  double COD_conv_C_Cfat = COD_conv[18];
+  double COD_conv_C_CP = COD_conv[19];
+  double COD_conv_C_VSd = COD_conv[21];
+  double COD_conv_C_N_urea = COD_conv[22];
 
   double sum_rut = std::accumulate(rut.begin(), rut.end(), 0.0);
   // Catabolic part of methanogen VFA uptake (COD to CH4): the yield fraction goes to biomass
@@ -469,7 +469,9 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double COD_gap_ferm = h_RFd + h_starch + h_CP + h_Cfat + h_VSd - VFA_H2_ferm;
   double C_gap_ferm = h_RFd / COD_conv_C_RFd + h_starch / COD_conv_C_starch + h_CP / COD_conv_C_CP +
     h_Cfat / COD_conv_C_Cfat + h_VSd / COD_conv_C_VSd - C_ace_ferm - CO2_ferm * C_CO2;
-  double N_gap_ferm = h_CP / COD_conv_CP_N - TAN_min_ferm;
+  // N in VSd (g N/g COD) from formula (1 mol N per mol, mol_COD[3] g COD/mol)
+  double N_VSd = 14.007 / mol_COD[3];
+  double N_gap_ferm = h_CP / COD_conv_CP_N + h_VSd * N_VSd - TAN_min_ferm;
   // Microbial uptake of VFA: VFA -> CH4 + CO2 + sulfide (COD) + biomass
   // COD: uptake - catabolism (CH4, sulfide) - growth (biomass), 0 if every group is a methanogen or sulfate reducer
   double COD_gap_growth = sum_rut - sum_catmeth - sum_catsr - sum_growth;
@@ -483,7 +485,7 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   if (respiration > 0.0) {
     C_gap_respir = respiration / sub_resp * (RFd / COD_conv_C_RFd + starch / COD_conv_C_starch + (CPs + CPf) / COD_conv_C_CP +
       Cfat / COD_conv_C_Cfat + VSd / COD_conv_C_VSd) - CO2_resp * C_CO2;
-    N_gap_respir = respiration / sub_resp * (CPs + CPf) / COD_conv_CP_N - TAN_min_resp;
+    N_gap_respir = respiration / sub_resp * ((CPs + CPf) / COD_conv_CP_N + VSd * N_VSd) - TAN_min_resp;
   }
   // Urea hydrolysis: urea -> TAN + CO2
   double C_gap_urea = rut_urea / COD_conv_C_N_urea - rut_urea / COD_conv_CO2_ureo * C_CO2;
@@ -523,7 +525,7 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   derivatives[n_mic+24] = slurry_prod_rate * (conc_fresh_starch/COD_conv_C_starch + conc_fresh_RFd/COD_conv_C_RFd + conc_fresh_iNDF/COD_conv_C_iNDF + conc_fresh_VFA/COD_conv_C_VFA + conc_fresh_xa_dead/COD_conv_C_xa +
     conc_fresh_Cfat/COD_conv_C_Cfat + (conc_fresh_CPs + conc_fresh_CPf)/COD_conv_C_CP +
     conc_fresh_VSd/COD_conv_C_VSd + conc_fresh_urea/COD_conv_C_N_urea + (sum_xa_fresh * scale_xa_fresh)/(COD_conv_C_xa));
-  derivatives[n_mic+25] =  slurry_prod_rate * ((conc_fresh_CPs + conc_fresh_CPf)/COD_conv_CP_N + conc_fresh_TAN + conc_fresh_urea);
+  derivatives[n_mic+25] =  slurry_prod_rate * ((conc_fresh_CPs + conc_fresh_CPf)/COD_conv_CP_N + conc_fresh_VSd * N_VSd + conc_fresh_TAN + conc_fresh_urea);
   derivatives[n_mic+26] = slurry_prod_rate;
   // Mass balance: n_mic+27 to n_mic+29 are COD_eff_cum, C_eff_cum, N_eff_cum (changed only at emptying, derivative 0)
   derivatives[n_mic+30] = COD_gap_ferm;

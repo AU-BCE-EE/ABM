@@ -9,8 +9,8 @@ hydrol_names <- c('xa_dead', 'starch', 'Cfat', 'CPs', 'CPf', 'RFd', 'VSd', 'urea
 
 # Order of COD_conv elements as used in rates_cpp()
 COD_conv_names <- c('CH4', 'xa', 'RFd', 'iNDF', 'starch', 'Cfat', 'CP', 'VFA', 'S', 'VS', 'CO2_aer', 'CO2_sr',
-                    'CO2_ureo', 'CP_N', 'C_xa', 'C_RFd', 'C_iNDF', 'N_xa', 'C_starch', 'C_Cfat', 'C_CP', 'C_VFA',
-                    'C_VSd', 'C_N_urea', 'frac_CP_xa', 'C_xa_aer', 'C_xa_bac', 'C_xa_dead')
+                    'CO2_ureo', 'CP_N', 'C_xa', 'C_RFd', 'C_iNDF', 'C_starch', 'C_Cfat', 'C_CP', 'C_VFA',
+                    'C_VSd', 'C_N_urea', 'C_xa_aer', 'C_xa_bac', 'C_xa_dead')
 
 # Put named vector elements in the order expected by rates_cpp()
 # Unnamed input is assumed to be in the correct order already

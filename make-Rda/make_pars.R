@@ -243,10 +243,10 @@ wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 
 chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                                   Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.5709966,
                                   # C factors for substrates are exact values for the formulas used in fermentation stoichiometry (hard_pars()):
-                                  # C6H10O5 (RFd, starch), C4H6.1O1.2N (CP), C51H98O6 (Cfat), C15.89H26.3O9.2N (VSd)
-                                  CP_N = 1/0.1014, C_xa = 1/0.3753125, C_RFd = 1/0.3753438, C_iNDF = 1/0.376, N_xa = 1/0.08754375,
+                                  # C6H10O5 (RFd, starch), C4H6.1O1.2N (CP, also CP_N), C51H98O6 (Cfat), C15.89H26.3O9.2N (VSd)
+                                  CP_N = 1/0.1048428, C_xa = 1/0.3753125, C_RFd = 1/0.3753438, C_iNDF = 1/0.376,
                                   C_starch = 1/0.3753438, C_Cfat = 1/0.2640349, C_CP = 1/0.3596108 , C_VFA = 1/0.374, C_VSd = 1/0.3484791, C_N_urea = 1/0.4287499,
-                                  frac_CP_xa = 0.835, C_xa_aer = 1/0.3753125, C_xa_bac = 1/0.3753125, C_xa_dead = 1/0.3753125))
+                                  C_xa_aer = 1/0.3753125, C_xa_bac = 1/0.3753125, C_xa_dead = 1/0.3753125))
 
 arrh_pars_pig3.0 <- list(lnA =  29.96298,
                          E_CH4 = 81000, 

@@ -447,13 +447,15 @@ abm <- function(
   # specifically the N stored in xa_bac needs to be transfered to the CP pool when it degrades.  
   
   dat$Ninorg_conc_fresh <- dat$conc_fresh_urea + dat$conc_fresh_TAN
-  dat$Norg_conc_fresh <- dat$conc_fresh_CPs / pars$COD_conv[['CP_N']] + dat$conc_fresh_CPf / pars$COD_conv[['CP_N']]# Note that the input CP is typically measured and therefore includes.
+  # Organic N in CP and VSd (N in VSd from formula, see NVSd())
+  N_VSd <- NVSd(pars)
+  dat$Norg_conc_fresh <- dat$conc_fresh_CPs / pars$COD_conv[['CP_N']] + dat$conc_fresh_CPf / pars$COD_conv[['CP_N']] + dat$conc_fresh_VSd * N_VSd # Note that the input CP is typically measured and therefore includes.
   dat$N_conc_fresh <- dat$Ninorg_conc_fresh + dat$Norg_conc_fresh
   dat$Ninorg_conc <- Ninorg_conc <- dat$urea_conc + dat$TAN_conc
-  dat$Norg_conc <- Norg_conc <- dat$CPs_conc / pars$COD_conv[['CP_N']] + dat$CPf_conc / pars$COD_conv[['CP_N']]
+  dat$Norg_conc <- Norg_conc <- dat$CPs_conc / pars$COD_conv[['CP_N']] + dat$CPf_conc / pars$COD_conv[['CP_N']] + dat$VSd_conc * N_VSd
   dat$N_conc <- N_conc <- dat$Ninorg_conc + dat$Norg_conc
   dat$Ninorg_eff_conc <- Ninorg_eff_conc <- dat$urea_eff_conc + dat$TAN_eff_conc
-  dat$N_eff_conc <- Ninorg_eff_conc + dat$CPs_eff_conc / pars$COD_conv[['CP_N']] + dat$CPf_eff_conc / pars$COD_conv[['CP_N']]
+  dat$N_eff_conc <- Ninorg_eff_conc + dat$CPs_eff_conc / pars$COD_conv[['CP_N']] + dat$CPf_eff_conc / pars$COD_conv[['CP_N']] + dat$VSd_eff_conc * N_VSd
   
   # And flows in g/d
   dat$dCOD_load_rate <- dat$dCOD_conc_fresh * dat$slurry_prod_rate

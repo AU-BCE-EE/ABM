@@ -255,6 +255,7 @@ abm(days = 365,
   \code{gap} (net loss due to process stoichiometry, positive = destroyed, negative = created),
   \code{resid} (\code{in - stored - removed - emitted - gap}, should be about 0), and \code{rel_resid} (\code{resid/in}).
   The gap is split by process in columns \code{*_gap_*_cum} (e.g., \code{COD_gap_ferm_cum} for hydrolysis and fermentation, \code{COD_gap_growth_cum} for microbial growth).
+  Organic N is N in crude protein (\code{CP_N}) and in VSd (from the formula C15.89H26.3O9.2N).
   Microbial biomass is assumed to contain no N.
   The summary includes final relative residuals (\code{*_bal_rel_resid}) and gaps (\code{*_bal_rel_gap}).
   A warning is given if a residual exceeds 0.1\% of input.

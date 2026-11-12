@@ -90,6 +90,8 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double TAN = y[n_mic+12];
   double sulfate = y[n_mic+13];
   double sulfide = y[n_mic+14];
+  // n_mic+15 to n_mic+38 are cumulative variables, see derivatives below
+  double VFA_C = y[n_mic+39];
 
   double time_sum = t + t_run; // Time since start of complete simulation
 
@@ -341,10 +343,8 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   const double *pro = V(40);
   const double *lip = V(41);
   const double *OM = V(55);
-  const double *ace = V(42);
-  const double *hyd = V(43);
-  const double *ace_sr = V(44);
-  const double *hyd_sr = V(45);
+  // V(42) to V(45) (ace, hyd, ace_sr, hyd_sr): no longer used, CO2 from methanogenesis and sulfate reduction
+  // is calculated from VFA pool carbon; slots kept so indices stay fixed
 
   std::vector<double> ferm(n_carb);
   for(int i = 0; i < n_carb; ++i) {
@@ -357,8 +357,6 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double VFA_H2_ferm = C2H4O2 * 64 + H2 * 16;
   double TAN_min_ferm = ferm[3] * 14.007;
 
-  double COD_conv_meth_CO2 = -(ace[1] * 64 + hyd[0] * 16)/((ace[2] + hyd[2]) * 44.01);
-  double COD_conv_sr_CO2 = -(ace_sr[1] * 64 + hyd_sr[0] * 16)/((ace_sr[3]) * 44.01);
   double CO2_ferm = ferm[8] * 44.01;
 
   // Respiration
@@ -412,8 +410,36 @@ List rates_cpp(double t, NumericVector y_in, List parms){
     sum_catsr += (1.0 - scale_yield * yield[idx]) * rut[idx];
   }
 
+  // Carbon in VFA pool (acetate + H2, so C content per g COD varies)
+  const double C_CH4 = 12.011 / 16.043;
+  const double C_CO2 = 12.011 / 44.01;
+  // C per g COD in pool
+  double VFA_fC = (VFA > 0.0) ? VFA_C / VFA : 0.0;
+  // C added to pool: acetate from fermentation, hydrolysis of dead biomass, fresh slurry
+  double h_xa_dead = alpha_xa_dead * xa_dead;
+  double C_ace_ferm = C2H4O2 * 2 * 12.011;
+  double C_VFA_xa_dead = h_xa_dead / COD_conv_C_xa;
+  double C_VFA_fresh = slurry_prod_rate * conc_fresh_VFA / COD_conv_C_VFA;
+
+  // VFA C taken up by methanogens and sulfate reducers goes to biomass, CH4 (methanogens), and CO2 (remainder)
+  // CO2 can be negative if pool is rich in H2 (hydrogenotrophic methanogenesis consumes CO2)
+  double C_upt_meth = 0.0, C_growth_meth = 0.0;
+  for(int i = 0; i < n_meth; ++i) {
+    int idx = (int) i_meth[i];
+    C_upt_meth += rut[idx] * VFA_fC;
+    C_growth_meth += scale_yield * yield[idx] * rut[idx] / COD_conv_C_xa;
+  }
+  double C_upt_sr = 0.0, C_growth_sr = 0.0;
+  for(int i = 0; i < n_sr; ++i) {
+    int idx = (int) i_sr[i];
+    C_upt_sr += rut[idx] * VFA_fC;
+    C_growth_sr += scale_yield * yield[idx] * rut[idx] / COD_conv_C_xa;
+  }
+  double CO2_meth = (C_upt_meth - sum_catmeth / COD_conv_CH4 * C_CH4 - C_growth_meth) / C_CO2;
+  double CO2_sr = (C_upt_sr - C_growth_sr) / C_CO2;
+
   // CO2 produced from combined fermentation, methanogenesis and sulfate reduction
-  double CO2_ferm_meth_sr = CO2_ferm + sum_catmeth/COD_conv_meth_CO2 + sum_catsr/COD_conv_sr_CO2;
+  double CO2_ferm_meth_sr = CO2_ferm + CO2_meth + CO2_sr;
 
   // Microbial biomass in fresh slurry, from interpolation table (columns in order of microbial groups)
   SEXP xaf_tab = P(63);
@@ -430,30 +456,27 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   // Mass balance diagnostics: element consumed - element produced by each process (g/d)
   // Positive = element destroyed by process stoichiometry, negative = created
   // Computed from process rates (not from derivatives) so the balance also checks the derivatives
-  const double C_CH4 = 12.011 / 16.043;
-  const double C_CO2 = 12.011 / 44.01;
   double h_RFd = alpha_RFd * RFd;
   double h_starch = alpha_starch * starch;
   double h_CP = alpha_CPs * CPs + alpha_CPf * CPf;
   double h_Cfat = alpha_Cfat * Cfat;
   double h_VSd = alpha_VSd * VSd;
-  double h_xa_dead = alpha_xa_dead * xa_dead;
   double sum_growth = 0.0;
   for (int i = 0; i < n_mic; ++i) sum_growth += scale_yield * yield[i] * rut[i];
   double sum_growth_C = sum_growth / COD_conv_C_xa;
 
-  // Hydrolysis + fermentation: substrate -> VFA (incl. H2) + CO2 + TAN
+  // Hydrolysis + fermentation: substrate -> VFA (acetate C, H2 has no C) + CO2 + TAN
   double COD_gap_ferm = h_RFd + h_starch + h_CP + h_Cfat + h_VSd - VFA_H2_ferm;
   double C_gap_ferm = h_RFd / COD_conv_C_RFd + h_starch / COD_conv_C_starch + h_CP / COD_conv_C_CP +
-    h_Cfat / COD_conv_C_Cfat + h_VSd / COD_conv_C_VSd - VFA_H2_ferm / COD_conv_C_VFA - CO2_ferm * C_CO2;
+    h_Cfat / COD_conv_C_Cfat + h_VSd / COD_conv_C_VSd - C_ace_ferm - CO2_ferm * C_CO2;
   double N_gap_ferm = h_CP / COD_conv_CP_N - TAN_min_ferm;
   // Microbial uptake of VFA: VFA -> CH4 + CO2 + sulfide (COD) + biomass
   // COD: uptake - catabolism (CH4, sulfide) - growth (biomass), 0 if every group is a methanogen or sulfate reducer
   double COD_gap_growth = sum_rut - sum_catmeth - sum_catsr - sum_growth;
-  double C_gap_uptake = sum_rut / COD_conv_C_VFA - sum_catmeth / COD_conv_CH4 * C_CH4 -
-    (sum_catmeth / COD_conv_meth_CO2 + sum_catsr / COD_conv_sr_CO2) * C_CO2 - sum_growth_C;
+  double C_gap_uptake = sum_rut * VFA_fC - sum_catmeth / COD_conv_CH4 * C_CH4 -
+    (CO2_meth + CO2_sr) * C_CO2 - sum_growth_C;
   // Hydrolysis of dead biomass: xa_dead -> VFA
-  double C_gap_xa_dead = h_xa_dead / COD_conv_C_xa - h_xa_dead / COD_conv_C_VFA;
+  double C_gap_xa_dead = h_xa_dead / COD_conv_C_xa - C_VFA_xa_dead;
   // Respiration: substrate -> CO2 + TAN (COD is tracked as COD_conv_cum_respir)
   double C_gap_respir = 0.0;
   double N_gap_respir = 0.0;
@@ -466,7 +489,7 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double C_gap_urea = rut_urea / COD_conv_C_N_urea - rut_urea / COD_conv_CO2_ureo * C_CO2;
 
   // Derivatives
-  int nn = n_mic + 39;
+  int nn = n_mic + 40;
   NumericVector derivatives(nn);
 
   for (int i = 0; i < n_mic; i++) {
@@ -512,6 +535,8 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   derivatives[n_mic+36] = C_gap_urea;
   derivatives[n_mic+37] = N_gap_ferm;
   derivatives[n_mic+38] = N_gap_respir;
+  // Carbon in VFA pool
+  derivatives[n_mic+39] = C_ace_ferm + C_VFA_xa_dead + C_VFA_fresh - sum_rut * VFA_fC;
 
   // Other output, as a single flat vector (much faster for deSolve to unlist() than a nested list)
   // Names are created once in R (see outNames.R) and must match the order here

@@ -101,7 +101,7 @@ check <- function(cond, msg) {
 }
 
 state_cols <- c('slurry_mass', 'xa_dead', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'CPs', 'CPf',
-                'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide')
+                'Cfat', 'VFA', 'VFA_C', 'urea', 'TAN', 'sulfate', 'sulfide')
 cum_cols <- c('NH3_emis_cum', 'N2O_emis_cum', 'CH4_emis_cum', 'CO2_emis_cum', 'COD_conv_cum',
               'COD_conv_cum_meth', 'COD_conv_cum_respir', 'COD_conv_cum_sr', 'COD_load_cum',
               'C_load_cum', 'N_load_cum', 'slurry_load_cum', 'COD_eff_cum', 'C_eff_cum', 'N_eff_cum')

@@ -327,7 +327,9 @@ abm <- function(
          C_gap_respir_cum = 0,
          C_gap_urea_cum = 0,
          N_gap_ferm_cum = 0,
-         N_gap_respir_cum = 0)
+         N_gap_respir_cum = 0,
+         # Carbon in VFA pool (g C), VFA pool holds acetate and H2 so C content per g COD varies
+         VFA_C = pars$conc_init[['VFA']] * slurry_mass_init / pars$COD_conv[['C_VFA']])
   
   if (!is.null(starting)) {
     start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide')
@@ -335,6 +337,12 @@ abm <- function(
       stop('Columns missing in `starting`: ', paste(c(start.vars, pars$grps)[miss], collapse = ', '))
     }
     y[start.vars] <- unlist(starting[nrow(starting), start.vars])
+    # VFA carbon, from VFA if not available (output from older versions)
+    if ('VFA_C' %in% names(starting)) {
+      y['VFA_C'] <- starting[nrow(starting), 'VFA_C']
+    } else {
+      y['VFA_C'] <- y['VFA'] / pars$COD_conv[['C_VFA']]
+    }
     # Microbial biomass (g)
     y[1:length(pars$grps)] <- unlist(starting[nrow(starting), pars$grps])
   }
@@ -365,7 +373,7 @@ abm <- function(
   mic_names <- pars$grps
   eff_names <- names(dat[grepl("_eff$", names(dat))])
   eff_conc_names <- eff_names[eff_names != "slurry_mass_eff"]
-  conc_names <-  c('TAN', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'Cfat', 'CPs', 'CPf', 'VFA', 'sulfide', 'sulfate', mic_names)
+  conc_names <-  c('TAN', 'xa_dead', 'urea', 'RFd', 'iNDF', 'ash', 'VSd', 'starch', 'Cfat', 'CPs', 'CPf', 'VFA', 'VFA_C', 'sulfide', 'sulfate', mic_names)
   dat_conc <- dat[, conc_names]/(dat$slurry_mass)
   dat_eff_conc <- dat[, eff_conc_names]/(dat$slurry_mass_eff)
   names(dat_conc) <- paste0(names(dat_conc), '_conc')
@@ -425,12 +433,12 @@ abm <- function(
   
   dat$VS_conc <- dat$COD_conc/pars$COD_conv[['VS']]
 
-  dat$C_conc <- dat$VFA_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_conc / pars$COD_conv[['C_xa']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
+  dat$C_conc <- dat$VFA_C_conc + dat$xa_dead_conc / pars$COD_conv[['C_xa']] + dat$RFd_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_conc / pars$COD_conv[['C_starch']] + dat$CPs_conc / pars$COD_conv[['C_CP']] + dat$CPf_conc / pars$COD_conv[['C_CP']] + dat$Cfat_conc / pars$COD_conv[['C_Cfat']] +
                 dat$VSd_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
                 dat$urea_conc / pars$COD_conv[['C_N_urea']]
   
-  dat$C_eff_conc <- dat$VFA_eff_conc / pars$COD_conv[['C_VFA']] + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
+  dat$C_eff_conc <- dat$VFA_C_eff_conc + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_eff_conc / pars$COD_conv[['C_starch']] + dat$CPs_eff_conc / pars$COD_conv[['C_CP']] + dat$CPf_eff_conc / pars$COD_conv[['C_CP']] + dat$Cfat_eff_conc / pars$COD_conv[['C_Cfat']] +
                 dat$VSd_eff_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
                 dat$urea_eff_conc / pars$COD_conv[['C_N_urea']]

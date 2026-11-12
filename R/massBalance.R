@@ -16,7 +16,7 @@ elementContent <- function(x, cc, mic_names) {
          x[['CPs']] + x[['CPf']] + x[['Cfat']] + x[['VFA']]
   C <- (mic + x[['xa_dead']]) / cc[['C_xa']] + x[['RFd']] / cc[['C_RFd']] + x[['iNDF']] / cc[['C_iNDF']] +
        x[['VSd']] / cc[['C_VSd']] + x[['starch']] / cc[['C_starch']] + (x[['CPs']] + x[['CPf']]) / cc[['C_CP']] +
-       x[['Cfat']] / cc[['C_Cfat']] + x[['VFA']] / cc[['C_VFA']] + x[['urea']] / cc[['C_N_urea']]
+       x[['Cfat']] / cc[['C_Cfat']] + x[['VFA_C']] + x[['urea']] / cc[['C_N_urea']]
   N <- (x[['CPs']] + x[['CPf']]) / cc[['CP_N']] + x[['urea']] + x[['TAN']]
   return(list(COD = unname(COD), C = unname(C), N = unname(N)))
 }

@@ -181,7 +181,7 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   const double *ki_H2S_slope = V(25);
   const double *ki_H2S_int = V(26);
   const double *ki_H2S_min = V(27);
-  const double *IC50_low = V(28);
+  // V(28) = IC50_low: no longer used (IC50 is continuous at pH 6.8), slot kept so indices stay fixed
   double area = D(29);
   double floor_area = D(30);
   bool resp = Rf_asLogical(P(31));
@@ -234,10 +234,11 @@ List rates_cpp(double t, NumericVector y_in, List parms){
         1.0;
 
       // H2S inhibition
-      // NTS: check units in b: x is a concentration (g/kg) but last term is divided by slurry_mass
-      double IC50 = (pH >= 6.8) ? (ki_H2S_slope[i] * pH + ki_H2S_int[i]) : IC50_low[i];
+      // Linear in free H2S (x, g/kg): 1 at x = H2S_frac * ki_H2S_min, 0.5 at x = IC50
+      // IC50 is held at its pH 6.8 value below pH 6.8 (continuous in pH)
+      double IC50 = ki_H2S_slope[i] * std::max(pH, 6.8) + ki_H2S_int[i];
       double a = -0.5 / (IC50 - (H2S_frac * ki_H2S_min[i]));
-      double b = 1 - (-0.5 / (IC50 - (H2S_frac * ki_H2S_min[i])) * H2S_frac * ki_H2S_min[i] / slurry_mass);
+      double b = 1 - a * H2S_frac * ki_H2S_min[i];
 
       H2S_inhib[i] = a * x + b;
       H2S_inhib[i] = std::max(0.0, std::min(1.0, H2S_inhib[i]));  // Clamp between 0 and 1

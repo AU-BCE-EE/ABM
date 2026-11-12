@@ -86,8 +86,8 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL) 
     if (wash[i]) {
       y['slurry_mass'] <- y['slurry_mass'] + pars$wash_water
 
-      # And empty again, leaving same residual mass as always (no enrichment, same as abm_variable())
-      y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = c(OM = 0, mic = 0))
+      # And empty again, leaving same residual mass as always, and enriching for particles (same as abm_variable())
+      y <- emptyStore(y, resid_mass = pars$resid_mass, resid_enrich = pars$resid_enrich)
       which_eff <- grepl('_eff$', names(y))
       y.eff <- y.eff + y[which_eff]
       y <- y[!which_eff]

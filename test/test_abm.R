@@ -428,14 +428,15 @@ add_test('grp_pars_decay_rate_per_group', function() {
   check(abs(d1$m2_conc[n] - d0$m2_conc[n]) / d0$m2_conc[n] < 0.1, 'Group-specific decay_rate for m1 changes m2 strongly')
   d1
 })
-add_test('wash_no_enrichment', function() {
-  # With washing, residual after the second (wash) emptying is not enriched
-  # So changing resid_enrich should give the same change as without washing (only via first emptying)
+add_test('wash_enrichment', function() {
+  # With washing, residual after the second (wash) emptying is also enriched for particles
+  # Enrichment changes composition but not residual slurry mass
   m <- mng(wash_int = 30, wash_water = 20000, rest_d = 0, empty_int = 0)
   d0 <- run_abm(days = 40, mng_pars = modlist(m, resid_enrich = c(OM = 0, mic = 0)))
   d1 <- run_abm(days = 40, mng_pars = modlist(m, resid_enrich = c(OM = 2, mic = 2)))
   i <- which(d0$time == 30)[2]
   check(abs(d1$slurry_mass[i] - d0$slurry_mass[i]) < 1e-6, 'slurry mass after wash differs')
+  check(d1$RFd[i] > 1.05 * d0$RFd[i], 'resid_enrich has no effect on residual RFd after wash')
   d1
 }, regression = FALSE)
 std_test('grp_pars_decay_rate', list(days = D, grp_pars = modlist(grp_pars2.0, decay_rate = c(all = 0.05))))

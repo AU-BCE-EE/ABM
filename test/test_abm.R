@@ -498,6 +498,27 @@ add_test('stoichiometry_balanced', function() {
   }
   p[c('carb', 'pro', 'lip', 'OM')]
 }, regression = FALSE)
+add_test('variable_slurry_mass_rain_exceeds_increase', function() {
+  # Given slurry mass increases less than net rain - evaporation in some intervals:
+  # slurry addition is set to 0 and rain reduced, so simulated mass follows the given mass (with a warning)
+  sm <- data.frame(time = c(0, 50, 51, 120, 121, 250, 251, 365),
+                   slurry_mass = c(5000, 70000, 5000, 90000, 6000, 120000, 7000, 80000))
+  d <- run_abm(days = 365, mng_pars = mng(slurry_mass = sm), wthr_pars = modlist(wthr_pars2.0, rain = 1.9))
+  check_ts(d, 365, mass_balance = TRUE)
+  check(any(grepl('increases less than net rain', attr(d, 'warnings'))), 'No warning about rain exceeding slurry mass increase')
+  # Simulated mass at end of each filling interval matches given mass
+  # (within one day of rain, which falls after emptying with approx_method = "early")
+  pe <- (1.9 - d$evap[1]) * def_mng$area
+  for (tt in c(50, 120, 250, 365)) {
+    sim <- d$slurry_mass[d$time == tt][1]
+    given <- sm$slurry_mass[sm$time == tt]
+    check(abs(sim - given) <= 1.01 * pe, paste0('Simulated slurry mass at time ', tt, ' (', round(sim), ') differs from given (', given, ')'))
+  }
+  # With default rain (0) there is no warning
+  d0 <- run_abm(days = 365, mng_pars = mng(slurry_mass = sm))
+  check(!any(grepl('increases less than net rain', attr(d0, 'warnings'))), 'Unexpected rain warning with default rain = 0')
+  d
+}, regression = FALSE)
 add_test('no_emptying_at_end_of_run', function() {
   # Simulation end (100 d) is not an emptying time (42, 84 d), so there must be no effluent at the end
   d <- run_abm(days = 100, mng_pars = mng(empty_int = 42))

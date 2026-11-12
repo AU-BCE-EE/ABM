@@ -22,7 +22,8 @@ abm_variable <- function(days, delta_t, times, y, pars, warn, slurry_mass_approx
   
   # If simulation continues past slurry_mass data frame time, set following slurry production (addition) to zero
   # Extend last slurry mass all the way 
-  if (pars$slurry_mass[nrow(pars$slurry_mass), 'time'] < days) {
+  extended <- pars$slurry_mass[nrow(pars$slurry_mass), 'time'] < days
+  if (extended) {
     pars$slurry_mass <- rbind(pars$slurry_mass, pars$slurry_mass[nrow(pars$slurry_mass), ])
     pars$slurry_mass[nrow(pars$slurry_mass), 'time'] <- days
     # But make sure washing is not repeated!
@@ -46,7 +47,7 @@ abm_variable <- function(days, delta_t, times, y, pars, warn, slurry_mass_approx
   # First get net precip/evap addition as a daily rate in kg/d (mm/d * m2 * density = kg/d)
   # Cannot combine this with mid approach--technically impossible and practically difficult
   if (slurry_mass_approx != 'mid') {
-    pe_netr <- (pars$rain - pars$evap) * pars$area * (pars$dens / 1000) 
+    pe_netr <- (pars$rain - pars$evap) * pars$area * (pars$dens / 1000)
     slurry_mass_orig <- pars$slurry_mass$slurry_mass
     pars$slurry_mass$slurry_mass <- pars$slurry_mass$slurry_mass - cumsum(c(0, diff(pars$slurry_mass$time) * pe_netr))
   } else {
@@ -54,6 +55,7 @@ abm_variable <- function(days, delta_t, times, y, pars, warn, slurry_mass_approx
       warning('Setting rain and evap to 0 because "mid" method was selected.')
     }
     pars$rain <- pars$evap <- 0
+    pe_netr <- 0
   }
 
   if (any(pars$slurry_mass$slurry_mass < 0)) {
@@ -113,7 +115,30 @@ abm_variable <- function(days, delta_t, times, y, pars, warn, slurry_mass_approx
   }
 
   # Determine variable slurry production rate for each time interval
-  slurry_prod_rate_t <- c(0, diff(pars$slurry_mass[, 'slurry_mass']) / diff(pars$slurry_mass[, 'time'])) 
+  slurry_prod_rate_t <- c(0, diff(pars$slurry_mass[, 'slurry_mass']) / diff(pars$slurry_mass[, 'time']))
+
+  # Rain for each time interval
+  # In filling intervals where the given slurry mass rises less than net rain - evaporation, slurry addition would be negative
+  # Then set slurry addition to 0 and reduce rain so simulated slurry mass follows the given slurry mass
+  rain_t <- rep(pars$rain, length(slurry_prod_rate_t))
+  dt_sm <- c(NA, diff(pars$slurry_mass[, 'time']))
+  # Given (unadjusted) mass increase rate
+  dm_given <- c(NA, diff(pars$slurry_mass[, 'slurry_mass'])) / dt_sm + pe_netr
+  short <- which(is.finite(slurry_prod_rate_t) & slurry_prod_rate_t < 0 & is.finite(dm_given) & dm_given >= 0)
+  # Not for the added final interval when simulation continues past given slurry mass data (no data there)
+  if (extended) short <- short[short != length(slurry_prod_rate_t)]
+  if (length(short) > 0) {
+    rain_t[short] <- dm_given[short] / (pars$area * pars$dens / 1000) + pars$evap
+    if (warn) {
+      st_sm <- pars$slurry_mass[, 'time']
+      excess <- sum((pars$rain - rain_t[short]) * pars$area * pars$dens / 1000 * dt_sm[short])
+      warning('In ', length(short), ' interval(s) of slurry_mass (e.g., time ', st_sm[short[1] - 1], ' to ', st_sm[short[1]],
+              ') the given slurry mass increases less than net rain - evaporation (', signif(pe_netr, 3), ' kg/d).\n',
+              '  Slurry addition was set to 0 and rain reduced in these intervals so simulated slurry mass follows the given values\n',
+              '  (', signif(excess, 3), ' kg less rain in total). Check rain and evap.')
+    }
+  }
+
   slurry_prod_rate_t[slurry_prod_rate_t < 0] <- 0
   slurry_prod_rate_t[!is.finite(slurry_prod_rate_t)] <- 0
 
@@ -163,8 +188,9 @@ abm_variable <- function(days, delta_t, times, y, pars, warn, slurry_mass_approx
     # Sort out call duration
     t_call <- min(max(timelist[[i]]), t_rem)
 
-    # Fill in slurry_prod_rate
+    # Fill in slurry_prod_rate and rain
     pars$slurry_prod_rate <- slurry_prod_rate_t[i]
+    pars$rain <- rain_t[i]
 
     # If there is a removal event, remove slurry before calling up ODE solver
     if (removals[i]) {

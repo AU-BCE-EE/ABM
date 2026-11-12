@@ -261,12 +261,16 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double kl_NH3_floor = kl[1];
   double kl_H2S = kl[2];
 
+  // Surface fluxes (evaporation, NH3 and H2S emission) fade out as storage empties (half rate at 0.01 kg/m2),
+  // because they are calculated from concentrations and would otherwise continue from an empty storage
+  double f_empty = slurry_mass / (slurry_mass + 0.01 * area);
+
   // NH3 emission rates
-  double NH3_emis_rate_floor = kl_NH3_floor * floor_area * ((NH3_frac_floor * TAN) / slurry_mass) * 1000 / H_NH3;
-  double NH3_emis_rate_pit = kl_NH3 * area * ((NH3_frac * TAN) / slurry_mass) * 1000 / H_NH3;
+  double NH3_emis_rate_floor = f_empty * kl_NH3_floor * floor_area * ((NH3_frac_floor * TAN) / slurry_mass) * 1000 / H_NH3;
+  double NH3_emis_rate_pit = f_empty * kl_NH3 * area * ((NH3_frac * TAN) / slurry_mass) * 1000 / H_NH3;
 
   // H2S emission rate
-  double H2S_emis_rate = kl_H2S * area * ((H2S_frac * sulfide) / slurry_mass) * 1000;
+  double H2S_emis_rate = f_empty * kl_H2S * area * ((H2S_frac * sulfide) / slurry_mass) * 1000;
 
   // Respiration
   double respiration = 0.0;
@@ -450,7 +454,8 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   for (int i = 0; i < n_mic; ++i) sum_decay += decay_rate[i] * xa[i];
 
   double rain = D(52);
-  double evap = D(53);
+  // Evaporation fades out as storage empties (see f_empty above), so slurry mass cannot become negative
+  double evap = D(53) * f_empty;
   double N2O_emis_rate = D(54);
 
   // Mass balance diagnostics: element consumed - element produced by each process (g/d)

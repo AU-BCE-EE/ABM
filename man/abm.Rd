@@ -66,10 +66,14 @@ abm(days = 365,
   \item{wthr_pars}{
     Weather inputs.
     List with elements `temp_air_C` in degree C, `RH` relative humidity in percent, `rain` is precipitation in kg/m2/day, `pres_kpa` is ambient pressure in kPa, `rs` is solar radiation in MJ/m2/d.
+    Default \code{rain} is 0 (in-house storage), set it for outdoor storage.
+    With variable slurry mass, rain is reduced in intervals where the given slurry mass increases less than net rain - evaporation (with a warning), so simulated slurry mass follows the given values.
     See \code{\link{parameters}}.
 }
   \item{evap_pars}{
     Evaporation inputs.
+    Evaporation (kg/m2/day) fades out as storage empties (half rate at 0.01 kg/m2), so slurry mass cannot become negative. Output column \code{evap} is the actual rate.
+    NH3 (pit and floor) and H2S emission fade out in the same way.
 }
   \item{mng_pars}{
     List of management parameters including slurry production rate (kg/day) (\code{slurry_prod_rate}),

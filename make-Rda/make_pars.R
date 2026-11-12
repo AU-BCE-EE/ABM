@@ -32,7 +32,8 @@ man_pars2.0 <- list(conc_fresh = list(sulfide = 0.01, urea = 3.17, sulfate = 0.2
                                   RFd = 25.4, iNDF = 11.3, VSd = 0, ash = 15), 
                     pH = 7, dens = 1000)
 
-wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
+# Default rain is 0 (in-house storage); set rain for outdoor storage
+wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 0, pres_kpa = 101, rs = 10)
 
 arrh_pars2.0 <- list(A = c(xa_dead= 3.61383 * 10^12, starch = 5.86*10^18, Cfat = 0, CPs = 1.763612 * 10^12, CPf = 4.10669 * 10^11, RFd = 1.499476 * 10^12, VSd = 3.61383 * 10^12, urea = 4.38*10^15), 
                      E = c(xa_dead= 81557, starch = 109400, Cfat = 0, CPs = 87515.5450, CPf = 69361.3, RFd = 81052, VSd = 81557, urea = 81559),  
@@ -239,7 +240,8 @@ for (i in c('starch', 'xa_dead','Cfat','RFd','CPs', 'CPf', 'iNDF')){
 }
 
 
-wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 1.9, pres_kpa = 101, rs = 10)
+# Default rain is 0 (in-house storage); set rain for outdoor storage
+wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 0, pres_kpa = 101, rs = 10)
 chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
                                   Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.5709966,
                                   # C factors for substrates are exact values for the formulas used in fermentation stoichiometry (hard_pars()):

@@ -35,14 +35,22 @@ hard_pars <- function(pars){
   #               NH3 = -0.1400892, H2O = -2.3396911, C5H7O2N = 0.1400892,
   #               C2H4O2 = 1.7509058, H2 = 3.5198056, CO2 = 1.7603468)
   # without cell synthesis
-  pars$carb <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
+  # Fermentation stoichiometry, mol per mol substrate (positions are used in rates_cpp(), names are only labels)
+  # Each reaction must be balanced for C, H, O, N, and COD with substrate COD in mol_COD below (checked in test_abm.R)
+  # Substrate COD (g COD/mol, N as NH3), used in rates_cpp() to convert hydrolyzed COD (g) to mol substrate
+  pars$mol_COD <- c(carb = 192,      # C6H10O5
+                    pro = 133.6,     # C4H6.1O1.2N
+                    lip = 2320,      # C51H98O6
+                    OM = 547.68)     # C15.89H26.3O9.2N (VSd)
+  pars$carb <- c(C6H10O5 = -1, C51H98O6 = 0, C4H6.1O1.2N = 0,
                  NH3 = 0, H2O = -2.992714, C5H7O2N = 0,
                  C2H4O2 = 2.003743, H2 = 3.985329, CO2 = 1.993114)
-  pars$pro <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
-                NH3 = 1, H2O = -3.2521987, C5H7O2N = 0,
-                C2H4O2 = 1.4774587, H2 = 1.402611, CO2 = 0.6004123)
-  pars$lip <- c(C6H10O5 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
-                NH3 = 0, H2O = -45.4119381, C5H7O2N = 0,
+  # Protein: same acetate/H2 COD split as carbohydrate (67% acetate), from predFerm('C4H6.1O1.2N', acefrac = 0.6679, fs = 0)
+  pars$pro <- c(C6H10O5 = 0, C51H98O6 = 0, C4H6.1O1.2N = -1,
+                NH3 = 1, H2O = -4.0115276, C5H7O2N = 0,
+                C2H4O2 = 1.3942362, H2 = 2.7730552, CO2 = 1.2115276)
+  pars$lip <- c(C6H10O5 = 0, C51H98O6 = -1, C4H6.1O1.2N = 0,
+                NH3 = 0, H2O = -45.3678, C5H7O2N = 0,
                 C2H4O2 = 25.3171914, H2 = 43.7334158, CO2 = 0.3667798)
   # with cell synthesis
   #pars$pro <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
@@ -56,7 +64,7 @@ hard_pars <- function(pars){
   # without cell synthesis
   
   # VSd without cell synthesis (based on C15.89H26.3O9.2N)  
-  pars$OM <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = 0, 
+  pars$OM <- c(C6H10O5 = 0, C51H98O6 = 0, C4H6.1O1.2N = 0,
                 NH3 = 1, H2O = -11.284, C5H7O2N = 0,
                 C2H4O2 = 5.64795, H2 = 11.638, CO2 = 4.5941)
   
@@ -64,20 +72,23 @@ hard_pars <- function(pars){
   #carb_resp <- c(C6H12O6 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
   #                    NH4 = -0.78, HCO3 = -0.78, O2 =  -2.1, H2O = 5.22, C5H7O2N = 0.78,
   #                    CO2 = 2.88) # 
-  carb_resp <- c(C6H12O6 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
-                      NH4 = 0, HCO3 = 0, O2 = -6, H2O = 6, C5H7O2N = 0,
-                      CO2 = 6) # 
-  
-  pro_resp <- c(C6H12O6 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
+  # Respiration stoichiometry, mol per mol substrate (same substrates and mol_COD as fermentation)
+  # Positions are used in rates_cpp(), names are only labels (NH4 is released as TAN, i.e., NH3 in balance)
+  # Only CO2 (and HCO3) and NH4 affect results, O2 consumption (COD) is tracked as respiration rate
+  carb_resp <- c(C6H10O5 = -1, C51H98O6 = 0, C4H6.1O1.2N = 0,
+                      NH4 = 0, HCO3 = 0, O2 = -6, H2O = 5, C5H7O2N = 0,
+                      CO2 = 6) #
+
+  pro_resp <- c(C6H10O5 = 0, C51H98O6 = 0, C4H6.1O1.2N = -1,
                      NH4 = 1, HCO3 = 0, O2 = -4.175, H2O = 1.55, C5H7O2N = 0,
                      CO2 = 4) #
-  
-  lip_resp <- c(C6H12O6 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
-                     NH4 = 0, HCO3 = 0, O2 = -74.5, H2O = 49, C5H7O2N = 0,
+
+  lip_resp <- c(C6H10O5 = 0, C51H98O6 = -1, C4H6.1O1.2N = 0,
+                     NH4 = 0, HCO3 = 0, O2 = -72.5, H2O = 49, C5H7O2N = 0,
                      CO2 = 51) #
-  ## THIS IS WHERE I AM
-  OM_resp <- c(C6H12O6 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
-                NH4 = 1, HCO3 = 0, O2 = -17.865, H2O = 13.15, C5H7O2N = 0,
+  # VSd (C15.89H26.3O9.2N), substrate in position 2
+  OM_resp <- c(C6H10O5 = 0, C15.89H26.3O9.2N = -1, C4H6.1O1.2N = 0,
+                NH4 = 1, HCO3 = 0, O2 = -17.115, H2O = 11.65, C5H7O2N = 0,
                 CO2 = 15.89) #
 
   pars$carb_resp <- carb_resp # 

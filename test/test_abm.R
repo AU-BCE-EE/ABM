@@ -462,6 +462,42 @@ add_test('wash_enrichment', function() {
   check(d1$RFd[i] > 1.05 * d0$RFd[i], 'resid_enrich has no effect on residual RFd after wash')
   d1
 }, regression = FALSE)
+add_test('stoichiometry_balanced', function() {
+  # Fermentation and respiration reactions in hard_pars() must be balanced for C, H, O, N, and COD,
+  # with substrate COD equal to mol_COD (used in rates_cpp() to convert g COD to mol)
+  p <- ABM:::hard_pars(list(pH_LL = c(a = 1), graze_int = 0, graze = c(hours_day = 0), kl = c(NH3 = 1),
+                            EF_NH3 = 1, area = 1, EF_N2O = 0))
+  atoms <- function(f) {
+    m <- regmatches(f, gregexpr('[A-Z][a-z]?[0-9.]*', f))[[1]]
+    out <- c(C = 0, H = 0, O = 0, N = 0)
+    for (x in m) {
+      e <- sub('[0-9.]+$', '', x); n <- sub('^[A-Za-z]+', '', x)
+      out[e] <- out[e] + ifelse(n == '', 1, as.numeric(n))
+    }
+    out
+  }
+  sub_form <- c(carb = 'C6H10O5', pro = 'C4H6.1O1.2N', lip = 'C51H98O6', OM = 'C15.89H26.3O9.2N')
+  # COD (g/mol) of non-substrate species (N as NH3; O2 is negative COD)
+  COD_sp <- c(NH3 = 0, H2O = 0, C5H7O2N = 160, C2H4O2 = 64, H2 = 16, CO2 = 0, H2CO3 = 0, O2 = -32)
+  # Species in positions 4 to 9 of stoichiometry vectors (positions 1 to 3 are substrate labels)
+  sp_ferm <- c('NH3', 'H2O', 'C5H7O2N', 'C2H4O2', 'H2', 'CO2')
+  # Respiration: NH4 is released as TAN (NH3), HCO3 counted as CO2 + H2O (H2CO3)
+  sp_resp <- c('NH3', 'H2CO3', 'O2', 'H2O', 'C5H7O2N', 'CO2')
+  for (s in names(sub_form)) {
+    for (type in c('ferm', 'resp')) {
+      st <- if (type == 'ferm') p[[s]] else p[[paste0(s, '_resp')]]
+      sp <- if (type == 'ferm') sp_ferm else sp_resp
+      coef <- st[4:9]
+      el <- -atoms(sub_form[[s]])
+      for (i in seq_along(sp)) el <- el + coef[[i]] * atoms(sp[i])
+      COD <- -p$mol_COD[[s]] + sum(coef * COD_sp[sp])
+      check(all(abs(el) < 1e-3 * max(1, atoms(sub_form[[s]]))),
+            paste0(s, ' ', type, ' not balanced: ', paste(names(el), signif(el, 3), collapse = ', ')))
+      check(abs(COD) < 1e-4 * p$mol_COD[[s]], paste0(s, ' ', type, ' COD not balanced (', signif(COD, 4), ' g/mol)'))
+    }
+  }
+  p[c('carb', 'pro', 'lip', 'OM')]
+}, regression = FALSE)
 add_test('no_emptying_at_end_of_run', function() {
   # Simulation end (100 d) is not an emptying time (42, 84 d), so there must be no effluent at the end
   d <- run_abm(days = 100, mng_pars = mng(empty_int = 42))

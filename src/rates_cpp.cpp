@@ -329,10 +329,12 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double conc_fresh_ash = conc_fresh[13];
 
   // Fermentation stoichiometry
-  double mol_carb = (alpha_RFd * RFd + alpha_starch * starch) * 0.005208333;
-  double mol_pro = (alpha_CPf * CPf + alpha_CPs * CPs) * 0.00748503;
-  double mol_lip = alpha_Cfat * Cfat * 0.0004194631;
-  double mol_OM = alpha_VSd * VSd * 0.001833952;
+  // Substrate COD (g COD/mol), order carb, pro, lip, OM (see hard_pars())
+  const double *mol_COD = V(65);
+  double mol_carb = (alpha_RFd * RFd + alpha_starch * starch) / mol_COD[0];
+  double mol_pro = (alpha_CPf * CPf + alpha_CPs * CPs) / mol_COD[1];
+  double mol_lip = alpha_Cfat * Cfat / mol_COD[2];
+  double mol_OM = alpha_VSd * VSd / mol_COD[3];
 
   const double *carb = V(39);
   int n_carb = Rf_length(P(39));
@@ -360,10 +362,10 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double CO2_ferm = ferm[8] * 44.01;
 
   // Respiration
-  double mol_carb_resp = respiration * (RFd + starch)/sub_resp * 0.005208333;
-  double mol_pro_resp = respiration * (CPs + CPf)/sub_resp * 0.00748503;
-  double mol_lip_resp = respiration * Cfat/sub_resp * 0.0004194631;
-  double mol_OM_resp = respiration * VSd/sub_resp * 0.001833952;
+  double mol_carb_resp = respiration * (RFd + starch)/sub_resp / mol_COD[0];
+  double mol_pro_resp = respiration * (CPs + CPf)/sub_resp / mol_COD[1];
+  double mol_lip_resp = respiration * Cfat/sub_resp / mol_COD[2];
+  double mol_OM_resp = respiration * VSd/sub_resp / mol_COD[3];
 
   const double *carb_resp = V(46);
   int n_carb_resp = Rf_length(P(46));

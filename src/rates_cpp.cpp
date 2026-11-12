@@ -398,17 +398,22 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double COD_conv_C_N_urea = COD_conv[23];
 
   double sum_rut = std::accumulate(rut.begin(), rut.end(), 0.0);
-  double sum_rutmeth = 0.0;
+  // Catabolic part of methanogen VFA uptake (COD to CH4): the yield fraction goes to biomass
+  const double *yield = V(51);
+  double sum_catmeth = 0.0;
   for(int i = 0; i < n_meth; ++i) {
-    sum_rutmeth += rut[(int) i_meth[i]];
+    int idx = (int) i_meth[i];
+    sum_catmeth += (1.0 - scale_yield * yield[idx]) * rut[idx];
   }
-  double sum_rutsr = 0.0;
+  // Catabolic part of sulfate reducer VFA uptake (COD to sulfide): the yield fraction goes to biomass
+  double sum_catsr = 0.0;
   for(int i = 0; i < n_sr; ++i) {
-    sum_rutsr += rut[(int) i_sr[i]];
+    int idx = (int) i_sr[i];
+    sum_catsr += (1.0 - scale_yield * yield[idx]) * rut[idx];
   }
 
   // CO2 produced from combined fermentation, methanogenesis and sulfate reduction
-  double CO2_ferm_meth_sr = CO2_ferm + sum_rutmeth/COD_conv_meth_CO2 + sum_rutsr/COD_conv_sr_CO2;
+  double CO2_ferm_meth_sr = CO2_ferm + sum_catmeth/COD_conv_meth_CO2 + sum_catsr/COD_conv_sr_CO2;
 
   // Microbial biomass in fresh slurry, from interpolation table (columns in order of microbial groups)
   SEXP xaf_tab = P(63);
@@ -418,7 +423,6 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double sum_decay = 0.0;
   for (int i = 0; i < n_mic; ++i) sum_decay += decay_rate[i] * xa[i];
 
-  const double *yield = V(51);
   double rain = D(52);
   double evap = D(53);
   double N2O_emis_rate = D(54);
@@ -435,9 +439,8 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double h_VSd = alpha_VSd * VSd;
   double h_xa_dead = alpha_xa_dead * xa_dead;
   double sum_growth = 0.0;
-  double sum_growth_C = 0.0;
   for (int i = 0; i < n_mic; ++i) sum_growth += scale_yield * yield[i] * rut[i];
-  sum_growth_C = sum_growth / COD_conv_C_xa;
+  double sum_growth_C = sum_growth / COD_conv_C_xa;
 
   // Hydrolysis + fermentation: substrate -> VFA (incl. H2) + CO2 + TAN
   double COD_gap_ferm = h_RFd + h_starch + h_CP + h_Cfat + h_VSd - VFA_H2_ferm;
@@ -445,9 +448,10 @@ List rates_cpp(double t, NumericVector y_in, List parms){
     h_Cfat / COD_conv_C_Cfat + h_VSd / COD_conv_C_VSd - VFA_H2_ferm / COD_conv_C_VFA - CO2_ferm * C_CO2;
   double N_gap_ferm = h_CP / COD_conv_CP_N - TAN_min_ferm;
   // Microbial uptake of VFA: VFA -> CH4 + CO2 + sulfide (COD) + biomass
-  double COD_gap_growth = -sum_growth;
-  double C_gap_uptake = sum_rut / COD_conv_C_VFA - sum_rutmeth / COD_conv_CH4 * C_CH4 -
-    (sum_rutmeth / COD_conv_meth_CO2 + sum_rutsr / COD_conv_sr_CO2) * C_CO2 - sum_growth_C;
+  // COD: uptake - catabolism (CH4, sulfide) - growth (biomass), 0 if every group is a methanogen or sulfate reducer
+  double COD_gap_growth = sum_rut - sum_catmeth - sum_catsr - sum_growth;
+  double C_gap_uptake = sum_rut / COD_conv_C_VFA - sum_catmeth / COD_conv_CH4 * C_CH4 -
+    (sum_catmeth / COD_conv_meth_CO2 + sum_catsr / COD_conv_sr_CO2) * C_CO2 - sum_growth_C;
   // Hydrolysis of dead biomass: xa_dead -> VFA
   double C_gap_xa_dead = h_xa_dead / COD_conv_C_xa - h_xa_dead / COD_conv_C_VFA;
   // Respiration: substrate -> CO2 + TAN (COD is tracked as COD_conv_cum_respir)
@@ -482,16 +486,16 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   derivatives[n_mic+10] = alpha_xa_dead * xa_dead + VFA_H2_ferm - sum_rut + slurry_prod_rate * conc_fresh_VFA;
   derivatives[n_mic+11] = slurry_prod_rate * conc_fresh_urea - rut_urea;
   derivatives[n_mic+12] = slurry_prod_rate * conc_fresh_TAN + rut_urea + TAN_min_ferm + TAN_min_resp - NH3_emis_rate_pit - NH3_emis_rate_floor - N2O_emis_rate;
-  derivatives[n_mic+13] = slurry_prod_rate * conc_fresh_sulfate - sum_rutsr / COD_conv_S;
-  derivatives[n_mic+14] = slurry_prod_rate * conc_fresh_sulfide + sum_rutsr / COD_conv_S - H2S_emis_rate;
+  derivatives[n_mic+13] = slurry_prod_rate * conc_fresh_sulfate - sum_catsr / COD_conv_S;
+  derivatives[n_mic+14] = slurry_prod_rate * conc_fresh_sulfide + sum_catsr / COD_conv_S - H2S_emis_rate;
   derivatives[n_mic+15] = NH3_emis_rate_pit + NH3_emis_rate_floor;
   derivatives[n_mic+16] = N2O_emis_rate;
-  derivatives[n_mic+17] = sum_rutmeth / COD_conv_CH4;
+  derivatives[n_mic+17] = sum_catmeth / COD_conv_CH4;
   derivatives[n_mic+18] = CO2_ferm_meth_sr + CO2_resp + rut_urea / COD_conv_CO2_ureo;
   derivatives[n_mic+19] = sum_rut + respiration;
-  derivatives[n_mic+20] = sum_rutmeth;
+  derivatives[n_mic+20] = sum_catmeth;
   derivatives[n_mic+21] = respiration;
-  derivatives[n_mic+22] = sum_rutsr;
+  derivatives[n_mic+22] = sum_catsr;
   derivatives[n_mic+23] = slurry_prod_rate * (conc_fresh_starch + conc_fresh_VFA + conc_fresh_xa_dead + conc_fresh_Cfat + conc_fresh_CPs + conc_fresh_CPf + conc_fresh_RFd + conc_fresh_iNDF + conc_fresh_VSd + (sum_xa_fresh * scale_xa_fresh));
   derivatives[n_mic+24] = slurry_prod_rate * (conc_fresh_starch/COD_conv_C_starch + conc_fresh_RFd/COD_conv_C_RFd + conc_fresh_iNDF/COD_conv_C_iNDF + conc_fresh_VFA/COD_conv_C_VFA + conc_fresh_xa_dead/COD_conv_C_xa +
     conc_fresh_Cfat/COD_conv_C_Cfat + (conc_fresh_CPs + conc_fresh_CPf)/COD_conv_C_CP +

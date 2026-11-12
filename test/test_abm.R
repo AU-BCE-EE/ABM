@@ -179,6 +179,14 @@ check_ts <- function(d, days, grps = c('m0', 'm1', 'm2', 'sr1'), times = NULL,
   tol <- 1e-6 * max(1, a)
   check(abs(a - b) < tol || abs(a - COD_eff[nrow(d)] - b) < tol,
         paste0('Effluent columns do not match COD_eff_cum (', signif(a, 6), ' vs. ', signif(b, 6), ')'))
+  # Same for C, using reported effluent C concentration
+  C_eff <- d$C_eff_conc * d$slurry_mass_eff
+  C_eff[!is.finite(C_eff)] <- 0
+  a <- sum(C_eff[-1])
+  b <- d$C_eff_cum[nrow(d)] - d$C_eff_cum[1]
+  tol <- 1e-6 * max(1, a)
+  check(abs(a - b) < tol || abs(a - C_eff[nrow(d)] - b) < tol,
+        paste0('C_eff_conc does not match C_eff_cum (', signif(a, 6), ' vs. ', signif(b, 6), ')'))
 
   # Conservation of ash and iNDF (inert): storage + removed = initial + loaded
   # Effluent is recorded in the row *before* removal, so subtract that row's own effluent

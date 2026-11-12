@@ -440,7 +440,7 @@ abm <- function(
   
   dat$C_eff_conc <- dat$VFA_C_eff_conc + dat$xa_dead_eff_conc / pars$COD_conv[['C_xa']] + dat$RFd_eff_conc / pars$COD_conv[["C_RFd"]] +
                 dat$starch_eff_conc / pars$COD_conv[['C_starch']] + dat$CPs_eff_conc / pars$COD_conv[['C_CP']] + dat$CPf_eff_conc / pars$COD_conv[['C_CP']] + dat$Cfat_eff_conc / pars$COD_conv[['C_Cfat']] +
-                dat$VSd_eff_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, paste0(mic_names, '_', 'conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
+                dat$VSd_eff_conc / pars$COD_conv[['C_VSd']] + dat$iNDF_eff_conc / pars$COD_conv[['C_iNDF']] + rowSums(dat[, names(dat) %in% paste0(c('xa.', 'xa_'), rep(mic_names, each = 2), '_eff_conc'), drop = FALSE]) / pars$COD_conv[['C_xa']] +
                 dat$urea_eff_conc / pars$COD_conv[['C_N_urea']]
   
   # still miss to incorp N from biomass here, 

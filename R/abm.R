@@ -74,21 +74,28 @@ abm <- function(
                  pH_inhib_overrule = pH_inhib_overrule,
                  starting = starting, 
                  approx_method = approx_method, 
-                 par_key = par_key, value = value, warn = warn)
+                 par_key = par_key, value = value, rates_calc = rates_calc, warn = warn)
  
       if (i <= startup) {
         # Pull starting *concentrations* (inlcuding xa) from previous sim
         tso <- out
 
         # Names need to deal with possible data frame for conc_fresh
-        cf_names <- names(man_pars$conc_fresh)
-        cf_names <- cf_names[!grepl('^time', paste0(cf_names, '_conc'))]
+        cf <- if (is.null(anim_pars)) man_pars$conc_fresh else anim_pars$conc_fresh
+        cf_names <- names(cf)[names(cf) != 'time']
 
         init_pars$conc_init <- unlist(tso[nrow(tso), paste0(cf_names, '_conc')])
         names(init_pars$conc_init) <- cf_names
 
-        grp_pars$xa_init <- unlist(tso[nrow(tso), paste0(grp_pars$grps, '_conc')])
-        names(grp_pars$xa_init) <- grp_pars$grps
+        # Microbial groups (could be changed in add_pars)
+        grps <- if (!is.null(add_pars$grps)) add_pars$grps else if (is.null(anim_pars)) grp_pars$grps else anim_pars$grps
+        xa_init <- unlist(tso[nrow(tso), paste0(grps, '_conc')])
+        names(xa_init) <- grps
+        if (is.null(anim_pars)) {
+          grp_pars$xa_init <- xa_init
+        } else {
+          anim_pars$xa_init <- xa_init
+        }
       }
  
     }
@@ -97,18 +104,19 @@ abm <- function(
     return(out)
   } 
   
-  #if anim_pars are used adjust initial concentration to init in anim_pars
-  if(!is.null(anim_pars)){
-    init_pars = list(conc_init = anim_pars$conc_fresh)
+  # If anim_pars are used, initial concentrations are taken from fresh slurry in anim_pars (unless init_pars is given)
+  if (!is.null(anim_pars) && missing(init_pars)) {
+    init_pars <- list(conc_init = anim_pars$conc_fresh)
   }
-  
-  # If starting conditions are provided from a previous simulation, move them to pars
-  # Note that additional state variables are extracted from starting in abm_*.R
-  if (!is.null(starting) & is.data.frame(starting)) {
+
+  # Starting conditions from a previous simulation (see below for state variables)
+  if (!is.null(starting)) {
+    if (!is.data.frame(starting)) stop('`starting` must be a data frame (output from an earlier abm() call).')
     message('Using starting conditions from `starting` argument')
-    grp_pars[['xa_init']] <- as.numeric(starting[nrow(starting), paste0(names(grp_pars[['qhat_opt']]), '_conc')])
-    names(grp_pars[['xa_init']]) <- names(grp_pars[['qhat_opt']])
-    mng_pars['slurry_mass'] <- starting[nrow(starting), 'slurry_mass']
+    # Initial slurry mass for fixed slurry production
+    if (!is.data.frame(mng_pars$slurry_mass)) {
+      mng_pars$slurry_mass <- starting[nrow(starting), 'slurry_mass']
+    }
   }
   
   # Combine pars to make extraction and pass to rates() easier
@@ -206,22 +214,42 @@ abm <- function(
   
   # Check grp arguments, including order of element names in some pars
   # After above block, this should be redundant
-  checkGrpNames(pars)
+  checkGrpNames(pars, grp_par_nms)
   
   # Convert temperature constants to K if needed
   pars <- tempsC2K(pars, ll = 200)
   
-  # Create time-variable functions
+  # Fill in any missing approx_method elements with defaults
+  approx_def <- c(temp = 'linear', pH = 'linear', slurry_mass = 'early', conc_fresh = 'constant')
+  approx_method <- c(approx_method, approx_def[!names(approx_def) %in% names(approx_method)])
+
+  # Some vector parameters are accessed by position in rates_cpp(), so make sure order is correct
+  pars$scale <- orderElements(pars$scale, c('ks_coefficient', 'qhat_opt', 'xa_fresh', 'yield', 'alpha_opt'), 'scale')
+  pars$kl <- orderElements(pars$kl, c('NH3', 'NH3_floor', 'H2S'), 'kl')
+  pars$A <- orderElements(pars$A, hydrol_names, 'A')
+  pars$E <- orderElements(pars$E, hydrol_names, 'E')
+  pars$COD_conv <- orderElements(pars$COD_conv, COD_conv_names, 'COD_conv')
+
+  # Create time-variable functions (used for output only)
   # Note that pars$x must be numeric constant or df with time (col 1) and var (2)
-  
-  temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method['temp'])
-  pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method['pH'])
-  conc_fresh_fun <- makeConcFunc(pars$conc_fresh, approx_method = approx_method['conc_fresh'])
-  
-  # add time to xa_fresh and get xa_fresh funs
-  if(is.data.frame(pars$xa_fresh)) pars$xa_fresh$time <- xa_fresh_time
-  xa_fresh_fun <- makeXaFreshFunc(pars$xa_fresh)
-  
+  temp_C_fun <- makeTimeFunc(pars$temp_C, approx_method = approx_method[['temp']])
+  pH_fun <- makeTimeFunc(pars$pH, approx_method = approx_method[['pH']])
+
+  # Interpolation tables for time-variable inputs, used directly in rates_cpp()
+  pars$temp_C_tab <- makeInterpTab(timeDF(pars$temp_C), approx_method = approx_method[['temp']])
+  if (identical(pars$pH, 'calc')) {
+    # -1 is code for calculation of pH from sulfate in rates_cpp()
+    pars$pH_tab <- makeInterpTab(-1)
+  } else {
+    pars$pH_tab <- makeInterpTab(timeDF(pars$pH), approx_method = approx_method[['pH']])
+  }
+  pars$conc_fresh_tab <- makeInterpTab(pars$conc_fresh, cols = conc_fresh_names, approx_method = approx_method[['conc_fresh']])
+  if (is.data.frame(pars$xa_fresh)) {
+    pars$xa_fresh_tab <- makeInterpTab(data.frame(time = xa_fresh_time[[1]], pars$xa_fresh), cols = grp_nms, approx_method = 'linear')
+  } else {
+    pars$xa_fresh_tab <- makeInterpTab(pars$xa_fresh, cols = grp_nms)
+  }
+
   # Convert some supplied parameters
   # Maximum slurry mass in kg
   pars$max_slurry_mass <- pars$storage_depth * pars$area * pars$dens
@@ -244,7 +272,10 @@ abm <- function(
   if(is.data.frame(pars$slurry_mass)){
     # If missing slurry mass at time 0, set to earliest slurry mass value
     if (pars$slurry_mass[1, 'time'] > 0) {
-      pars$slurry_mass <- rbind(c(0, pars$slurry_mass$slurry_mass[1]), pars$slurry_mass)
+      first <- pars$slurry_mass[1, ]
+      first$time <- 0
+      if ('wash_water' %in% names(first)) first$wash_water <- 0
+      pars$slurry_mass <- rbind(first, pars$slurry_mass)
     }
     slurry_mass_init <- pars$slurry_mass[1, 'slurry_mass']
   } else {
@@ -284,10 +315,15 @@ abm <- function(
          N_load_cum = 0,
          slurry_load_cum = 0)
   
-  if (!is.null(starting) & is.data.frame(starting)) {
+  if (!is.null(starting)) {
     start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide')
-    y[start.vars]  <- starting[nrow(starting), start.vars]
-  }  
+    if (any(miss <- !c(start.vars, pars$grps) %in% names(starting))) {
+      stop('Columns missing in `starting`: ', paste(c(start.vars, pars$grps)[miss], collapse = ', '))
+    }
+    y[start.vars] <- unlist(starting[nrow(starting), start.vars])
+    # Microbial biomass (g)
+    y[1:length(pars$grps)] <- unlist(starting[nrow(starting), pars$grps])
+  }
 
   if (any(pars$conc_fresh[['VSd']] > 2e-10) & any(pars$conc_fresh[names(pars$conc_fresh) %in% names(pars$A)[!names(pars$A) %in% c('VSd','urea')]] > 2)) {
     stop('Cannot have both VSd and other organic matter components being above 0')
@@ -299,13 +335,14 @@ abm <- function(
 
   if (is.numeric(pars$slurry_mass)) {
     # Option 1: Fixed slurry production rate, regular emptying schedule
-    dat <- abm_regular(days = days, delta_t = delta_t, times_regular = times, y = y, pars = pars, starting = starting, temp_C_fun = temp_C_fun, pH_fun = pH_fun,  
-                       conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun)
+    dat <- abm_regular(days = days, delta_t = delta_t, times_regular = times, y = y, pars = pars, starting = starting)
   } else if (is.data.frame(pars$slurry_mass)) {
     # Option 2: Everything based on given slurry mass vs. time
-    dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-                        conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx = approx_method['slurry_mass'])
-  } 
+    dat <- abm_variable(days = days, delta_t = delta_t, times = times, y = y, pars = pars, warn = warn, 
+                        slurry_mass_approx = approx_method[['slurry_mass']])
+  } else {
+    stop('slurry_mass must be numeric or a data frame.')
+  }
 
   colnames(dat) <- gsub("conc_fresh.","conc_fresh_", colnames(dat))
  
@@ -336,18 +373,12 @@ abm <- function(
 
   dat$NH3_emis_rate <- dat$NH3_emis_rate_pit + dat$NH3_emis_rate_floor
   
-  if(rates_calc != 'instant'){
-  dat$rNH3 <- c(0, diff(dat$NH3_emis_cum))/c(1, diff(dat$time))
-  dat$NH3_emis_rate <- c(0, diff(dat$NH3_emis_cum))/c(1, diff(dat$time))
-
-  dat$rN2O <- c(0, diff(dat$N2O_emis_cum))/c(1, diff(dat$time))
-  dat$N2O_emis_rate <- c(0, diff(dat$N2O_emis_cum))/c(1, diff(dat$time))
-  
-  dat$rCH4 <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
-  dat$CH4_emis_rate <- c(0, diff(dat$CH4_emis_cum))/c(1, diff(dat$time))
- 
-  dat$rCO2 <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
-  dat$CO2_emis_rate <- c(0, diff(dat$CO2_emis_cum))/c(1, diff(dat$time))
+  if (rates_calc != 'instant') {
+    # Average rates from change in cumulative emission
+    dat$rNH3 <- dat$NH3_emis_rate <- avgRate(dat$NH3_emis_cum, dat$time)
+    dat$rN2O <- dat$N2O_emis_rate <- avgRate(dat$N2O_emis_cum, dat$time)
+    dat$rCH4 <- dat$CH4_emis_rate <- avgRate(dat$CH4_emis_cum, dat$time)
+    dat$rCO2 <- dat$CO2_emis_rate <- avgRate(dat$CO2_emis_cum, dat$time)
   }
   
   dat$NH3_emis_rate_slurry <- dat$NH3_emis_rate / (dat$slurry_mass / 1000)
@@ -363,12 +394,14 @@ abm <- function(
   # Calculate COD/VS flows
   # First concentrations in g/kg
 
-  dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))])
-  dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) + dat$conc_fresh_iNDF
+  # Total microbial biomass in fresh slurry (columns xa_fresh1, xa_fresh2, ... or xa_fresh for 1 group)
+  xa_fresh_tot <- rowSums(dat[, grepl('^xa_fresh', colnames(dat)), drop = FALSE])
+  dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + xa_fresh_tot
+  dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + xa_fresh_tot + dat$conc_fresh_iNDF
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
   dat$C_conc_fresh <- dat$conc_fresh_VFA / pars$COD_conv[['C_VFA']] + dat$conc_fresh_xa_dead / pars$COD_conv[['C_xa']] + dat$conc_fresh_RFd / pars$COD_conv[["C_RFd"]] +
                       dat$conc_fresh_starch / pars$COD_conv[['C_starch']] + dat$conc_fresh_CPs / pars$COD_conv[['C_CP']] + dat$conc_fresh_CPf / pars$COD_conv[['C_CP']] + dat$conc_fresh_Cfat / pars$COD_conv[['C_Cfat']] +
-                      dat$conc_fresh_VSd / pars$COD_conv[['C_VSd']] + dat$conc_fresh_iNDF / pars$COD_conv[['C_iNDF']] + rowSums(dat[, grepl("xa_fresh_", colnames(dat))]) / pars$COD_conv[['C_xa']] +
+                      dat$conc_fresh_VSd / pars$COD_conv[['C_VSd']] + dat$conc_fresh_iNDF / pars$COD_conv[['C_iNDF']] + xa_fresh_tot / pars$COD_conv[['C_xa']] +
                       dat$conc_fresh_urea / pars$COD_conv[['C_N_urea']]
   
   # ndCOD is almost conserved, same everywhere always - some problem here with water evap and water precipitation?

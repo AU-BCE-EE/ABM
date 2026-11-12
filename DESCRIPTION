@@ -12,7 +12,7 @@ Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 LinkingTo: Rcpp
 LazyData: true
-Imports: Rcpp (>= 1.0.8), dplyr
+Imports: Rcpp (>= 1.0.8)
 
 
 

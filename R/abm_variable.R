@@ -1,12 +1,8 @@
-abm_variable <-
-  function(days, delta_t, times, y, pars, warn, temp_C_fun = temp_C_fun, pH_fun = pH_fun, 
-           conc_fresh_fun = conc_fresh_fun, xa_fresh_fun = xa_fresh_fun, slurry_mass_approx) {
+# Simulation with slurry mass given as a data frame (time-variable filling and emptying)
+# Not exported, called by abm()
+
+abm_variable <- function(days, delta_t, times, y, pars, warn, slurry_mass_approx) {
     
-  #initialize dat for storage of results to speed up bind_rows
-  dat <- as.data.frame(matrix(NA, nrow = days * 2, ncol = 400)) # slow speed, but much faster than before
-  
-  pars$abm_regular <- FALSE
-  
   # Some warnings about unused inputs
   if (!is.na(pars$wash_water) & pars$wash_water != 0) {
     warning('Fixed wash_water value of ', pars$wash_water, '\nwill be ignored because variable slurry input is used.')
@@ -27,7 +23,6 @@ abm_variable <-
   # If simulation continues past slurry_mass data frame time, set following slurry production (addition) to zero
   # Extend last slurry mass all the way 
   if (pars$slurry_mass[nrow(pars$slurry_mass), 'time'] < days) {
-    t_end <- days
     pars$slurry_mass <- rbind(pars$slurry_mass, pars$slurry_mass[nrow(pars$slurry_mass), ])
     pars$slurry_mass[nrow(pars$slurry_mass), 'time'] <- days
     # But make sure washing is not repeated!
@@ -64,6 +59,7 @@ abm_variable <-
   if (any(pars$slurry_mass$slurry_mass < 0)) {
     warning('Negative slurry mass values after adjustment for rain and evaporation.\n  Check parameters and try again.')
   }
+
   # Determine slurry removal quantity in each time interval
   # Note final 0--alignment is a bit tricky
   if (slurry_mass_approx == 'late') {
@@ -79,20 +75,23 @@ abm_variable <-
     mm <- pars$slurry_mass[ir, 'slurry_mass']
     
     # if wash_water exists for some reason, we need to add it when rbinding.
-    if("wash_water" %in% colnames(pars$slurry_mass)){
-      if(length(mm) == 0) {
+    if ("wash_water" %in% colnames(pars$slurry_mass)) {
+      if (length(mm) == 0) {
         wash_water_fill <- mm
-      }else{wash_water_fill <- 0}
-    
+      } else {
+        wash_water_fill <- 0
+      }
       pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm, wash_water = wash_water_fill))
-    } else{
+    } else {
       pars$slurry_mass <- rbind(pars$slurry_mass, data.frame(time = tt, slurry_mass = mm))
     }
     
     pars$slurry_mass <- pars$slurry_mass[order(pars$slurry_mass$time), ]
     # Then apply late removal method
     removals <- - c(0, 0, diff(pars$slurry_mass[-nrow(pars$slurry_mass), 'slurry_mass'])) > 0
-  } 
+  } else {
+    stop('approx_method["slurry_mass"] must be "early", "late", or "mid", but is "', slurry_mass_approx, '".')
+  }
 
   # Extract slurry_mass for use in emptying calculations
   slurry_mass <- pars$slurry_mass[, 'slurry_mass']
@@ -113,11 +112,6 @@ abm_variable <-
     wash_water <- 0 * slurry_mass
   }
 
-  # NTS: can put evap here, after calculating daily temperature
-  # NTS: call evap function, check old commit, see wind speed branch
-  # wash_water <- NULL
-  # ifelse(length(pars$wash_water) <= 1, wash_water <- 0, wash_water <- pars$wash_water[, 'wash_water'])
-
   # Determine variable slurry production rate for each time interval
   slurry_prod_rate_t <- c(0, diff(pars$slurry_mass[, 'slurry_mass']) / diff(pars$slurry_mass[, 'time'])) 
   slurry_prod_rate_t[slurry_prod_rate_t < 0] <- 0
@@ -125,28 +119,35 @@ abm_variable <-
 
   # Get number of timing of intervals
   # Note about time: 1) All simulations start at 0, 2) days must be at least as long as mass data
-  # Note that this works even with t_end = NULL (is ignored)
   # Note the "dummy" placeholder in position 1 (and extra + 1 in n_int)
   n_int <- nrow(pars$slurry_mass)
   st <- pars$slurry_mass[, 'time']
-  timelist <- cumtime <- as.list(0 * removals)
+  # Output times within each interval (st[i - 1], st[i]], found in one step
+  # Simulation intervals should end exactly at emptying time, so st[i] is added for cases where there is not alignment
+  tgrp <- split(times, factor(findInterval(times, st, left.open = TRUE) + 1, levels = 1:n_int))
+  timelist <- vector('list', n_int)
+  cumtime <- c(0, st[-1])
   for (i in 2:n_int) {
-    tt <- times[times > st[i - 1] & times <= st[i]] # slow speed of this line
-    # Simulation intervals should end exactly at emptying time, so it is added here through st[i] for cases where there is not alignment
-    tt <- unique(c(tt, st[i]))
-    if (length(tt) == 0) { 
-      # Not clear when this might happen, but it isn't good
-      stop('No times for interval (row) ', i, ' in time list for some reason. hatty917')
-    } else {
-      cumtime[[i]] <- max(tt)
-      tt <- tt - cumtime[[i - 1]]
-      tt <- unique(c(0, tt))
-    }
-    timelist[[i]] <- tt
+    tt <- unique(c(tgrp[[i]], st[i]))
+    tt <- tt - cumtime[i - 1]
+    timelist[[i]] <- unique(c(0, tt))
   }
   
-  # Empty data frame for holding results
-  dat <- NULL
+  # Number of state variables
+  n_state <- length(y)
+  n_mic <- pars$n_mic
+
+  # Parameter indices, output names etc. for rates_cpp()
+  pars <- prepRatesPars(pars)
+
+  # Names of effluent columns (all state variables except cumulative ones)
+  eff_names <- names(emptyStore(y, resid_mass = 0, resid_enrich = c(OM = 0, mic = 0)))
+  eff_names <- eff_names[grepl('_eff$', eff_names)]
+
+  # List for holding results (combined at end, much faster than growing a data frame)
+  outs <- vector('list', n_int)
+  last_out <- NULL
+  pending_eff <- NULL
 
   # Time trackers
   # Time remaining to run
@@ -158,19 +159,12 @@ abm_variable <-
   # Note: but all except _mass have placeholder in first position
   # Start the time (emptying) loop
   for (i in 2:n_int) {
-    #if(i == 41) browser()
+
     # Sort out call duration
     t_call <- min(max(timelist[[i]]), t_rem)
 
-    # Get number of microbial groups
-    n_mic <- length(pars$grps)
-
     # Fill in slurry_prod_rate
     pars$slurry_prod_rate <- slurry_prod_rate_t[i]
-
-    # With no removal
-    # Call lsoda and advance if time changes (i.e., if there is not a removal)
-    # Note that t_call should always by 0 when there is a removal, so skipping this code is correct
 
     # If there is a removal event, remove slurry before calling up ODE solver
     if (removals[i]) {
@@ -182,73 +176,65 @@ abm_variable <-
       }
       
       y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = pars$resid_enrich)
-      y.eff <- y[grepl('_eff$', names(y))]
-      y <- y[!grepl('_eff$', names(y))]
+      which_eff <- grepl('_eff$', names(y))
+      y.eff <- y[which_eff]
+      y <- y[!which_eff]
 
       # Washing, increase slurry mass
       # Typically occurs after emptying here (wash_int ignored)
       # But could take place at the *end* of *any* interval
-      
       if (wash_water[i] > 0) {
         y['slurry_mass'] <- y['slurry_mass'] + wash_water[i]
         
-        # And empty again, leaving same residual mass as always, and enriching for particles
+        # And empty again, leaving same residual mass as always (no enrichment)
         y <- emptyStore(y, resid_mass = slurry_mass[j], resid_enrich = c(OM = 0, mic = 0))
-        y.eff <- y.eff + y[grepl('_eff$', names(y))]
-        y <- y[!grepl('_eff$', names(y))]
-        out[nrow(out), names(y)] <- y
+        which_eff <- grepl('_eff$', names(y))
+        y.eff <- y.eff + y[which_eff]
+        y <- y[!which_eff]
+      }
+
+      # Record effluent in last output row before removal (or first row if there is no earlier output)
+      if (is.null(last_out)) {
+        pending_eff <- y.eff
+      } else {
+        outs[[last_out]][nrow(outs[[last_out]]), names(y.eff)] <- y.eff
       }
     }
 
     # This might not be possible with above code
     if (t_call <= 0) stop('t_call < 0. slkj4098sh, check if "time" is duplicated in slurry mass data frame')
 
-    # Need some care with times to make sure t_call is last one in case it is not multiple of delta_t
     times <- timelist[[i]]
     
     # Add run time to pars so rates() can use actual time to calculate temp_C and pH
     pars$t_run <- t_run
 
-    pars$p_idx <- pars_indices(pars)
-    pars$temp_C_fun <- temp_C_fun
-    pars$pH_fun <- pH_fun
-    pars$CTM_cpp <- CTM_cpp
-    pars$H2SO4_titrate <- H2SO4_titrat
-    pars$xa_fresh_fun <- xa_fresh_fun
-    pars$conc_fresh_fun <- conc_fresh_fun
     # Call up ODE solver
-    #cat(t_rem, '\n')
-    
     out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, rtol = 1E-5, atol = 1E-5)
-    
-    # Change format of output and drop first (time 0) row (duplicated in last row of previous)
-    if (i == 2) {
-      out <- data.frame(out)
-    } else {
-      out <- data.frame(out[-1, , drop = FALSE])
-    }
-
-    # Fix some names (NTS: can we sort this out in rates()? I have tried and failed)
-    names(out)[1:length(pars$qhat_opt) + 1] <- names(pars$qhat_opt)
+    out <- matrix(out, nrow = nrow(out), dimnames = dimnames(out))
 
     # Extract new state variable vector from last row of lsoda output
-    y <- unlist(out[nrow(out), 1:(length(c(pars$qhat_opt)) + 27) + 1])
+    y <- out[nrow(out), 1:n_state + 1]
+
+    # Microbial group names (instead of e.g., xa.m1)
+    colnames(out)[1:n_mic + 1] <- names(pars$qhat_opt)
+
+    # Drop first (time 0) row (duplicated in last row of previous)
+    if (!is.null(last_out)) {
+      out <- out[-1, , drop = FALSE]
+    }
 
     # Change time in output to cumulative time for complete simulation
-    out$time <- out$time + t_run
+    out[, 'time'] <- out[, 'time'] + t_run
     
-    # Create empty (0) y.eff vector because washing could occur, and dat needs columns
-    
-    yy <- emptyStore(y, resid_mass = 0, resid_enrich = c(OM = 0, mic = 0))
-    y.eff <- 0 * yy[grepl('_eff$', names(yy))]
-
-    # Add effluent results
-    out[, names(y.eff)] <- 0
-    out[nrow(out), names(y.eff)] <- y.eff
- 
-    # Add results to earlier ones
-    dat <- dplyr::bind_rows(dat, out)
-    #dat <- rbind(dat, out)
+    # Add effluent columns (filled in at removal events)
+    eff <- matrix(0, nrow = nrow(out), ncol = length(eff_names), dimnames = list(NULL, eff_names))
+    if (!is.null(pending_eff)) {
+      eff[1, names(pending_eff)] <- pending_eff
+      pending_eff <- NULL
+    }
+    outs[[i]] <- cbind(out, eff)
+    last_out <- i
     
     # Update time remaining and total time run so far
     t_rem <- t_rem - t_call
@@ -256,9 +242,11 @@ abm_variable <-
 
   }
 
-  # Drop times from slurry mass data that were not requested in output
+  dat <- as.data.frame(do.call(rbind, outs))
 
-  dat <- dat[!dat$time %in% droptimes, ]
+  # Drop times from slurry mass data that were not requested in output
+  # Effluent from emptying at times that are not returned is added to the next returned time
+  dat <- filterTimes(dat, keep = !dat$time %in% droptimes)
 
   return(dat)
 }

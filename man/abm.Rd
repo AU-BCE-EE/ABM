@@ -27,8 +27,7 @@ abm(days = 365,
                     wash_int = NA,
                     rest_d = 5,
                     cover = 'none',
-                    resid_enrich = 0.9,
-                    slopes = c(urea = NA, slurry_prod_rate = NA),
+                    resid_enrich = c(OM = 0.9, mic = 0.9),
                     graze = c(start = 'May', duration = 0, hours_day = 0),
                     scale = c(ks_coefficient = 1, qhat_opt = 1, 
                               xa_fresh = 1, yield = 1, alpha_opt = 1)),
@@ -38,16 +37,18 @@ abm(days = 365,
     mic_pars = ABM::mic_pars2.0,
     chem_pars = ABM::chem_pars2.0,
     arrh_pars = ABM::arrh_pars2.0,
+    anim_pars = NULL,
     resp = TRUE,
+    pH_inhib_overrule = FALSE,
     add_pars = NULL,
     pars = NULL,
     startup = 0,
     starting = NULL,
-    approx_method_temp = 'linear', 
-    approx_method_pH = 'linear',
-    approx_method_vent_air = 'linear',
+    approx_method = c(temp = 'linear', pH = 'linear', 
+                      slurry_mass = 'early', conc_fresh = 'constant'),
     par_key = '\\\\.',
-    value = 'ts',                 
+    value = 'ts',
+    rates_calc = 'instant',
     warn = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -82,9 +83,7 @@ abm(days = 365,
     wash water used per washing event (kg) (\code{wash_water}),
     time between washing events (days), where NA = "washing not applied" (\code{wash_int}),
     time that the animal section is empty after a batch of animals has been finished (days) (\code{rest_d}), argument for setting the type of cover on an outside   storage tank (\code{cover}). The type of cover only affects the ammonia emission factor, with emission factors and types of covers taken from Sommer et al. 2022, e.g. cover = \code{none} means no cover, cover = \code{tent} reduces ammonia emission by 80 percent, cover = \code{straw} reduces ammonia emission by 33 percent.
-    Factor that determines the degree of enrichment of microbes and organic matter components in the residual slurry after emptying (\code{resid_enrich}),
-    and \code{slopes} is an expert user argument for changing the excretion rate of urea or slurry production during a growth period of an animal. 
-    By default this argument is not used (\code{slopes}),
+    Factors (on logit scale) that determine the degree of enrichment of organic matter components (\code{OM}) and microbes (\code{mic}) in the residual slurry after emptying, where 0 = no enrichment (\code{resid_enrich}),
     (\code{graze}) is a list with parameters to adjust the grazing activity outdoor, which affects the amount of slurry excreted in the barn. 
     \code{duration} is the number of days per year that the animals are allowed to graze and \code{hours_day} are the number of hours animals graze per day during the grazing period, the \code{start} argument is the month, where grazing starts, e.g. "May". When the (\code{graze}) arguments are not 0, then the model simulation is with time reference to 1. January 00:00:00. Effectively, if start = \code{May}, the model simulates grazing from time = 120. 
     Therefore, when combined with variable temperature, temperature should also be with time = 0 referencing to 1 January 00:00:00. 
@@ -205,20 +204,22 @@ abm(days = 365,
     Used to start one simulation where another ended.
     Optional.
 }
-  \item{approx_method_temp}{
-    Sets type of interpolation when temperature is variable (\code{temp_c} is a data frame).
-    Passed to \code{\link{approxfun}} through hidden (not exported) \code{makeTimeFunc()}.
+  \item{approx_method}{
+    Named character vector setting the type of interpolation for time-variable inputs.
+    \code{temp} and \code{pH}: \code{'linear'} or \code{'constant'}, used when \code{temp_C} or \code{pH} is a data frame.
+    \code{conc_fresh}: \code{'linear'} or \code{'constant'}, used when \code{conc_fresh} is a data frame.
+    \code{slurry_mass}: \code{'early'}, \code{'late'}, or \code{'mid'}, sets the timing of slurry removal when \code{slurry_mass} is a data frame.
+    Missing elements are set to the defaults.
+    Interpolation is the same as \code{\link{approxfun}} with \code{rule = 2}.
     See vignette. Suggested temperature sets for outside slurry storage are provided in \code{\link{temperatures}}.
 }
-  \item{approx_method_pH}{
-    Sets type of interpolation when pH is variable (\code{pH} is a data frame).
-    Passed to \code{\link{approxfun}} through hidden (not exported) \code{makeTimeFunc()}.
-    See vignette.
+  \item{anim_pars}{
+    Optional complete parameter set for an animal category (e.g., \code{pig_pars3.0} or \code{cattle_pars3.0}), used instead of \code{grp_pars}, \code{arrh_pars}, and \code{man_pars}.
 }
-  \item{approx_method_vent_air}{
-    Sets type of interpolation when ventilation flow rate is variable.
-    Passed to \code{\link{approxfun}} through hidden (not exported) \code{makeTimeFunc()}.
-    See vignette.
+  \item{rates_calc}{
+    Type of emission rate output. 
+    Default \code{'instant'} gives instantaneous rates. 
+    Any other value (e.g., \code{'average'}) gives average rates over each output time step, calculated from cumulative emission.
 }
   \item{par_key}{
     Special character used to set individual nested elements within some arguments.
@@ -228,10 +229,11 @@ abm(days = 365,
     Sets the type of output.
     Default (\code{'ts'}) returns a data frame with the complete time series.
     For a summary, use \code{'summ'} (or \code{'sum'} or \code{'summary'}).
-    code{'eff'} will return only those rows where slurry was removed--this option is convenient for working with effluent slurry.
+    \code{'all'} returns a list with parameters (\code{pars}), time series (\code{ts}), and summary (\code{summ}).
+    \code{'eff'} will return only those rows where slurry was removed--this option is convenient for working with effluent slurry.
 }
   \item{warn}{
-    Set to \code{FALSE} to suppress warnings.
+    Currently not used.
 }
 }
 
@@ -255,7 +257,7 @@ Dalby, F.R., Hansen, M.J., Guldberg, L.B., Hafner, S.D., Feilberg, A., 2023. Sim
 
 Dalby, F.R., Ambrose, H.W.,  Poulsen, J.S., Nielsen, J.L., Adamsen, A.P.S., 2023. Pig slurry organic matter transformation and methanogenesis at ambient storage temperatures. JEQ. \doi{10.1002/jeq2.20512}
 
-Dalby, F.R., Hafner, S.D., Ambrose, H.W., Adamsen, A.P.S., 2024. Pig manure degradation and carbon emission: Measuring and modeling combined aerobic–anaerobic transformations. JEQ. \doi{10.1002/jeq2.20603}
+Dalby, F.R., Hafner, S.D., Ambrose, H.W., Adamsen, A.P.S., 2024. Pig manure degradation and carbon emission: Measuring and modeling combined aerobic-anaerobic transformations. JEQ. \doi{10.1002/jeq2.20603}
 
 Sommer, S.G, Hafner S.D., Laubach, J., van der Weerden, T.J., Pacholski, A., 2022. Model for calculating ammonia emission from stored animal liquid manure. 
 Biosyst Eng \doi{10.1016/j.biosystemseng.2022.08.007}

@@ -11,17 +11,13 @@ emptyStore <- function(y, resid_mass, resid_enrich,
   y <- unlist(y)
   slurry_mass <- y['slurry_mass']
 
-  #print(slurry_mass)
+  # A single (unnamed) enrichment factor is used for both organic matter and microbes (as in earlier versions)
+  if (length(resid_enrich) == 1 && is.null(names(resid_enrich))) {
+    resid_enrich <- c(OM = resid_enrich[[1]], mic = resid_enrich[[1]])
+  }
+
   which.ignore <- grepl(paste(ignore_names, collapse = '|'), names(y))
 
-  #if(!exists('slurry_mass')) browser()
-  #if(is.null(slurry_mass)) browser()
-  #if (!is.finite(slurry_mass) || !is.finite(resid_mass) || is.null(slurry_mass)) {
-  #  cat("Non-finite detected: slurry_mass =", slurry_mass,
-  #      ", resid_mass =", resid_mass, "\n")
-  #  browser()
-  #}
-  
   if (slurry_mass > resid_mass) {
     # Masses before emptying
     y.before <- y
@@ -36,7 +32,8 @@ emptyStore <- function(y, resid_mass, resid_enrich,
     which.enrich_mic <- grepl(paste(enrich_names_mic, collapse = '|'), names(y)) & !which.ignore & !which.enrich_OM
     y[which.enrich_mic] <- y[which.enrich_mic] * resid_par_mic
     
-    y[!which.enrich_mic & !which.enrich_OM & !which.ignore] <- y[!which.enrich_OM & !which.enrich_mic & !which.ignore] * resid_frac
+    which.other <- !which.enrich_mic & !which.enrich_OM & !which.ignore
+    y[which.other] <- y[which.other] * resid_frac
     # Effluent
     y.eff <- y.before - y
     y.eff <- y.eff[!which.ignore]

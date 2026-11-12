@@ -248,6 +248,16 @@ abm(days = 365,
   These columns all start with \code{CH4}.
   Microbial biomass (g) is given in columns with names that match those used for the names of the groups.
   For more details, see the Output section in the vignette.
+
+  COD, C, and N mass balances (g) are given in columns \code{COD_bal_*}, \code{C_bal_*}, and \code{N_bal_*}:
+  \code{in} (initial storage + cumulative load), \code{stored}, \code{removed} (cumulative effluent),
+  \code{emitted} (COD: methanogenesis, respiration, sulfate reduction; C: CH4 and CO2; N: NH3 and N2O),
+  \code{gap} (net loss due to process stoichiometry, positive = destroyed, negative = created),
+  \code{resid} (\code{in - stored - removed - emitted - gap}, should be about 0), and \code{rel_resid} (\code{resid/in}).
+  The gap is split by process in columns \code{*_gap_*_cum} (e.g., \code{COD_gap_ferm_cum} for hydrolysis and fermentation, \code{COD_gap_growth_cum} for microbial growth).
+  Microbial biomass is assumed to contain no N.
+  The summary includes final relative residuals (\code{*_bal_rel_resid}) and gaps (\code{*_bal_rel_gap}).
+  A warning is given if a residual exceeds 0.1\% of input.
 }
 
 \references{

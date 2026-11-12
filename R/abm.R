@@ -313,7 +313,21 @@ abm <- function(
          COD_load_cum = 0,
          C_load_cum = 0,
          N_load_cum = 0,
-         slurry_load_cum = 0)
+         slurry_load_cum = 0,
+         # Mass balance: removal in effluent (updated at emptying) and net loss by process stoichiometry
+         # Order must match rates_cpp()
+         COD_eff_cum = 0,
+         C_eff_cum = 0,
+         N_eff_cum = 0,
+         COD_gap_ferm_cum = 0,
+         COD_gap_growth_cum = 0,
+         C_gap_ferm_cum = 0,
+         C_gap_xa_dead_cum = 0,
+         C_gap_uptake_cum = 0,
+         C_gap_respir_cum = 0,
+         C_gap_urea_cum = 0,
+         N_gap_ferm_cum = 0,
+         N_gap_respir_cum = 0)
   
   if (!is.null(starting)) {
     start.vars <- c('slurry_mass', 'xa_dead', 'iNDF', 'ash', 'RFd', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide')
@@ -507,7 +521,26 @@ abm <- function(
   
   # Replace . in names with _
   names(dat) <- gsub('\\.', '_', names(dat))
-  
+
+  # COD, C, and N mass balance
+  bal <- massBalance(dat, pars)
+  dat <- cbind(dat, bal)
+  n_dat <- nrow(dat)
+  bal_summ <- c(COD_bal_rel_resid = bal$COD_bal_rel_resid[n_dat], C_bal_rel_resid = bal$C_bal_rel_resid[n_dat],
+                N_bal_rel_resid = bal$N_bal_rel_resid[n_dat],
+                COD_bal_rel_gap = bal$COD_bal_gap[n_dat] / bal$COD_bal_in[n_dat],
+                C_bal_rel_gap = bal$C_bal_gap[n_dat] / bal$C_bal_in[n_dat],
+                N_bal_rel_gap = bal$N_bal_gap[n_dat] / bal$N_bal_in[n_dat])
+  if (warn) {
+    for (e in c('COD', 'C', 'N')) {
+      relerr <- max(abs(bal[[paste0(e, '_bal_resid')]])) / max(bal[[paste0(e, '_bal_in')]])
+      if (is.finite(relerr) && relerr > 1e-3) {
+        warning(e, ' mass balance does not close (max. relative residual ', signif(relerr, 3),
+                '). This is a bookkeeping error, please report it.')
+      }
+    }
+  }
+
   Ninorg_load <- dat$Ninorg_load_cum[nrow(dat)]
   Norg_load <- dat$Norg_load_cum[nrow(dat)]
   N_load <- dat$N_load_cum[nrow(dat)]
@@ -561,7 +594,7 @@ abm <- function(
             CH4_emis_COD = CH4_emis_COD, CH4_emis_dCOD = CH4_emis_dCOD, CH4_emis_VS = CH4_emis_VS, CH4_emis_C = CH4_emis_C, CH4_emis_slurry = CH4_emis_slurry,
             CO2_emis_cum = CO2_emis_cum, CO2_emis_rate = CO2_emis_rate, CO2_emis_COD = CO2_emis_COD, CO2_emis_dCOD = CO2_emis_dCOD, CO2_emis_VS = CO2_emis_VS, CO2_emis_C = CO2_emis_C, CO2_emis_slurry = CO2_emis_slurry,
             COD_conv_meth = COD_conv_meth, COD_conv_respir = COD_conv_respir, COD_conv_sr = COD_conv_sr,
-            f_COD_CH4 = f_COD_CH4, f_COD_respir = f_COD_respir, f_COD_sr = f_COD_sr) 
+            f_COD_CH4 = f_COD_CH4, f_COD_respir = f_COD_respir, f_COD_sr = f_COD_sr, bal_summ)
 
   # Add slurry depth
   dat$slurry_depth <- dat$slurry_mass / pars$area / pars$dens

@@ -104,7 +104,12 @@ state_cols <- c('slurry_mass', 'xa_dead', 'RFd', 'iNDF', 'ash', 'VSd', 'starch',
                 'Cfat', 'VFA', 'urea', 'TAN', 'sulfate', 'sulfide')
 cum_cols <- c('NH3_emis_cum', 'N2O_emis_cum', 'CH4_emis_cum', 'CO2_emis_cum', 'COD_conv_cum',
               'COD_conv_cum_meth', 'COD_conv_cum_respir', 'COD_conv_cum_sr', 'COD_load_cum',
-              'C_load_cum', 'N_load_cum', 'slurry_load_cum')
+              'C_load_cum', 'N_load_cum', 'slurry_load_cum', 'COD_eff_cum', 'C_eff_cum', 'N_eff_cum')
+bal_cols <- as.vector(outer(c('COD', 'C', 'N'), c('in', 'stored', 'removed', 'emitted', 'gap', 'resid', 'rel_resid'),
+                            function(e, x) paste0(e, '_bal_', x)))
+gap_cols <- c('COD_gap_ferm_cum', 'COD_gap_growth_cum', 'C_gap_ferm_cum', 'C_gap_xa_dead_cum', 'C_gap_uptake_cum',
+              'C_gap_respir_cum', 'C_gap_urea_cum', 'N_gap_ferm_cum', 'N_gap_respir_cum')
+COD_pools <- c('xa_dead', 'RFd', 'iNDF', 'VSd', 'starch', 'CPs', 'CPf', 'Cfat', 'VFA')
 rate_cols <- c('CH4_emis_rate', 'NH3_emis_rate', 'CO2_emis_rate', 'N2O_emis_rate', 'temp_C', 'pH')
 
 # Standard checks on time series output
@@ -127,7 +132,7 @@ check_ts <- function(d, days, grps = c('m0', 'm1', 'm2', 'sr1'), times = NULL,
   }
 
   # Columns
-  cols <- c(grps, state_cols, cum_cols, rate_cols, paste0(c(grps, state_cols[-1]), '_conc'),
+  cols <- c(grps, state_cols, cum_cols, bal_cols, gap_cols, rate_cols, paste0(c(grps, state_cols[-1]), '_conc'),
             # Microbial group output is named by group
             as.vector(outer(c('rut_', 'qhat_', 'cum_inhib_', 'H2S_inhib_', 'xa_fresh_'), grps, paste0)))
   miss <- cols[!cols %in% names(d)]
@@ -156,6 +161,24 @@ check_ts <- function(d, days, grps = c('m0', 'm1', 'm2', 'sr1'), times = NULL,
 
   # Emptying: effluent columns present
   check('slurry_mass_eff' %in% names(d), 'slurry_mass_eff column missing')
+
+  # COD, C, and N mass balance: bookkeeping residual (after process stoichiometry gaps) must be ~0
+  # Valid for all scenarios (removal is tracked in state variables, so also with washing and output times)
+  for (e in c('COD', 'C', 'N')) {
+    relerr <- max(abs(d[[paste0(e, '_bal_resid')]])) / max(d[[paste0(e, '_bal_in')]])
+    check(relerr < 1e-6, paste0(e, ' mass balance does not close (rel. error ', signif(relerr, 3), ')'))
+  }
+
+  # Effluent columns agree with COD removal tracked in COD_eff_cum
+  # Removal at the last row may or may not be included in COD_eff_cum (depends on whether row is before or after removal)
+  mic_eff <- setdiff(grep('^xa_.+_eff$', names(d), value = TRUE), 'xa_dead_eff')
+  COD_eff <- rowSums(d[, c(mic_eff, paste0(COD_pools, '_eff')), drop = FALSE])
+  COD_eff[is.na(COD_eff)] <- 0
+  a <- sum(COD_eff[-1])
+  b <- d$COD_eff_cum[nrow(d)] - d$COD_eff_cum[1]
+  tol <- 1e-6 * max(1, a)
+  check(abs(a - b) < tol || abs(a - COD_eff[nrow(d)] - b) < tol,
+        paste0('Effluent columns do not match COD_eff_cum (', signif(a, 6), ' vs. ', signif(b, 6), ')'))
 
   # Conservation of ash and iNDF (inert): storage + removed = initial + loaded
   # Effluent is recorded in the row *before* removal, so subtract that row's own effluent
@@ -438,6 +461,29 @@ add_test('wash_enrichment', function() {
   check(abs(d1$slurry_mass[i] - d0$slurry_mass[i]) < 1e-6, 'slurry mass after wash differs')
   check(d1$RFd[i] > 1.05 * d0$RFd[i], 'resid_enrich has no effect on residual RFd after wash')
   d1
+}, regression = FALSE)
+add_test('no_emptying_at_end_of_run', function() {
+  # Simulation end (100 d) is not an emptying time (42, 84 d), so there must be no effluent at the end
+  d <- run_abm(days = 100, mng_pars = mng(empty_int = 42))
+  check_ts(d, 100)
+  check(d$slurry_mass_eff[nrow(d)] == 0, 'Effluent at end of simulation that is not an emptying time')
+  check(sum(d$slurry_mass_eff > 0) == 2, paste('Expected 2 emptying events, found', sum(d$slurry_mass_eff > 0)))
+  d
+}, regression = FALSE)
+add_test('emptying_at_end_when_scheduled', function() {
+  # Simulation end (84 d) is a scheduled emptying time, so effluent is reported in the last row
+  d <- run_abm(days = 84, mng_pars = mng(empty_int = 42))
+  check_ts(d, 84)
+  check(d$slurry_mass_eff[nrow(d)] > 0, 'No effluent at end of simulation that is an emptying time')
+  d
+}, regression = FALSE)
+add_test('summ_mass_balance', function() {
+  s <- run_abm(days = D, value = 'summ')
+  nms <- c('COD_bal_rel_resid', 'C_bal_rel_resid', 'N_bal_rel_resid', 'COD_bal_rel_gap', 'C_bal_rel_gap', 'N_bal_rel_gap')
+  check(all(nms %in% names(s)), paste('Missing in summ:', paste(nms[!nms %in% names(s)], collapse = ', ')))
+  check(all(is.finite(s[nms])), 'Non-finite mass balance values in summ')
+  check(all(abs(s[nms[1:3]]) < 1e-6), 'Mass balance residual in summ not ~0')
+  s
 }, regression = FALSE)
 std_test('grp_pars_decay_rate', list(days = D, grp_pars = modlist(grp_pars2.0, decay_rate = c(all = 0.05))))
 

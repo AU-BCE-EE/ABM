@@ -193,6 +193,9 @@ abm_variable <- function(days, delta_t, times, y, pars, warn, slurry_mass_approx
         y <- y[!which_eff]
       }
 
+      # Track removed COD, C, and N in cumulative state variables (for mass balance)
+      y <- addEffCum(y, y.eff, pars)
+
       # Record effluent in last output row before removal (or first row if there is no earlier output)
       if (is.null(last_out)) {
         pending_eff <- y.eff

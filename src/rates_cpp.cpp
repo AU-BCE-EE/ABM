@@ -421,8 +421,46 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double evap = D(53);
   double N2O_emis_rate = D(54);
 
+  // Mass balance diagnostics: element consumed - element produced by each process (g/d)
+  // Positive = element destroyed by process stoichiometry, negative = created
+  // Computed from process rates (not from derivatives) so the balance also checks the derivatives
+  const double C_CH4 = 12.011 / 16.043;
+  const double C_CO2 = 12.011 / 44.01;
+  double h_RFd = alpha_RFd * RFd;
+  double h_starch = alpha_starch * starch;
+  double h_CP = alpha_CPs * CPs + alpha_CPf * CPf;
+  double h_Cfat = alpha_Cfat * Cfat;
+  double h_VSd = alpha_VSd * VSd;
+  double h_xa_dead = alpha_xa_dead * xa_dead;
+  double sum_growth = 0.0;
+  double sum_growth_C = 0.0;
+  for (int i = 0; i < n_mic; ++i) sum_growth += scale_yield * yield[i] * rut[i];
+  sum_growth_C = sum_growth / COD_conv_C_xa;
+
+  // Hydrolysis + fermentation: substrate -> VFA (incl. H2) + CO2 + TAN
+  double COD_gap_ferm = h_RFd + h_starch + h_CP + h_Cfat + h_VSd - VFA_H2_ferm;
+  double C_gap_ferm = h_RFd / COD_conv_C_RFd + h_starch / COD_conv_C_starch + h_CP / COD_conv_C_CP +
+    h_Cfat / COD_conv_C_Cfat + h_VSd / COD_conv_C_VSd - VFA_H2_ferm / COD_conv_C_VFA - CO2_ferm * C_CO2;
+  double N_gap_ferm = h_CP / COD_conv_CP_N - TAN_min_ferm;
+  // Microbial uptake of VFA: VFA -> CH4 + CO2 + sulfide (COD) + biomass
+  double COD_gap_growth = -sum_growth;
+  double C_gap_uptake = sum_rut / COD_conv_C_VFA - sum_rutmeth / COD_conv_CH4 * C_CH4 -
+    (sum_rutmeth / COD_conv_meth_CO2 + sum_rutsr / COD_conv_sr_CO2) * C_CO2 - sum_growth_C;
+  // Hydrolysis of dead biomass: xa_dead -> VFA
+  double C_gap_xa_dead = h_xa_dead / COD_conv_C_xa - h_xa_dead / COD_conv_C_VFA;
+  // Respiration: substrate -> CO2 + TAN (COD is tracked as COD_conv_cum_respir)
+  double C_gap_respir = 0.0;
+  double N_gap_respir = 0.0;
+  if (respiration > 0.0) {
+    C_gap_respir = respiration / sub_resp * (RFd / COD_conv_C_RFd + starch / COD_conv_C_starch + (CPs + CPf) / COD_conv_C_CP +
+      Cfat / COD_conv_C_Cfat + VSd / COD_conv_C_VSd) - CO2_resp * C_CO2;
+    N_gap_respir = respiration / sub_resp * (CPs + CPf) / COD_conv_CP_N - TAN_min_resp;
+  }
+  // Urea hydrolysis: urea -> TAN + CO2
+  double C_gap_urea = rut_urea / COD_conv_C_N_urea - rut_urea / COD_conv_CO2_ureo * C_CO2;
+
   // Derivatives
-  int nn = n_mic + 27;
+  int nn = n_mic + 39;
   NumericVector derivatives(nn);
 
   for (int i = 0; i < n_mic; i++) {
@@ -458,6 +496,16 @@ List rates_cpp(double t, NumericVector y_in, List parms){
     conc_fresh_VSd/COD_conv_C_VSd + conc_fresh_urea/COD_conv_C_N_urea + (sum_xa_fresh * scale_xa_fresh)/(COD_conv_C_xa));
   derivatives[n_mic+25] =  slurry_prod_rate * ((conc_fresh_CPs + conc_fresh_CPf)/COD_conv_CP_N + conc_fresh_TAN + conc_fresh_urea);
   derivatives[n_mic+26] = slurry_prod_rate;
+  // Mass balance: n_mic+27 to n_mic+29 are COD_eff_cum, C_eff_cum, N_eff_cum (changed only at emptying, derivative 0)
+  derivatives[n_mic+30] = COD_gap_ferm;
+  derivatives[n_mic+31] = COD_gap_growth;
+  derivatives[n_mic+32] = C_gap_ferm;
+  derivatives[n_mic+33] = C_gap_xa_dead;
+  derivatives[n_mic+34] = C_gap_uptake;
+  derivatives[n_mic+35] = C_gap_respir;
+  derivatives[n_mic+36] = C_gap_urea;
+  derivatives[n_mic+37] = N_gap_ferm;
+  derivatives[n_mic+38] = N_gap_respir;
 
   // Other output, as a single flat vector (much faster for deSolve to unlist() than a nested list)
   // Names are created once in R (see outNames.R) and must match the order here

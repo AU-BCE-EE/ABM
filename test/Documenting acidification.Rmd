@@ -1,0 +1,203 @@
+---
+title: "Acidification"
+author: "Frederik Rask Dalby"
+date: "2025-04-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+There are many ways to model acidification and here a few examples are given. Lets use standard pig parameters for the first example and use a pH of 6 to simulate continuous acidifcation
+```{r}
+devtools::load_all("..")
+library(ggplot2)
+
+out <- cbind(abm(), treatment = 'contr')
+outa <- cbind(abm(add_pars = list(pH = 6)), treatment = 'pH 6')
+
+dat <- rbind(out,outa)
+
+ggplot(dat, aes(time, CH4_emis_rate, col = treatment)) + geom_line() +
+  geom_point() +
+  labs(x = 'Time (days)',
+       y = 'CH4 emissions (g/d)',
+       col = 'Treatment') +
+  theme_minimal()
+```
+
+In this case the inhibition is due to the different inhibition factors in the model. These are NH4, NH3, VFA and H2S inhibition. The pH itself is not inhibiting methanogenic activity. Lets look into what is actually causing inhibition. With the current settings all methanogen groups are equally susceptible to inhibition, so we will just pick m0 as example.
+```{r}
+library(data.table)
+
+setDT(dat)
+dat_long <- melt(dat, measure.vars = c('H2S_inhib_m0','NH4_inhib_m0','NH3_inhib_m0','HAC_inhib_m0'))
+
+
+ggplot(dat_long, aes(time, value, col = variable)) + geom_point()+ facet_wrap(~treatment) + 
+  labs(x = 'Time (days)',
+       y = 'Inhibition factor',
+       col = 'Inhibition type') +
+  theme_minimal()
+```
+
+So from this plot it is clearly protonated VFAs (HAC_inhib) that cause most of the inhibition. H2S also inhibits, even in the control section! Now we try another approach, where we can choose that we use a pH inhibition factor instead. In this case the model is not sensitive to the individual compounds above, only the pH value itself. When only pH inhibition factor is used it is equivalent to the cumulative inhibition (cum_inhib in the model output) and we see that HAC_inhib is now 1
+
+```{r}
+
+outb <- cbind(abm(add_pars = list(pH = 6), pH_inhib_overrule = TRUE), treatment = 'pH 6, pH overrule')
+dat <- rbind(dat, outb)
+dat_long <- melt(dat, measure.vars = c('cum_inhib_m0','HAC_inhib_m0'))
+
+ggplot(dat_long, aes(time, value, col = variable)) + geom_point() + facet_wrap(~treatment) +
+  labs(x = 'Time (days)',
+       y = 'Inhibition factor',
+       col = 'inhibition type') +
+  theme_minimal()
+```
+
+Predicted emission from these two approaches are very similar, but that might not be the case in some scenarios.
+
+```{r}
+ggplot(dat[treatment != 'contr'], aes(time, CH4_emis_rate, col = treatment)) + geom_point() +
+  labs(x = 'Time (days)',
+       y = 'CH4 emissions (g/d)',
+       col = 'Treatment') +
+  theme_minimal()
+```
+
+When using H2SO4 as acidification agent, the reduction in methane emission may not only be due to inhibition, but for example also competition for substrate between sulfate reducers and methanogens. We may want a way to simulate this, by also adjusting the sulfate concentration, thereby favoring sulfate reducer activity. From the built-in function H2SO4_titrat() we can estimate how much H2SO4 is approximately needed to reach a pH value of 6.
+
+```{r}
+conc_SO4 <- H2SO4_titrat(pH = 6, class_anim = 'pig')
+print(paste('the concentration of SO4-S in the fresh manure is approximately', conc_SO4$cSO4))
+```
+
+OK, so we will use this information in the simulation by setting the concentration in the freshly produced manure to that amount. 
+```{r}
+outc <- cbind(abm(add_pars = list(conc_fresh.sulfate = conc_SO4$cSO4)), treatment = 'SO4 adjust only')
+outd <- cbind(abm(add_pars = list(conc_fresh.sulfate = conc_SO4$cSO4, pH = 6)), treatment = 'pH 6 + SO4 adjust')
+
+dat <- rbind(dat, outc, outd)
+
+ggplot(dat, aes(time, CH4_emis_rate, col = treatment)) + geom_point() + facet_grid(~treatment)
+  labs(x = 'Time (days)',
+       y = 'CH4 emissions (g/d)',
+       col = 'Treatment') +
+  theme_minimal()
+```
+
+So just by changing the sulfate concentration we see an effect that is almost as large as the other approaches, and when combining sulfate addition and the effects of pH change we get a larger effect. Lets see what causes this. 
+
+```{r}
+dat <- rbind(dat, outc, outd)
+dat_long <- melt(dat, measure.vars = c('H2S_inhib_m0','HAC_inhib_m0'))
+ggplot(dat_long, aes(time, value, col = variable)) + geom_point() + facet_grid(~treatment)
+  labs(x = 'Time (days)',
+       y = 'Inhibition factor',
+       col = 'Inhibition type') +
+  theme_minimal()
+```
+When only sulfate is added, H2S inhibition is more important because sulfate reducers reduce sulfate to sulfide! On the other hand HAC_inhibition is not present anymore, probably because the sulfate reducers also consume VFA quicker, reducing its concentration below its lower inhibition threshold. The rut_meth and rut_sr are measures of the substrate utilization rate and are directly proportional to the amount of methane and sulfide produced. Lets see what happens here. 
+```{r}
+dat$rut_meth <- (dat$rut_m0 + dat$rut_m1 + dat$rut_m2)/dat$slurry_mass
+dat$rut_sr <- dat$rut_sr1/dat$slurry_mass
+dat$VFA_conc_10 <- dat$VFA_conc/10
+dat_long <- melt(dat, measure.vars = c('rut_meth','rut_sr','VFA_conc_10'))
+ggplot(dat_long, aes(time, value, col = variable)) + geom_point() + facet_grid(~treatment) + 
+  labs(x = 'Time (days)',
+       y = 'gCOD/kg/day or gCOD/10/kg',
+       col = 'type') +
+  theme_minimal()
+
+```
+With only sulfate added, sulfate reducers are equally active to the methanogens and VFA levels are lower, but when pH is reduced to 6 at the same time, sulfate reducers outcompete the methanogens, because their inhibition thresholds are a little different than the methanogens. 
+
+The importance of both sulfate concentrations and inhibition are particularly important when we are using single-dose acidification. Lets try and simulate a single dose acidification around the start of May. This requires a few steps, we do not know the development of the pH value in this case, but we can assume that it is closely related to the amount of sulfate in the tank. Therefore we use pH = 'calc' in one of the model calls. 
+```{r}
+# get the effluent flows from the barn
+effluents <- setDT(abm(value = 'eff'))
+# define names that we want to extract from the effluents
+names_conc <- paste0(names(ABM::man_pars2.0$conc_fresh),'_eff_conc')
+# add time to the names
+names_conc <- c('time', names_conc)
+# get the effluent concentrations which is 
+# the fresh concentration for the storage
+conc_fresh_dat <- data.frame(effluents[, ..names_conc])
+# change names back
+names(conc_fresh_dat) <- c('time', names(ABM::man_pars2.0$conc_fresh))
+# get slurry mass effluents, which is
+# the slurry mass transported to the storage
+slurry_mass_dat <- data.frame(effluents[, .(time, slurry_mass = slurry_mass_eff_cum)])
+
+# get some manure storage temperature data
+temp_dat <- ABM::outside_slurry_temp_vechi
+
+# run storage simulation without acidification 
+oute <- setDT(cbind(abm(add_pars = list(slurry_mass = slurry_mass_dat, temp_C = temp_dat, conc_fresh = conc_fresh_dat)), treatment = 'contr storage'))
+
+# what day of year is acid added? Because our temperature data is with reference
+# to the Jan 1st our simulation will also be with that reference
+# We choose begin = 'January' in the built in doy() function
+
+t_acid <- doy("May", begin = "January")$doy
+
+# We need to calculate the concentration of sulfate that would need to be in 
+# the fresh slurry at the time of acidification to reach a pH of 6 in the 
+# bulk slurry ion occurs.
+
+# first know slurry mass and slurry production rate at around that time.
+slurry_mass_t_acid <- oute[time == t_acid, 'slurry_mass']
+slurry_prod_rate <- oute[time == t_acid+1, 'slurry_mass'] - slurry_mass_t_acid 
+
+# calculate the theoretical concentration of sulfate-S in the fresh manure to
+# reach the sulfate concentration that gives pH 6 
+# Use previous estimate from H2SO4_titrate(), that is conc_SO4$cSO4.
+conc_SO4_t_acid <- conc_SO4$cSO4 * slurry_mass_t_acid/slurry_prod_rate
+
+# add to conc_fresh this extra data to the conc_fresh_dat
+conc_fresh_dat_t_acid <- conc_fresh_dat[1:3, ]
+conc_fresh_dat_t_acid$time <- c(t_acid, t_acid + 1, t_acid + 1.001)
+conc_fresh_dat <- rbind(conc_fresh_dat, conc_fresh_dat_t_acid)
+conc_fresh_dat <- conc_fresh_dat[order(conc_fresh_dat$time), ]
+conc_fresh_dat[conc_fresh_dat$time == t_acid | conc_fresh_dat$time == t_acid+1, 'sulfate'] <- conc_SO4_t_acid
+
+outf <- setDT(cbind(abm(add_pars = list(slurry_mass = slurry_mass_dat, 
+                                        temp_C = temp_dat, 
+                                        conc_fresh = conc_fresh_dat)), 
+                    treatment = 'SO4 adjust only, single dose'))
+
+outg <- setDT(cbind(abm(add_pars = list(slurry_mass = slurry_mass_dat, 
+                                        temp_C = temp_dat, 
+                                        conc_fresh = conc_fresh_dat, pH = 'calc')), 
+                    treatment = 'pH 6 + SO4 adjust, single dose'))
+# Lets go further down in pH
+
+conc_SO4_pH_5 <- H2SO4_titrat(pH = 5, class_anim = 'pig')$cSO4
+conc_SO4_pH_5 <- conc_SO4_pH_5 * slurry_mass_t_acid/slurry_prod_rate
+
+outg <- setDT(cbind(abm(add_pars = list(slurry_mass = slurry_mass_dat, 
+                                        temp_C = temp_dat, 
+                                        conc_fresh = conc_fresh_dat, pH = 'calc')), 
+                    treatment = 'pH 6 + SO4 adjust, single dose'))
+
+conc_fresh_dat[conc_fresh_dat$time == t_acid | conc_fresh_dat$time == t_acid+1, 'sulfate'] <- conc_SO4_pH_5
+
+outh <- setDT(cbind(abm(add_pars = list(slurry_mass = slurry_mass_dat, 
+                                        temp_C = temp_dat, 
+                                        conc_fresh = conc_fresh_dat, pH = 'calc')), 
+                    treatment = 'pH 5 + SO4 adjust, single dose'))
+
+storage <- rbind(oute, outf, outg, outh)
+
+storage_long <- melt(storage, measure.vars = c('CH4_emis_rate','sulfate_conc','pH'))
+# plot the sulfate concentration in the manure
+ggplot(storage_long, aes(time, value, col = treatment)) + geom_point() + facet_wrap(~variable, scales = 'free') + 
+  labs(x = 'Time (days)',
+       y = 'g/d, gS/kg or pH',
+       col = 'Treatment') +
+  theme_minimal()
+```
+
+The single-dose acidification results in a significant reduction of methane emission at first, but the effect does not last very long when only dosing to pH 6 resulting in a methane peak 1-2 months later. Going to pH 5 have a lasting effect though.

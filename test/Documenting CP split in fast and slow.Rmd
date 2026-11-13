@@ -1,0 +1,40 @@
+---
+title: "Split CP into two fractions"
+author: "Frederik Rask Dalby"
+date: "2025-02-18"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Crude protein, abbreviated as CP in the model and calculated from measurement of (TN-TAN) * 6.25 seems to have a fast and slowly degradable fraction. This is clearly seen in Dalby et al. 2023 (https://doi.org/10.1002/jeq2.20512) where fresh pig manure degradation kinetics was examined and in unpublished work on fresh cattle manure degradation kinetics by Ambrose et al. 2025 (unpublished). If ABM is to capture nitrogen dynamics and prediction of emission and N transformation in the barn and in the storage, we need to split the CP component in two fractions. This is because the fast fraction will degrade mainly in the barn and be almost completely gone when manure is transfered to the storage, where only slow CP is then degraded. 
+
+```{r cars}
+devtools::load_all('../')
+
+in_house <- abm(days = 365, anim_pars = pig_pars2.0, add_pars = list(conc_fresh.CPf = 0.45 * 29, conc_fresh.CPs = 0.55 * 29))
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(in_house$time, in_house$CPs_conc, ylim = c(0, 15))
+lines(in_house$time, in_house$CPf_conc)
+lines(in_house$time, in_house$urea_conc)
+```
+```{r pressure, echo=FALSE}
+plot(in_house$time, in_house$TAN_conc, ylim = c(0, 6))
+lines(in_house$time, in_house$N_conc)
+lines(in_house$time, in_house$urea_conc)
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r pressure, echo=FALSE}
+plot(in_house$time, in_house$NH3_emis_rate/1000)
+
+```

@@ -88,7 +88,8 @@ abm <- function(
         names(init_pars$conc_init) <- cf_names
 
         # Microbial groups (could be changed in add_pars)
-        grps <- if (!is.null(add_pars$grps)) add_pars$grps else if (is.null(anim_pars)) grp_pars$grps else anim_pars$grps
+        # add_pars can be a list or a named vector (e.g. parameter estimates from optim()), so no $ here
+        grps <- if ('grps' %in% names(add_pars)) add_pars[['grps']] else if (is.null(anim_pars)) grp_pars$grps else anim_pars$grps
         xa_init <- unlist(tso[nrow(tso), paste0(grps, '_conc')])
         names(xa_init) <- grps
         if (is.null(anim_pars)) {

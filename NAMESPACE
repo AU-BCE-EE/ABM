@@ -1,5 +1,6 @@
 import(deSolve)
 importFrom("stats", "approx", "approxfun")
 export(abm)
+export(doy)
 useDynLib(ABM)
 importFrom(Rcpp, sourceCpp)

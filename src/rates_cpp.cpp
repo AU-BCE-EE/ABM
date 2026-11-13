@@ -276,7 +276,7 @@ static void rates_core(double t, const double *y_in, int ny, SEXP parms, const d
   double kl_NH3_floor = kl[1];
   double kl_H2S = kl[2];
 
-  // Surface fluxes (evaporation, NH3 and H2S emission) fade out as storage empties (half rate at 0.01 kg/m2),
+  // Surface fluxes (evaporation, NH3, H2S and N2O emission) fade out as storage empties (half rate at 0.01 kg/m2),
   // because they are calculated from concentrations and would otherwise continue from an empty storage
   double f_empty = slurry_mass / (slurry_mass + 0.01 * area);
 
@@ -472,7 +472,10 @@ static void rates_core(double t, const double *y_in, int ny, SEXP parms, const d
   double rain = D(52);
   // Evaporation fades out as storage empties (see f_empty above), so slurry mass cannot become negative
   double evap = D(53) * f_empty;
-  double N2O_emis_rate = D(54);
+  // N2O emission (area * EF_N2O, g N/d) fades out as storage empties like the other surface fluxes, and is limited by TAN
+  // (half rate at 1 g TAN in storage), so it cannot take N from an empty storage and make TAN negative
+  double TAN_pos = std::max(TAN, 0.0);
+  double N2O_emis_rate = D(54) * f_empty * TAN_pos / (TAN_pos + 1.0);
 
   // Mass balance diagnostics: element consumed - element produced by each process (g/d)
   // Positive = element destroyed by process stoichiometry, negative = created

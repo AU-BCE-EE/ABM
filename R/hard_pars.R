@@ -26,7 +26,7 @@ hard_pars <- function(pars){
   
   pars$kl[['NH3']] <- pars$kl[['NH3']] * pars$EF_NH3 
 
-  # N2O emission g(N) pr day
+  # Maximum N2O emission g(N) pr day (faded out in rates_cpp() when storage is empty or TAN is ~0)
   pars$N2O_emis_rate <- as.numeric(pars$area * pars$EF_N2O)
   
   # calculations moved from stoich to here to speed up model

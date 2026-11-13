@@ -47,7 +47,7 @@ addEffCum <- function(y, y.eff, pars) {
 #   emitted  = cumulative conversion/emission (COD: CH4, respiration, sulfate reduction; C: CH4, CO2; N: NH3, N2O)
 #   gap      = cumulative net loss due to process stoichiometry (sum of *_gap_*_cum, positive = destroyed, negative = created)
 #   resid    = in - stored - removed - emitted - gap (bookkeeping error, should be ~0)
-#   rel_resid = resid / in
+#   rel_resid = resid / max(in) (largest input in the run)
 # All cumulative variables are taken relative to the first row, so a run can start from any state
 massBalance <- function(dat, pars) {
   cc <- pars$COD_conv
@@ -87,7 +87,8 @@ massBalance <- function(dat, pars) {
     out[[paste0(e, '_bal_emitted')]] <- b$emitted
     out[[paste0(e, '_bal_gap')]] <- b$gap
     out[[paste0(e, '_bal_resid')]] <- resid
-    out[[paste0(e, '_bal_rel_resid')]] <- resid / pmax(b_in, .Machine$double.eps)
+    # Relative to the largest input in the run (input in a single row can be ~0, e.g. empty storage at start)
+    out[[paste0(e, '_bal_rel_resid')]] <- resid / max(b_in, .Machine$double.eps)
   }
 
   return(as.data.frame(out))

@@ -770,6 +770,16 @@ add_test('compiled_equals_R_function', function() {
   }
   NULL
 }, regression = FALSE)
+add_test('N2O_no_emission_from_empty_storage', function() {
+  # N2O emission (area * EF_N2O) must fade out when storage is empty, so TAN does not become negative
+  sm <- data.frame(time = c(0, 30, 31, 120), slurry_mass = c(1e-10, 1e-10, 2e5, 4e5))
+  d <- run_abm(days = D, mng_pars = mng(slurry_mass = sm), add_pars = list(cover = 'tent', evap = 0, rain = 0))
+  check(min(d$TAN) > -1e-6, paste('TAN negative:', signif(min(d$TAN), 3)))
+  check(max(d$N2O_emis_cum[d$time <= 30]) < 1e-3, 'N2O emitted from empty storage')
+  check(d$N2O_emis_cum[nrow(d)] > 0, 'No N2O emission with slurry present')
+  check(max(abs(d$N_bal_rel_resid)) < 1e-10, 'N balance does not close')
+  NULL
+}, regression = FALSE)
 add_test('conc_fresh_VFA_C_optional', function() {
   # VFA_C in conc_fresh is optional: default (VFA as acetate) equals explicit VFA / C_VFA
   # A lower VFA_C (VFA with H2 from an upstream ABM run) changes only C, not COD or CH4, and C balance still closes

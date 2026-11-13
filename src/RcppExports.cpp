@@ -36,14 +36,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rates_set_pars
+IntegerVector rates_set_pars(List parms);
+RcppExport SEXP _ABM_rates_set_pars(SEXP parmsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< List >::type parms(parmsSEXP);
+    rcpp_result_gen = Rcpp::wrap(rates_set_pars(parms));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ABM_CTM_cpp", (DL_FUNC) &_ABM_CTM_cpp, 5},
     {"_ABM_rates_cpp", (DL_FUNC) &_ABM_rates_cpp, 3},
+    {"_ABM_rates_set_pars", (DL_FUNC) &_ABM_rates_set_pars, 1},
     {NULL, NULL, 0}
 };
 
+void rates_register_c(DllInfo *dll);
 RcppExport void R_init_ABM(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+    rates_register_c(dll);
 }

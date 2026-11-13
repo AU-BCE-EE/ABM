@@ -30,11 +30,6 @@ hard_pars <- function(pars){
   pars$N2O_emis_rate <- as.numeric(pars$area * pars$EF_N2O)
   
   # calculations moved from stoich to here to speed up model
-  # with cell synthesis
-  #pars$carb <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
-  #               NH3 = -0.1400892, H2O = -2.3396911, C5H7O2N = 0.1400892,
-  #               C2H4O2 = 1.7509058, H2 = 3.5198056, CO2 = 1.7603468)
-  # without cell synthesis
   # Fermentation stoichiometry, mol per mol substrate (positions are used in rates_cpp(), names are only labels)
   # Each reaction must be balanced for C, H, O, N, and COD with substrate COD in mol_COD below (checked in test_abm.R)
   # Substrate COD (g COD/mol, N as NH3), used in rates_cpp() to convert hydrolyzed COD (g) to mol substrate
@@ -42,31 +37,34 @@ hard_pars <- function(pars){
                     pro = 133.6,     # C4H6.1O1.2N
                     lip = 2320,      # C51H98O6
                     OM = 547.68)     # C15.89H26.3O9.2N (VSd)
+  # Fermentation without cell synthesis, from predFerm(<substrate>, acefrac = 2/3, fs = 0):
+  # 2/3 of substrate COD goes to acetate and 1/3 to H2 for all substrates
+  # With d = e- eq per mol substrate (= mol_COD / 8): acetate = d / 12, H2 = d / 6, CO2 = C - 2 * acetate
   pars$carb <- c(C6H10O5 = -1, C51H98O6 = 0, C4H6.1O1.2N = 0,
-                 NH3 = 0, H2O = -2.992714, C5H7O2N = 0,
-                 C2H4O2 = 2.003743, H2 = 3.985329, CO2 = 1.993114)
-  # Protein: same acetate/H2 COD split as carbohydrate (67% acetate), from predFerm('C4H6.1O1.2N', acefrac = 0.6679, fs = 0)
+                 NH3 = 0, H2O = -3, C5H7O2N = 0,
+                 C2H4O2 = 2, H2 = 4, CO2 = 2)
+  # d = 16.7
   pars$pro <- c(C6H10O5 = 0, C51H98O6 = 0, C4H6.1O1.2N = -1,
-                NH3 = 1, H2O = -4.0115276, C5H7O2N = 0,
-                C2H4O2 = 1.3942362, H2 = 2.7730552, CO2 = 1.2115276)
+                NH3 = 1, H2O = -24.1 / 6, C5H7O2N = 0,
+                C2H4O2 = 16.7 / 12, H2 = 16.7 / 6, CO2 = 4 - 16.7 / 6)
+  # d = 290
   pars$lip <- c(C6H10O5 = 0, C51H98O6 = -1, C4H6.1O1.2N = 0,
-                NH3 = 0, H2O = -45.3678, C5H7O2N = 0,
-                C2H4O2 = 25.3171914, H2 = 43.7334158, CO2 = 0.3667798)
-  # with cell synthesis
+                NH3 = 0, H2O = -286 / 6, C5H7O2N = 0,
+                C2H4O2 = 290 / 12, H2 = 290 / 6, CO2 = 51 - 290 / 6)
+  # VSd (C15.89H26.3O9.2N), d = 68.46
+  pars$OM <- c(C6H10O5 = 0, C51H98O6 = 0, C4H6.1O1.2N = 0,
+               NH3 = 1, H2O = -11.17, C5H7O2N = 0,
+               C2H4O2 = 5.705, H2 = 11.41, CO2 = 4.48)
+  # Old cell synthesis versions (not used):
+  #pars$carb <- c(C6H10O5 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
+  #               NH3 = -0.1400892, H2O = -2.3396911, C5H7O2N = 0.1400892,
+  #               C2H4O2 = 1.7509058, H2 = 3.5198056, CO2 = 1.7603468)
   #pars$pro <- c(C6H10O5 = 0, C51H98O2 = 0, C4H6.1O1.2N = -1, 
   #              NH3 = 0.9098195, H2O = -2.91011939, C5H7O2N = 0.09091805,
   #              C2H4O2 = 1.32238963, H2 = 1.24392800, CO2 = 0.53512875)
-  # without cell synthesis
-  # with cell synthesis
   #pars$lip <- c(C6H10O5 = 0, C51H98O2 = -1, C4H6.1O1.2N = 0, 
   #              NH3 = -0.9111515, H2O = -41.2980881, C5H7O2N = 0.9111515,
   #              C2H4O2 = 23.7180355, H2 = 40.9726177, CO2 = 1.4659059)
-  # without cell synthesis
-  
-  # VSd without cell synthesis (based on C15.89H26.3O9.2N)  
-  pars$OM <- c(C6H10O5 = 0, C51H98O6 = 0, C4H6.1O1.2N = 0,
-                NH3 = 1, H2O = -11.284, C5H7O2N = 0,
-                C2H4O2 = 5.64795, H2 = 11.638, CO2 = 4.5941)
   
   # with cell synthesis
   #carb_resp <- c(C6H12O6 = -1, C51H98O2 = 0, C4H6.1O1.2N = 0, 
@@ -96,7 +94,10 @@ hard_pars <- function(pars){
   pars$lip_resp <- lip_resp #
   pars$OM_resp <- OM_resp # 
   
-  pars$ace <- c(H2 = 0, C2H4O2 = -1, CO2 = 1, CH4 = 1, H2O = 0) # moles stoichiometry 
+  # Methanogenesis and sulfate reduction (mol per mol acetate or H2, without biomass growth)
+  # Not used by rates_cpp(), which calculates these processes in COD and C units (see vignette 'stoichiometry')
+  # Kept for reference and because rates_cpp() accesses parameters by position (see pars_indices.R)
+  pars$ace <- c(H2 = 0, C2H4O2 = -1, CO2 = 1, CH4 = 1, H2O = 0)
   pars$hyd <- c(H2 = -1, C2H4O2 = 0, CO2 = -1/4, CH4 = 1/4, H2O = 2/4)
   pars$ace_sr <- c(H2 = 0, C2H4O2 = -1, H2SO4 = -1, CO2 = 2, H2O = 2, H2S = 1) 
   pars$hyd_sr <- c(H2 = -1, C2H4O2 = 0, H2SO4 = -1/4, CO2 = 0, H2O = 1, H2S = 1/4) 

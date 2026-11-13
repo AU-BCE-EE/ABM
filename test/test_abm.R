@@ -499,9 +499,16 @@ add_test('stoichiometry_balanced', function() {
       el <- -atoms(sub_form[[s]])
       for (i in seq_along(sp)) el <- el + coef[[i]] * atoms(sp[i])
       COD <- -p$mol_COD[[s]] + sum(coef * COD_sp[sp])
-      check(all(abs(el) < 1e-3 * max(1, atoms(sub_form[[s]]))),
+      # Fermentation is exact (from predFerm()), respiration is rounded
+      tol <- if (type == 'ferm') 1e-9 else 1e-3
+      check(all(abs(el) < tol * max(1, atoms(sub_form[[s]]))),
             paste0(s, ' ', type, ' not balanced: ', paste(names(el), signif(el, 3), collapse = ', ')))
-      check(abs(COD) < 1e-4 * p$mol_COD[[s]], paste0(s, ' ', type, ' COD not balanced (', signif(COD, 4), ' g/mol)'))
+      check(abs(COD) < tol / 10 * p$mol_COD[[s]], paste0(s, ' ', type, ' COD not balanced (', signif(COD, 4), ' g/mol)'))
+      # Fermentation: 2/3 of COD to acetate, 1/3 to H2
+      if (type == 'ferm') {
+        f_ace <- st[['C2H4O2']] * 64 / (st[['C2H4O2']] * 64 + st[['H2']] * 16)
+        check(abs(f_ace - 2/3) < 1e-9, paste0(s, ' fermentation acetate fraction of COD is ', signif(f_ace, 5), ', not 2/3'))
+      }
     }
   }
   p[c('carb', 'pro', 'lip', 'OM')]
@@ -713,6 +720,80 @@ add_test('delta_t_does_not_change_results', function() {
   d2 <- run_abm(days = D, delta_t = 0.25)
   r <- abs(tail(d1$CH4_emis_cum, 1) - tail(d2$CH4_emis_cum, 1)) / tail(d1$CH4_emis_cum, 1)
   check(r < 0.01, paste('CH4 emission differs by', signif(100 * r, 3), '% between delta_t = 1 and 0.25'))
+  NULL
+}, regression = FALSE)
+add_test('load_split_in_summary', function() {
+  s <- run_abm(days = D, value = 'sum')
+  nms <- c('dCOD_load', 'ndCOD_load', 'VS_load', 'Ninorg_load', 'Norg_load', 'CH4_emis_dCOD', 'CH4_emis_VS',
+           'CO2_emis_dCOD', 'CO2_emis_VS', 'NH3_emis_Ninorg', 'NH3_emis_Norg', 'N2O_emis_Ninorg', 'N2O_emis_Norg')
+  miss <- setdiff(nms, names(s))
+  check(length(miss) == 0, paste('Missing from summary:', paste(miss, collapse = ', ')))
+  check(abs(s[['dCOD_load']] + s[['ndCOD_load']] - s[['COD_load']]) < 1e-6 * s[['COD_load']], 'dCOD_load + ndCOD_load != COD_load')
+  check(abs(s[['Ninorg_load']] + s[['Norg_load']] - s[['N_load']]) < 1e-6 * s[['N_load']], 'Ninorg_load + Norg_load != N_load')
+  check(all(s[nms] > 0 | grepl('N2O', nms)), 'Non-positive load or relative emission in summary')
+  NULL
+}, regression = FALSE)
+add_test('emis_slurry_per_kg', function() {
+  d <- run_abm(days = D, rates_calc = 'instant')
+  s <- run_abm(days = D, value = 'sum')
+  n <- nrow(d)
+  for (g in c('NH3', 'N2O', 'CH4', 'CO2')) {
+    # Rate per kg slurry in storage (g/kg/d)
+    check(max(abs(d[[paste0(g, '_emis_rate_slurry')]] * d$slurry_mass - d[[paste0(g, '_emis_rate')]])) < 1e-9 * max(d[[paste0(g, '_emis_rate')]]) + 1e-12,
+          paste(g, '_emis_rate_slurry is not per kg slurry'))
+    # Cumulative per kg slurry loaded (g/kg), same in time series and summary
+    check(abs(d[[paste0(g, '_emis_cum_slurry')]][n] - s[[paste0(g, '_emis_slurry')]]) <= 1e-9 * abs(s[[paste0(g, '_emis_slurry')]]),
+          paste(g, '_emis_cum_slurry (ts) differs from', g, '_emis_slurry (summary)'))
+  }
+  NULL
+}, regression = FALSE)
+add_test('stoichiometry_gaps_zero', function() {
+  # With exact stoichiometry and conversion factors, processes neither create nor destroy COD, C, or N
+  for (ap in c('pig_pars2.0', 'pig_parsVS2.0')) {
+    s <- run_abm(days = D, anim_pars = get(ap), resp = TRUE, value = 'sum')
+    for (e in c('COD', 'C', 'N')) {
+      g <- s[[paste0(e, '_bal_rel_gap')]]
+      check(abs(g) < 1e-9, paste0(ap, ': ', e, ' balance gap is ', signif(g, 3), ' (stoichiometry or conversion factors not exact)'))
+    }
+  }
+  NULL
+}, regression = FALSE)
+add_test('compiled_equals_R_function', function() {
+  # lsoda() with compiled rates_derivs() must give exactly the same results as with rates_cpp() as R function
+  sm <- data.frame(time = c(0, 50, 51, 120), slurry_mass = c(5000, 70000, 5000, 90000))
+  for (args in list(list(days = D), list(days = D, mng_pars = mng(slurry_mass = sm), resp = TRUE))) {
+    old <- options(ABM.compiled = TRUE); a <- do.call(run_abm, args)
+    options(ABM.compiled = FALSE); b <- do.call(run_abm, args); options(old)
+    check(identical(names(a), names(b)) && nrow(a) == nrow(b), 'Different output columns or rows')
+    num <- names(a)[sapply(a, is.numeric)]
+    check(isTRUE(all.equal(a[num], b[num], tolerance = 1e-12, check.attributes = FALSE)), 'Results differ between compiled and R function')
+  }
+  NULL
+}, regression = FALSE)
+add_test('add_pars_unnamed_vector_parameter', function() {
+  # Unnamed single value for a parameter with several elements sets all elements (was silently ignored)
+  m0 <- mng(resid_enrich = c(OM = 0, mic = 0))
+  ref <- run_abm(days = D, mng_pars = m0, value = 'sum')
+  a <- run_abm(days = D, add_pars = list(resid_enrich = 0), value = 'sum')
+  check(isTRUE(all.equal(a, ref)), 'add_pars resid_enrich = 0 differs from resid_enrich = c(OM = 0, mic = 0)')
+  # Unnamed vector of same length replaces by position
+  b <- run_abm(days = D, add_pars = list(resid_enrich = c(0, 0)), value = 'sum')
+  check(isTRUE(all.equal(b, ref)), 'add_pars resid_enrich = c(0, 0) differs from resid_enrich = c(OM = 0, mic = 0)')
+  # Named values still replace only the named elements
+  d <- run_abm(days = D, add_pars = list(resid_enrich = c(mic = 0)), value = 'sum')
+  e <- run_abm(days = D, mng_pars = mng(resid_enrich = c(OM = 0.9, mic = 0)), value = 'sum')
+  check(isTRUE(all.equal(d, e)), 'add_pars with named element does not match')
+  # Wrong length or partly named gives an error
+  check(inherits(tryCatch(run_abm(days = D, add_pars = list(resid_enrich = c(0, 0, 0))), error = function(e) e), 'error'),
+        'No error for unnamed add_pars of wrong length')
+  check(inherits(tryCatch(run_abm(days = D, add_pars = list(resid_enrich = c(OM = 0, 0))), error = function(e) e), 'error'),
+        'No error for partly named add_pars')
+  NULL
+}, regression = FALSE)
+add_test('ndCOD_conc_equals_iNDF_conc', function() {
+  d <- run_abm(days = D)
+  check(max(abs(d$ndCOD_conc - d$iNDF_conc)) < 1e-9, 'ndCOD_conc differs from iNDF_conc')
+  check(max(abs(d$COD_conc - d$dCOD_conc - d$ndCOD_conc)) < 1e-9, 'COD_conc != dCOD_conc + ndCOD_conc')
   NULL
 }, regression = FALSE)
 

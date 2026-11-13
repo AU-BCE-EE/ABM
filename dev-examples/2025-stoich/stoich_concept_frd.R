@@ -4,7 +4,7 @@ devtools::load_all('../../../ABM')
 # Substrate state variables
 source('../../R/predFerm.R')
 source('../../R/readFormula.R')
-source('../../R/stoich_species.R')
+source('stoich_species.R')  # moved from R/ (not used by the package)
 
 # unit of y is moles here. 
 y <- c(xa = 0,

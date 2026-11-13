@@ -63,3 +63,20 @@ avgRate <- function(cum, time) {
   for (i in which(dt == 0)) r[i] <- r[i - 1]
   return(r)
 }
+
+# Run deSolve::lsoda() for one interval
+# compiled = TRUE: derivatives from the compiled function rates_derivs() (see rates_cpp.cpp), which deSolve calls
+# directly, so no R code runs during integration. Parameters are passed to C++ once with rates_set_pars().
+# compiled = FALSE: rates_cpp() is called as an R function (slower, same results, for testing and debugging)
+# Set options(ABM.compiled = FALSE) to use the R function in abm()
+runLsoda <- function(y, times, pars, compiled = getOption('ABM.compiled', TRUE)) {
+  if (compiled) {
+    dims <- rates_set_pars(pars)
+    if (length(y) != dims[1]) stop('Length of y (', length(y), ') does not match number of state variables (', dims[1], ')')
+    out <- deSolve::lsoda(y = y, times = times, func = 'rates_derivs', dllname = 'ABM', initfunc = NULL,
+                          parms = NULL, nout = dims[2], outnames = pars$out_names, rtol = 1E-5, atol = 1E-5)
+  } else {
+    out <- deSolve::lsoda(y = y, times = times, func = rates_cpp, parms = pars, rtol = 1E-5, atol = 1E-5)
+  }
+  return(out)
+}

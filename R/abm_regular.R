@@ -70,7 +70,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL) 
     pars$t_run <- t_run
 
     # Call up ODE solver
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, rtol = 1E-5, atol = 1E-5)
+    out <- runLsoda(y = y, times = times, pars = pars)
     out <- matrix(out, nrow = nrow(out), dimnames = dimnames(out))
     
     # Extract new state variable vector from last row
@@ -118,7 +118,7 @@ abm_regular <- function(days, delta_t, times_regular, y, pars, starting = NULL) 
       parsr$slurry_prod_rate <- 0
       # Actual time, for temperature etc.
       parsr$t_run <- t_run_r
-      outr <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = parsr, rtol = 1E-5, atol = 1E-5)
+      outr <- runLsoda(y = y, times = times, pars = parsr)
       outr <- matrix(outr, nrow = nrow(outr), dimnames = dimnames(outr))
       # Extract new state variable vector from last row
       y <- outr[nrow(outr), 1:n_state + 1]

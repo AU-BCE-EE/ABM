@@ -9,3 +9,7 @@ rates_cpp <- function(t, y_in, parms) {
     .Call('_ABM_rates_cpp', PACKAGE = 'ABM', t, y_in, parms)
 }
 
+rates_set_pars <- function(parms) {
+    .Call('_ABM_rates_set_pars', PACKAGE = 'ABM', parms)
+}
+

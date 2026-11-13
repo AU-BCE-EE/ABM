@@ -1,5 +1,6 @@
 // Cardinal temperature model (CTM), scalar version
-// Shared by CTM_cpp() (exported) and rates_cpp() (called directly for speed)
+// Used directly by rates_cpp() (for speed), and by CTM_cpp() (not exported, call as ABM:::CTM_cpp() from R,
+// e.g., to plot the temperature response of a microbial group)
 
 #ifndef ABM_CTM_H
 #define ABM_CTM_H

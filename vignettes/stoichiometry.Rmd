@@ -1,0 +1,198 @@
+---
+title: "Stoichiometry in ABM"
+author: "Frederik R. Dalby and Sasha D. Hafner"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Stoichiometry in ABM}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
+library(ABM)
+# Fixed (hard-coded) parameters, including stoichiometry, as used in abm()
+hp <- ABM:::hard_pars(list(pH_LL = c(a = 1), graze_int = 0, graze = c(hours_day = 0), kl = c(NH3 = 1),
+                           EF_NH3 = 1, area = 1, EF_N2O = 0))
+```
+
+This document describes how the reaction stoichiometry in ABM was derived and where it is used.
+All numbers below are calculated when the vignette is built, from the same functions and parameters that `abm()` uses, so the document stays in sync with the code.
+
+# 1. Overview
+
+ABM tracks COD, carbon (C), and nitrogen (N) in these processes:
+
+| Process | Reaction | Where | Units |
+|---|---|---|---|
+| Hydrolysis + fermentation | substrate + H~2~O → acetate + H~2~ + CO~2~ (+ NH~3~) | `hard_pars()`: `carb`, `pro`, `lip`, `OM` | mol/mol substrate |
+| Aerobic respiration | substrate + O~2~ → CO~2~ + H~2~O (+ NH~3~) | `hard_pars()`: `carb_resp`, `pro_resp`, `lip_resp`, `OM_resp` | mol/mol substrate |
+| Methanogenesis | VFA (acetate + H~2~) → CH~4~ + CO~2~ + biomass | `rates_cpp()` | g COD and g C |
+| Sulfate reduction | VFA + sulfate → sulfide + CO~2~ + biomass | `rates_cpp()` | g COD and g C |
+| Biomass decay and hydrolysis | biomass → dead biomass (`xa_dead`) → VFA | `rates_cpp()` | g COD and g C |
+| Urea hydrolysis | CO(NH~2~)~2~ + H~2~O → 2 NH~3~ + CO~2~ | `rates_cpp()` | g N |
+
+Hydrolysis and fermentation are lumped: hydrolyzed substrate COD goes directly to VFA (acetate + H~2~) in a single step.
+The `VFA` state variable is the COD of acetate + H~2~, and its carbon content is tracked separately in `VFA_C` because the ratio of acetate to H~2~ in the pool can vary.
+
+# 2. Substrates
+
+Each organic matter fraction is represented by an empirical formula.
+COD per mol follows from the formula (with N as NH~3~): COD = 8 (4 C + H − 2 O − 3 N) g/mol.
+
+```{r substrates}
+el <- c('C', 'H', 'O', 'N')
+subs <- c(carb = 'C6H10O5', pro = 'C4H6.1O1.2N', lip = 'C51H98O6', OM = 'C15.89H26.3O9.2N')
+comp <- t(sapply(subs, function(f) ABM:::readFormula(f, el)))
+COD_mol <- 8 * (4 * comp[, 'C'] + comp[, 'H'] - 2 * comp[, 'O'] - 3 * comp[, 'N'])
+data.frame(state_variables = c('RFd, starch', 'CPs, CPf', 'Cfat', 'VSd'),
+           formula = subs, comp, COD_g_per_mol = COD_mol, mol_COD_in_ABM = hp$mol_COD[names(subs)])
+```
+
+`mol_COD` is used in `rates_cpp()` to convert the hydrolysis rate (g COD/d) to mol substrate per day, which is then multiplied by the fermentation (or respiration) stoichiometry.
+`VSd` (OM) is used instead of the separate fractions when a manure is described by degradable volatile solids only; its formula is the composition of degradable cattle manure (excluding VFA) from the ABM paper (Appendix 1).
+
+# 3. Fermentation
+
+## Method
+
+Fermentation stoichiometry is calculated with the half-reaction method of Rittmann and McCarty (Environmental Biotechnology, 2001), implemented in `predFerm()` (`R/predFerm.R`).
+The overall reaction is
+
+R = f~e~ R~a~ + f~s~ R~c~ − R~d~
+
+where R~d~ is the donor (substrate oxidation) half-reaction, from the general organic half-reaction (O-19 in Rittmann and McCarty), R~c~ is cell synthesis (C~5~H~7~O~2~N), and R~a~ is the acceptor half-reaction.
+For fermentation the "acceptor" is the production of the two products, combined using the electron equivalent fraction going to acetate (`acefrac`):
+
+* acetate: 1/4 CO~2~ + H^+^ + e^−^ → 1/8 CH~3~COOH + 1/4 H~2~O
+* hydrogen: H^+^ + e^−^ → 1/2 H~2~
+
+Because 1 electron equivalent is 8 g COD, `acefrac` is also the fraction of substrate COD that goes to acetate.
+
+Two choices are made in ABM:
+
+* `acefrac = 2/3`: 2/3 of substrate COD goes to acetate and 1/3 to H~2~, for all substrates. For carbohydrate this is the classic reaction C~6~H~10~O~5~ + 3 H~2~O → 2 CH~3~COOH + 4 H~2~ + 2 CO~2~.
+* `fs = 0`: no cell synthesis in fermentation. Hydrolytic and fermentative bacteria are not modeled as a biomass pool, so all substrate COD goes to VFA.
+
+## Coefficients
+
+```{r ferm}
+ferm_pf <- t(sapply(subs, function(f) {
+  x <- ABM:::predFerm(f, acefrac = 2/3, fs = 0, dropsub = TRUE, dropzero = FALSE, order = FALSE)
+  x <- x[c('NH3', 'H2O', 'CH3COOH', 'H2', 'CO2')]
+}))
+ferm_pf
+```
+
+The same values are used in `hard_pars()` (positions 4 to 9: NH~3~, H~2~O, C~5~H~7~O~2~N, acetate, H~2~, CO~2~; positions 1 to 3 are only labels):
+
+```{r ferm-abm}
+ferm_abm <- t(sapply(names(subs), function(s) hp[[s]][c('NH3', 'H2O', 'C2H4O2', 'H2', 'CO2')]))
+ferm_abm
+# Difference from predFerm() and acetate fraction of product COD
+cbind(max_abs_diff = apply(abs(ferm_abm - ferm_pf), 1, max),
+      acetate_COD_frac = ferm_abm[, 'C2H4O2'] * 64 / (ferm_abm[, 'C2H4O2'] * 64 + ferm_abm[, 'H2'] * 16))
+```
+
+In closed form, with d = COD/8 (electron equivalents per mol substrate), acetate = d/12, H~2~ = d/6, CO~2~ = C − 2 acetate, and H~2~O from the O balance.
+
+## Limits
+
+With a higher acetate fraction, more CO~2~ is needed to make acetate.
+Above the following acetate fractions CO~2~ would become a reactant (homoacetogenesis), which is not intended.
+Lipid, the most reduced substrate, sets the upper limit for a single acetate fraction used for all substrates.
+
+```{r ferm-limit}
+sapply(subs, function(f) {
+  g <- function(a) ABM:::predFerm(f, acefrac = a, fs = 0, dropsub = TRUE, dropzero = FALSE)[['CO2']]
+  if (g(1) >= 0) 1 else uniroot(g, c(0.01, 1))$root
+})
+```
+
+## Use in the model
+
+In `rates_cpp()`, the hydrolysis rates of the substrate pools are converted to mol/d with `mol_COD` and multiplied by the stoichiometry vectors.
+The result gives
+
+* VFA production (g COD/d): 64 g COD/mol acetate + 16 g COD/mol H~2~
+* C to the VFA pool: 2 × 12.011 g C/mol acetate (H~2~ has no C)
+* CO~2~ emission from fermentation: 44.01 g/mol
+* TAN from protein and VSd mineralization: 14.007 g N/mol NH~3~
+
+# 4. Aerobic respiration
+
+Respiration at the slurry surface (only with `resp = TRUE`) is complete oxidation without cell synthesis:
+
+```{r resp}
+t(sapply(names(subs), function(s) hp[[paste0(s, '_resp')]][4:9]))
+```
+
+Only CO~2~ (and HCO~3~) and NH~4~ (released as TAN) affect results.
+O~2~ consumption is tracked as COD in `COD_conv_cum_respir`.
+Note that the OM row has the substrate in position 2 (this does not matter, positions 1 to 3 are labels).
+
+# 5. Methanogenesis and sulfate reduction
+
+These processes are calculated directly in COD and C units in `rates_cpp()`, not from mol-based stoichiometry:
+
+* COD: microbial VFA uptake (`rut`, g COD/d) is split into growth (`yield` × `rut`, to biomass) and catabolism ((1 − `yield`) × `rut`). Catabolism goes to CH~4~ for methanogens (`COD_conv[['CH4']]` g COD/g CH~4~) or to sulfide for sulfate reducers (`COD_conv[['S']]` g COD/g S).
+* C: uptake removes `rut` × `VFA_C`/`VFA` g C from the VFA pool. Biomass C is `yield` × `rut` / `COD_conv[['C_xa']]`, CH~4~ C is 12.011/16.043 g C/g CH~4~, and CO~2~ is the remainder of the C balance.
+
+Because the VFA pool contains both acetate and H~2~, this C balance reproduces the mixture of acetoclastic (CH~3~COOH → CH~4~ + CO~2~) and hydrogenotrophic (4 H~2~ + CO~2~ → CH~4~ + 2 H~2~O) methanogenesis.
+The net CO~2~ from methanogenesis can be negative when the pool is rich in H~2~.
+The mol-based reactions are kept in `hard_pars()` (`ace`, `hyd`, `ace_sr`, `hyd_sr`) for reference only:
+
+```{r meth}
+hp[c('ace', 'hyd', 'ace_sr', 'hyd_sr')]
+```
+
+# 6. Other processes
+
+* **Decay**: living biomass decays to `xa_dead` (COD conserved). `xa_dead` is hydrolyzed to VFA, with C added to the VFA pool using `COD_conv[['C_xa']]`.
+* **Urea hydrolysis**: urea N goes to TAN, and the C goes to CO~2~ (`COD_conv[['CO2_ureo']]`, g N/g CO~2~). Urea C in the storage is counted using `COD_conv[['C_N_urea']]` (g C/g N).
+* **Microbial biomass** (C~5~H~7~O~2~N) contains COD and C but is not counted as an N pool. N assimilation in biomass growth is not modeled.
+
+# 7. Conversion factors
+
+The C and N factors in `chem_pars$COD_conv` (stored as g COD per g element) follow from the formulas above.
+Expected values (g C or g N per g COD):
+
+```{r conv}
+C_per_COD <- 12.011 * comp[, 'C'] / COD_mol
+cc <- chem_pars2.0$COD_conv
+data.frame(factor = c('C_RFd, C_starch', 'C_CP', 'C_Cfat', 'C_VSd', 'C_xa', 'C_VFA (acetate)', 'CP_N', 'C_iNDF'),
+           from_formula = c(C_per_COD, 5 * 12.011 / 160, 2 * 12.011 / 64, 14.007 / COD_mol[['pro']], C_per_COD[['carb']]),
+           in_ABM = 1 / cc[c('C_RFd', 'C_CP', 'C_Cfat', 'C_VSd', 'C_xa', 'C_VFA', 'CP_N', 'C_iNDF')])
+```
+
+All factors are calculated from the formulas in `make-Rda/make_pars.R` (iNDF is assumed to have the same composition as RFd, C~6~H~10~O~5~). Before November 2026, `C_xa`, `C_iNDF`, and `C_VFA` were rounded values (differences up to 0.4 %), and so were `CO2_ureo`, `CH4` (1/0.2507), and `S` (1/0.5015); with exact factors the C balance gap is zero to machine precision.
+
+The COD factors for CH~4~ and sulfide are 64 g COD per mol (8 electron equivalents): `COD_conv[['CH4']]` = 64/16.043 g COD/g CH~4~ and `COD_conv[['S']]` = 64/32.06 g COD/g S (sulfate and sulfide are in g S).
+
+`C_VFA` is used only for VFA in fresh slurry and initial VFA; VFA produced in storage gets its C from the reactions above, through `VFA_C`.
+N in VSd (1 mol N per mol) is `14.007 / mol_COD[['OM']]` g N/g COD (`NVSd()`).
+
+# 8. Mass balance checks
+
+For every output row `abm()` calculates a COD, C, and N balance (`massBalance()`, columns `*_bal_*`): initial storage + load = storage + effluent + emission + gap.
+The gap terms (`*_gap_*_cum`) are the net loss or production of each element by process stoichiometry, calculated in `rates_cpp()` from process rates.
+For example, the fermentation COD gap is zero because all substrate COD goes to VFA, while the C gap of methanogenesis is zero by construction (CO~2~ is the remainder).
+Non-zero gaps show where the stoichiometry is not exactly balanced, for example because of rounding in conversion factors.
+`test/test_abm.R` checks that all fermentation and respiration reactions are balanced for C, H, O, N, and COD, and that the fermentation acetate fraction is 2/3.
+
+# 9. Changing the stoichiometry
+
+To change fermentation, for example the acetate fraction:
+
+1. Calculate new coefficients, e.g., `ABM:::predFerm('C6H10O5', acefrac = 0.6, fs = 0, dropsub = TRUE)`, for each substrate in section 2.
+2. Replace the `carb`, `pro`, `lip`, and `OM` vectors in `hard_pars()`, keeping the order of elements (positions are used in `rates_cpp()`).
+3. Update the acetate fraction check in the `stoichiometry_balanced` test and run `Rscript test/test_abm.R`.
+
+To add a new substrate formula, `mol_COD` and the C (and N) factors in `chem_pars` must be updated together with the stoichiometry vector.
+
+# 10. History
+
+* Earlier versions included cell synthesis of fermentative and aerobic bacteria (`fs` > 0); the old coefficients are kept as comments in `hard_pars()`.
+* An R function `stoich()` calculated rates from mol-based stoichiometry before this was moved to `rates_cpp()`; it was removed in November 2026. `stoich_species()`, which built a stoichiometry matrix from `predFerm()`, is in `dev-examples/2025-stoich/`.
+* Before November 2026, the fermentation coefficients were rounded and acetate fractions were 66–70 % of COD (69.8 % for lipid). They are now exactly 2/3 for all substrates.

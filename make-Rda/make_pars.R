@@ -242,13 +242,17 @@ for (i in c('starch', 'xa_dead','Cfat','RFd','CPs', 'CPf', 'iNDF')){
 
 # Default rain is 0 (in-house storage); set rain for outdoor storage
 wthr_pars2.0 <- list(temp_air_C = 20, RH = 90, rain = 0, pres_kpa = 101, rs = 10)
-chem_pars2.0 <- list(COD_conv = c(CH4 = 1/0.2507, xa = 1/0.7069561, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
-                                  Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 1/0.5015, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = 1/1.5709966,
-                                  # C factors for substrates are exact values for the formulas used in fermentation stoichiometry (hard_pars()):
-                                  # C6H10O5 (RFd, starch), C4H6.1O1.2N (CP, also CP_N), C51H98O6 (Cfat), C15.89H26.3O9.2N (VSd)
-                                  CP_N = 1/0.1048428, C_xa = 1/0.3753125, C_RFd = 1/0.3753438, C_iNDF = 1/0.376,
-                                  C_starch = 1/0.3753438, C_Cfat = 1/0.2640349, C_CP = 1/0.3596108 , C_VFA = 1/0.374, C_VSd = 1/0.3484791, C_N_urea = 1/0.4287499,
-                                  C_xa_aer = 1/0.3753125, C_xa_bac = 1/0.3753125, C_xa_dead = 1/0.3753125))
+# CH4 and S: 8 e- eq (64 g COD) per mol, CH4 + 2 O2 -> CO2 + 2 H2O and H2S + 2 O2 -> H2SO4 (sulfide and sulfate in g S)
+chem_pars2.0 <- list(COD_conv = c(CH4 = 64 / 16.043, xa = 1/0.7069561, RFd = 1/0.8444792, iNDF = 1/0.8444792, starch = 1/0.8444792, 
+                                  Cfat = 1/0.3117844, CP = 1/0.6541602, VFA = 1/0.9383125, S = 64 / 32.06, VS = 1/0.69, CO2_aer = 1/0.436, CO2_sr = 1/1.2, CO2_ureo = (2 * 14.007) / 44.01,  # g urea N/g CO2
+                                  # C (and N) factors, g COD/g C (g COD/g N for CP_N), exact for the formulas used in fermentation stoichiometry (hard_pars()):
+                                  # g COD/mol / (g C/mol), COD/mol = 8 * (4 C + H - 2 O - 3 N), see vignette 'stoichiometry'
+                                  # C6H10O5 (RFd, starch, iNDF), C4H6.1O1.2N (CP, also CP_N), C51H98O6 (Cfat), C15.89H26.3O9.2N (VSd),
+                                  # C5H7O2N (microbial biomass), C2H4O2 (VFA, as acetate), CO(NH2)2 (urea, g C/g N)
+                                  CP_N = 133.6 / 14.007, C_xa = 160 / (5 * 12.011), C_RFd = 192 / (6 * 12.011), C_iNDF = 192 / (6 * 12.011),
+                                  C_starch = 192 / (6 * 12.011), C_Cfat = 2320 / (51 * 12.011), C_CP = 133.6 / (4 * 12.011), C_VFA = 64 / (2 * 12.011),
+                                  C_VSd = 547.68 / (15.89 * 12.011), C_N_urea = (2 * 14.007) / 12.011,
+                                  C_xa_aer = 160 / (5 * 12.011), C_xa_bac = 160 / (5 * 12.011), C_xa_dead = 160 / (5 * 12.011)))
 
 arrh_pars_pig3.0 <- list(lnA =  29.96298,
                          E_CH4 = 81000, 

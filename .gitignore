@@ -1,6 +1,7 @@
 # Files from devtools::load_all()
 src/*.o
 src/*.so
+src/*.dll
 
 # History files
 .Rhistory

@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <R_ext/Rdynload.h>
 #include <algorithm>
 #include <numeric>
 #include <vector>
@@ -6,12 +7,19 @@
 
 using namespace Rcpp;
 
-// Derivatives for the ABM model, called by deSolve::lsoda() through abm_regular() and abm_variable()
+// Derivatives for the ABM model
 //
-// Notes on speed: this function is called very many times (~100 000 times for a 10 year simulation)
-// so it avoids 1) calls back to R, 2) allocation of R vectors (except for the returned ones),
-// and 3) name lookups in the parameter list (parameters are accessed by position through p_idx,
-// see pars_indices.R). Time-variable inputs are interpolated here from tables made by makeInterpTab().
+// The model is in rates_core(), which has two entry points:
+// 1) rates_derivs(): compiled function called directly by deSolve::lsoda() (func = 'rates_derivs', dllname = 'ABM'),
+//    used by abm_regular() and abm_variable() through runLsoda(). Parameters are set once per lsoda() call
+//    with rates_set_pars(), so no R code runs during integration.
+// 2) rates_cpp(): R-callable version returning list(derivatives, out), for testing and debugging
+//    (runLsoda(..., compiled = FALSE) uses it as an R function in lsoda()).
+//
+// Notes on speed: rates_core() is called very many times (~100 000 times for a 10 year simulation)
+// so it avoids 1) calls back to R, 2) allocation of R vectors, and 3) name lookups in the parameter list
+// (parameters are accessed by position through p_idx, see pars_indices.R).
+// Time-variable inputs are interpolated here from tables made by makeInterpTab().
 
 // Interpolation equivalent to stats::approxfun(x, y, method, rule = 2, f = 0)
 // method 0 = linear, 1 = constant (f = 0, i.e., value of left knot)
@@ -52,12 +60,20 @@ static double pH_from_SO4_pig(double conc_SO4) {
   return interp1(conc_SO4, cSO4, pHv, 14, 0);
 }
 
-// rng = false: no need to save/restore R's random number state (this is slow for many calls)
-// [[Rcpp::export(rng = false)]]
-List rates_cpp(double t, NumericVector y_in, List parms){
+// Number of derivatives and other output values
+static void rates_dims(SEXP parms, const double *p_idx, int &nn, int &n_out) {
+  int n_mic = Rf_asInteger(VECTOR_ELT(parms, (R_xlen_t)p_idx[2]));
+  int n_cf = interpTabNcol(VECTOR_ELT(parms, (R_xlen_t)p_idx[62]));
+  nn = n_mic + 42;
+  n_out = 9 + n_cf + 4 + 11 * n_mic + 1;
+}
+
+// Model: writes derivatives (length nn) and other output (length n_out, see rates_dims())
+// parms: parameter list (prepared by prepRatesPars()), p_idx: positions of parameters in parms
+static void rates_core(double t, const double *y_in, int ny, SEXP parms, const double *p_idx,
+                       double *derivatives, double *out) {
 
   // Parameter access by position (see pars_indices.R)
-  NumericVector p_idx = parms["p_idx"];
   auto P = [&](int i) -> SEXP { return VECTOR_ELT(parms, (R_xlen_t)p_idx[i]); };
   auto D = [&](int i) -> double { return Rf_asReal(P(i)); };
   // Pointer to numeric vector (all vector parameters are REALSXP, checked in R)
@@ -66,8 +82,7 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   int n_mic = Rf_asInteger(P(2));
 
   // Local copy of state variables, with negative or zero values set to a small positive value
-  const int ny = y_in.size();
-  std::vector<double> y(y_in.begin(), y_in.end());
+  std::vector<double> y(y_in, y_in + ny);
   for (int i = 0; i < ny; ++i) {
     if (y[i] < 1E-10) y[i] = 1E-10;
   }
@@ -90,7 +105,7 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double TAN = y[n_mic+12];
   double sulfate = y[n_mic+13];
   double sulfide = y[n_mic+14];
-  // n_mic+15 to n_mic+38 are cumulative variables, see derivatives below
+  // n_mic+15 to n_mic+38 and n_mic+40 to n_mic+41 are cumulative variables, see derivatives below
   double VFA_C = y[n_mic+39];
 
   double time_sum = t + t_run; // Time since start of complete simulation
@@ -496,8 +511,8 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   double C_gap_urea = rut_urea / COD_conv_C_N_urea - rut_urea / COD_conv_CO2_ureo * C_CO2;
 
   // Derivatives
-  int nn = n_mic + 40;
-  NumericVector derivatives(nn);
+  int nn = n_mic + 42;
+  std::fill(derivatives, derivatives + nn, 0.0);
 
   for (int i = 0; i < n_mic; i++) {
     derivatives[i] = scale_yield * yield[i] * rut[i] + scale_xa_fresh * xa_fresh[i] * slurry_prod_rate - decay_rate[i] * xa[i];
@@ -544,11 +559,13 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   derivatives[n_mic+38] = N_gap_respir;
   // Carbon in VFA pool
   derivatives[n_mic+39] = C_ace_ferm + C_VFA_xa_dead + C_VFA_fresh - sum_rut * VFA_fC;
+  // Cumulative load of non-degradable COD (iNDF) and inorganic N (TAN + urea)
+  // Degradable COD and organic N loads are obtained in R by difference from COD_load_cum and N_load_cum
+  derivatives[n_mic+40] = slurry_prod_rate * conc_fresh_iNDF;
+  derivatives[n_mic+41] = slurry_prod_rate * (conc_fresh_TAN + conc_fresh_urea);
 
   // Other output, as a single flat vector (much faster for deSolve to unlist() than a nested list)
   // Names are created once in R (see outNames.R) and must match the order here
-  int n_out = 9 + n_cf + 4 + 11 * n_mic + 1;
-  NumericVector out(n_out);
   int k = 0;
   out[k++] = derivatives[n_mic + 23];  // COD_load_rate
   out[k++] = derivatives[n_mic + 24];  // C_load_rate
@@ -576,11 +593,60 @@ List rates_cpp(double t, NumericVector y_in, List parms){
   for (int i = 0; i < n_mic; ++i) out[k++] = H2S_inhib[i];
   for (int i = 0; i < n_mic; ++i) out[k++] = VFA / slurry_mass / ks[i];  // sat_index
   out[k++] = (VFA_H2_ferm + alpha_xa_dead * xa_dead) / sum_rut;  // VFA_supply_VFA_demand
+}
 
-  SEXP out_names = P(64);
-  if (Rf_length(out_names) == n_out) {
-    out.attr("names") = out_names;
-  }
-
+// R-callable version, returns list(derivatives, out) as required by deSolve for an R function
+// rng = false: no need to save/restore R's random number state (this is slow for many calls)
+// [[Rcpp::export(rng = false)]]
+List rates_cpp(double t, NumericVector y_in, List parms) {
+  NumericVector p_idx = parms["p_idx"];
+  int nn, n_out;
+  rates_dims(parms, p_idx.begin(), nn, n_out);
+  if (y_in.size() != nn) stop("Length of y (%d) does not match number of state variables (%d)", (int) y_in.size(), nn);
+  NumericVector derivatives(nn), out(n_out);
+  rates_core(t, y_in.begin(), nn, parms, p_idx.begin(), derivatives.begin(), out.begin());
+  SEXP out_names = VECTOR_ELT(parms, (R_xlen_t)p_idx[64]);
+  if (Rf_length(out_names) == n_out) out.attr("names") = out_names;
   return List::create(derivatives, out);
+}
+
+// Compiled interface for deSolve
+// Parameter list for rates_derivs(), set by rates_set_pars() before each lsoda() call (protected from garbage collection)
+static SEXP g_parms = NULL;
+static std::vector<double> g_p_idx;
+static int g_nn = 0, g_n_out = 0;
+
+// Set parameters for rates_derivs(), returns c(number of state variables, number of other output values)
+// [[Rcpp::export(rng = false)]]
+IntegerVector rates_set_pars(List parms) {
+  NumericVector p_idx = parms["p_idx"];
+  int nn, n_out;
+  rates_dims(parms, p_idx.begin(), nn, n_out);
+  SEXP old = g_parms;
+  R_PreserveObject(parms);
+  g_parms = parms;
+  if (old != NULL) R_ReleaseObject(old);
+  g_p_idx.assign(p_idx.begin(), p_idx.end());
+  g_nn = nn;
+  g_n_out = n_out;
+  return IntegerVector::create(nn, n_out);
+}
+
+// Derivative function in deSolve's compiled code format
+// neq: number of state variables, yout: other output (nout values, see rates_dims()), ip: integer parameters (unused)
+extern "C" void rates_derivs(int *neq, double *t, double *y, double *ydot, double *yout, int *ip) {
+  (void) ip;
+  if (g_parms == NULL || *neq != g_nn) Rf_error("rates_derivs(): parameters not set or wrong number of state variables, call rates_set_pars() first");
+  rates_core(*t, y, *neq, g_parms, g_p_idx.data(), ydot, yout);
+}
+
+// Register rates_derivs() so deSolve can find it with dllname = 'ABM'
+// (called from R_init_ABM() in RcppExports.cpp, generated by Rcpp::compileAttributes())
+// [[Rcpp::init]]
+void rates_register_c(DllInfo *dll) {
+  static const R_CMethodDef c_methods[] = {
+    {"rates_derivs", (DL_FUNC) &rates_derivs, 6},
+    {NULL, NULL, 0}
+  };
+  R_registerRoutines(dll, c_methods, NULL, NULL, NULL);
 }

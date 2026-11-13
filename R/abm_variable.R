@@ -239,7 +239,7 @@ abm_variable <- function(days, delta_t, times, y, pars, warn, slurry_mass_approx
     pars$t_run <- t_run
 
     # Call up ODE solver
-    out <- deSolve::lsoda(y = y, times = times, rates_cpp, parms = pars, rtol = 1E-5, atol = 1E-5)
+    out <- runLsoda(y = y, times = times, pars = pars)
     out <- matrix(out, nrow = nrow(out), dimnames = dimnames(out))
 
     # Extract new state variable vector from last row of lsoda output

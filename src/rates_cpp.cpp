@@ -331,8 +331,8 @@ static void rates_core(double t, const double *y_in, int ny, SEXP parms, const d
   // Column order is fixed in R (see conc_fresh_names in internal_helpers.R)
   SEXP cf_tab = P(62);
   int n_cf = interpTabNcol(cf_tab);
-  double conc_fresh[14];
-  for (int i = 0; i < 14; ++i) conc_fresh[i] = interpTab(cf_tab, time_sum, i);
+  double conc_fresh[15];
+  for (int i = 0; i < 15; ++i) conc_fresh[i] = interpTab(cf_tab, time_sum, i);
 
   double conc_fresh_sulfide = conc_fresh[0];
   double conc_fresh_urea = conc_fresh[1];
@@ -348,6 +348,7 @@ static void rates_core(double t, const double *y_in, int ny, SEXP parms, const d
   double conc_fresh_iNDF = conc_fresh[11];
   double conc_fresh_VSd = conc_fresh[12];
   double conc_fresh_ash = conc_fresh[13];
+  double conc_fresh_VFA_C = conc_fresh[14]; // g C/kg
 
   // Fermentation stoichiometry
   // Substrate COD (g COD/mol), order carb, pro, lip, OM (see hard_pars())
@@ -438,7 +439,7 @@ static void rates_core(double t, const double *y_in, int ny, SEXP parms, const d
   double h_xa_dead = alpha_xa_dead * xa_dead;
   double C_ace_ferm = C2H4O2 * 2 * 12.011;
   double C_VFA_xa_dead = h_xa_dead / COD_conv_C_xa;
-  double C_VFA_fresh = slurry_prod_rate * conc_fresh_VFA / COD_conv_C_VFA;
+  double C_VFA_fresh = slurry_prod_rate * conc_fresh_VFA_C;
 
   // VFA C taken up by methanogens and sulfate reducers goes to biomass, CH4 (methanogens), and CO2 (remainder)
   // CO2 can be negative if pool is rich in H2 (hydrogenotrophic methanogenesis consumes CO2)
@@ -542,7 +543,7 @@ static void rates_core(double t, const double *y_in, int ny, SEXP parms, const d
   derivatives[n_mic+21] = respiration;
   derivatives[n_mic+22] = sum_catsr;
   derivatives[n_mic+23] = slurry_prod_rate * (conc_fresh_starch + conc_fresh_VFA + conc_fresh_xa_dead + conc_fresh_Cfat + conc_fresh_CPs + conc_fresh_CPf + conc_fresh_RFd + conc_fresh_iNDF + conc_fresh_VSd + (sum_xa_fresh * scale_xa_fresh));
-  derivatives[n_mic+24] = slurry_prod_rate * (conc_fresh_starch/COD_conv_C_starch + conc_fresh_RFd/COD_conv_C_RFd + conc_fresh_iNDF/COD_conv_C_iNDF + conc_fresh_VFA/COD_conv_C_VFA + conc_fresh_xa_dead/COD_conv_C_xa +
+  derivatives[n_mic+24] = slurry_prod_rate * (conc_fresh_starch/COD_conv_C_starch + conc_fresh_RFd/COD_conv_C_RFd + conc_fresh_iNDF/COD_conv_C_iNDF + conc_fresh_VFA_C + conc_fresh_xa_dead/COD_conv_C_xa +
     conc_fresh_Cfat/COD_conv_C_Cfat + (conc_fresh_CPs + conc_fresh_CPf)/COD_conv_C_CP +
     conc_fresh_VSd/COD_conv_C_VSd + conc_fresh_urea/COD_conv_C_N_urea + (sum_xa_fresh * scale_xa_fresh)/(COD_conv_C_xa));
   derivatives[n_mic+25] =  slurry_prod_rate * ((conc_fresh_CPs + conc_fresh_CPf)/COD_conv_CP_N + conc_fresh_VSd * N_VSd + conc_fresh_TAN + conc_fresh_urea);

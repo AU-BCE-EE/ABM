@@ -103,7 +103,9 @@ abm(days = 365,
     The \code{conc_fresh} element is a list itself, with the following elements:
     \code{sulfide} (sulfide), \code{urea} (urea), \code{sulfate} (sulfate), \code{TAN} (ammonia nitrogen), \code{starch} (starch and sugars),
     \code{VFA} (volatile fatty acids), \code{xa_dead} (dead microbial populations), \code{Cfat} (crude fat),
-    \code{CP} (crude protein), \code{RFd} (residual fiber that is degradable: defined as neutral detergent fiber - indigestible neutral detergent fiber), \code{iNDF} (indigestible neutral detergent fiber), \code{VSd} (degradable, volatile solids), \code{VSd_A} (degradable volatile solids for Arrhenius calculation), \code{VSnd_A} (non-degradable volatile solids for Arrhenius calcualtion), \code{ash} (ash content)
+    \code{CP} (crude protein), \code{RFd} (residual fiber that is degradable: defined as neutral detergent fiber - indigestible neutral detergent fiber), \code{iNDF} (indigestible neutral detergent fiber), \code{VSd} (degradable, volatile solids), \code{VSd_A} (degradable volatile solids for Arrhenius calculation), \code{VSnd_A} (non-degradable volatile solids for Arrhenius calcualtion), \code{ash} (ash content),
+    and optionally \code{VFA_C} (carbon in VFA, g C/kg wet manure). If \code{VFA_C} is not given, VFA is assumed to be acetate (\code{VFA_C = VFA / COD_conv[['C_VFA']]}).
+    Give \code{VFA_C} when fresh slurry comes from another ABM simulation (e.g., \code{VFA_C_eff_conc} from a barn simulation), because VFA from fermentation holds acetate and H2 and therefore less C per g COD.
     Concentrations are on an elemental basis (N/kg wet manure and S/kg wet manure) or else gCOD/kg wet manure (organic components). However, for VSd_A, VSnd_A and ash the unit is g/kg wet manure.
 }
   \item{init_pars}{

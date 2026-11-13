@@ -1,8 +1,9 @@
 # Small internal helper functions and constants
 
 # Order of conc_fresh elements as used in rates_cpp()
+# VFA_C (g C/kg) is optional in conc_fresh, default is VFA as acetate (set in abm())
 conc_fresh_names <- c('sulfide', 'urea', 'sulfate', 'TAN', 'starch', 'VFA', 'xa_dead', 'Cfat', 'CPs', 'CPf',
-                      'RFd', 'iNDF', 'VSd', 'ash')
+                      'RFd', 'iNDF', 'VSd', 'ash', 'VFA_C')
 
 # Order of hydrolysis parameters (A and E) as used in rates_cpp()
 hydrol_names <- c('xa_dead', 'starch', 'Cfat', 'CPs', 'CPf', 'RFd', 'VSd', 'urea')

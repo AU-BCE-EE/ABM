@@ -262,6 +262,11 @@ abm <- function(
   } else {
     pars$pH_tab <- makeInterpTab(timeDF(pars$pH), approx_method = approx_method[['pH']])
   }
+  # Carbon in fresh VFA (g C/kg) is optional, default is VFA as acetate
+  # (VFA from upstream ABM runs holds acetate and H2, so it has less C per g COD and VFA_C can be given)
+  if (!'VFA_C' %in% names(pars$conc_fresh)) {
+    pars$conc_fresh[['VFA_C']] <- pars$conc_fresh[['VFA']] / pars$COD_conv[['C_VFA']]
+  }
   pars$conc_fresh_tab <- makeInterpTab(pars$conc_fresh, cols = conc_fresh_names, approx_method = approx_method[['conc_fresh']])
   if (is.data.frame(pars$xa_fresh)) {
     pars$xa_fresh_tab <- makeInterpTab(data.frame(time = xa_fresh_time[[1]], pars$xa_fresh), cols = grp_nms, approx_method = 'linear')
@@ -348,7 +353,7 @@ abm <- function(
          N_gap_ferm_cum = 0,
          N_gap_respir_cum = 0,
          # Carbon in VFA pool (g C), VFA pool holds acetate and H2 so C content per g COD varies
-         VFA_C = pars$conc_init[['VFA']] * slurry_mass_init / pars$COD_conv[['C_VFA']],
+         VFA_C = slurry_mass_init * if ('VFA_C' %in% names(pars$conc_init)) pars$conc_init[['VFA_C']] else pars$conc_init[['VFA']] / pars$COD_conv[['C_VFA']],
          # Cumulative load of non-degradable COD and inorganic N, for dCOD/ndCOD and Ninorg/Norg loads
          ndCOD_load_cum = 0,
          Ninorg_load_cum = 0)
@@ -444,7 +449,7 @@ abm <- function(
   dat$dCOD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + xa_fresh_tot
   dat$COD_conc_fresh <- dat$conc_fresh_VFA + dat$conc_fresh_xa_dead + dat$conc_fresh_RFd + dat$conc_fresh_starch + dat$conc_fresh_CPs + dat$conc_fresh_CPf + dat$conc_fresh_Cfat + dat$conc_fresh_VSd + xa_fresh_tot + dat$conc_fresh_iNDF
   dat$ndCOD_conc_fresh <- dat$COD_conc_fresh - dat$dCOD_conc_fresh
-  dat$C_conc_fresh <- dat$conc_fresh_VFA / pars$COD_conv[['C_VFA']] + dat$conc_fresh_xa_dead / pars$COD_conv[['C_xa']] + dat$conc_fresh_RFd / pars$COD_conv[["C_RFd"]] +
+  dat$C_conc_fresh <- dat$conc_fresh_VFA_C + dat$conc_fresh_xa_dead / pars$COD_conv[['C_xa']] + dat$conc_fresh_RFd / pars$COD_conv[["C_RFd"]] +
                       dat$conc_fresh_starch / pars$COD_conv[['C_starch']] + dat$conc_fresh_CPs / pars$COD_conv[['C_CP']] + dat$conc_fresh_CPf / pars$COD_conv[['C_CP']] + dat$conc_fresh_Cfat / pars$COD_conv[['C_Cfat']] +
                       dat$conc_fresh_VSd / pars$COD_conv[['C_VSd']] + dat$conc_fresh_iNDF / pars$COD_conv[['C_iNDF']] + xa_fresh_tot / pars$COD_conv[['C_xa']] +
                       dat$conc_fresh_urea / pars$COD_conv[['C_N_urea']]

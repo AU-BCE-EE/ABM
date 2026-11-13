@@ -770,6 +770,25 @@ add_test('compiled_equals_R_function', function() {
   }
   NULL
 }, regression = FALSE)
+add_test('conc_fresh_VFA_C_optional', function() {
+  # VFA_C in conc_fresh is optional: default (VFA as acetate) equals explicit VFA / C_VFA
+  # A lower VFA_C (VFA with H2 from an upstream ABM run) changes only C, not COD or CH4, and C balance still closes
+  cf <- man_pars2.0$conc_fresh
+  vc <- cf[['VFA']] / chem_pars2.0$COD_conv[['C_VFA']]
+  a <- run_abm(days = D)
+  b <- run_abm(days = D, man_pars = modlist(man_pars2.0, conc_fresh = c(cf, VFA_C = vc)))
+  d <- run_abm(days = D, add_pars = list(conc_fresh.VFA_C = 0.7 * vc))
+  num <- names(a)[sapply(a, is.numeric)]
+  check(isTRUE(all.equal(a[num], b[num], tolerance = 1e-12, check.attributes = FALSE)), 'Default VFA_C differs from explicit VFA / C_VFA')
+  check(all(abs(a$conc_fresh_VFA_C - vc) < 1e-12), 'Default conc_fresh_VFA_C not VFA / C_VFA')
+  check(isTRUE(all.equal(a$CH4_emis_cum, d$CH4_emis_cum, tolerance = 1e-7)), 'VFA_C changed CH4') # only solver noise
+  check(isTRUE(all.equal(a$COD_load_cum, d$COD_load_cum, tolerance = 1e-10)), 'VFA_C changed COD load')
+  dC <- (a$C_load_cum - d$C_load_cum) - 0.3 * vc * (a$slurry_load_cum - a$slurry_load_cum[1])
+  check(max(abs(dC)) < 1e-6 * max(a$C_load_cum), 'C load not reduced by VFA_C difference')
+  check(max(abs(d$C_bal_rel_resid), na.rm = TRUE) < 1e-10, 'C balance does not close with given VFA_C')
+  check(abs(d$C_conc_fresh[1] - (a$C_conc_fresh[1] - 0.3 * vc)) < 1e-10, 'C_conc_fresh does not use VFA_C')
+  NULL
+}, regression = FALSE)
 add_test('add_pars_unnamed_vector_parameter', function() {
   # Unnamed single value for a parameter with several elements sets all elements (was silently ignored)
   m0 <- mng(resid_enrich = c(OM = 0, mic = 0))

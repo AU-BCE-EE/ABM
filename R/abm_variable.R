@@ -114,6 +114,23 @@ abm_variable <- function(days, delta_t, times, y, pars, warn, slurry_mass_approx
     wash_water <- 0 * slurry_mass
   }
 
+  # Washing only takes place at a removal (emptying) event (see loop below), so wash_water anywhere else would be
+  # ignored without notice. Warn about it.
+  if (warn) {
+    lost <- which(!is.na(wash_water) & wash_water > 0 & !removals)
+    if (length(lost) > 0) {
+      lt <- signif(pars$slurry_mass[lost, 'time'], 6)
+      where <- if (slurry_mass_approx == 'early') 'the row where slurry_mass drops' else 'the row after the drop in slurry_mass'
+      warning(length(lost), ' wash_water value(s) in slurry_mass not applied (', signif(sum(wash_water[lost]), 4), ' kg in total, at time ',
+              paste(head(lt, 10), collapse = ', '), if (length(lt) > 10) ', ...', ').\n',
+              '  Washing only takes place at a slurry removal event: wash_water must sit on a removal, i.e. on ', where,
+              ' (approx_method slurry_mass = "', slurry_mass_approx, '").\n',
+              '  A drop only counts as a removal if it is larger than net evaporation minus rain since the previous row, because\n',
+              '  slurry_mass is corrected for these. At the wash row, give slurry_mass as the level after emptying (without the\n',
+              '  wash water); otherwise a rise from wash water is read as fresh slurry.')
+    }
+  }
+
   # Determine variable slurry production rate for each time interval
   slurry_prod_rate_t <- c(0, diff(pars$slurry_mass[, 'slurry_mass']) / diff(pars$slurry_mass[, 'time']))
 

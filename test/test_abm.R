@@ -534,6 +534,23 @@ add_test('variable_slurry_mass_rain_exceeds_increase', function() {
   check(!any(grepl('increases less than net rain', attr(d0, 'warnings'))), 'Unexpected rain warning with default rain = 0')
   d
 }, regression = FALSE)
+add_test('wash_water_not_at_removal_warns', function() {
+  # wash_water is only applied at a removal event: on another row it is ignored, with a warning
+  sm_on <- cbind(sm_df, wash_water = c(0, 0, 10000, 0, 0, 0, 0, 0))    # at the emptying (day 21)
+  sm_off <- cbind(sm_df, wash_water = c(0, 10000, 0, 0, 0, 0, 0, 0))   # on a filling row (day 20)
+  sm_no <- cbind(sm_df, wash_water = 0)
+  d_on <- run_abm(days = D, mng_pars = mng(slurry_mass = sm_on, wash_water = 0))
+  d_off <- run_abm(days = D, mng_pars = mng(slurry_mass = sm_off, wash_water = 0))
+  d_no <- run_abm(days = D, mng_pars = mng(slurry_mass = sm_no, wash_water = 0))
+  check(!any(grepl('wash_water value', attr(d_on, 'warnings'))), 'Warning for wash_water at a removal event')
+  check(any(grepl('wash_water value.*not applied', attr(d_off, 'warnings'))), 'No warning for wash_water not at a removal event')
+  # tolerance: ODE solver noise in slurry mass (~1e-6 kg)
+  check(abs(sum(d_on$slurry_mass_eff) - sum(d_no$slurry_mass_eff) - 10000) < 1e-3, 'wash_water at removal not applied')
+  check(abs(sum(d_off$slurry_mass_eff) - sum(d_no$slurry_mass_eff)) < 1e-3, 'wash_water not at removal changed effluent')
+  w_off <- run_abm(days = D, mng_pars = mng(slurry_mass = sm_off, wash_water = 0), warn = FALSE)
+  check(!any(grepl('wash_water value', attr(w_off, 'warnings'))), 'wash_water warning with warn = FALSE')
+  d_off
+}, regression = FALSE)
 add_test('no_emptying_at_end_of_run', function() {
   # Simulation end (100 d) is not an emptying time (42, 84 d), so there must be no effluent at the end
   d <- run_abm(days = 100, mng_pars = mng(empty_int = 42))

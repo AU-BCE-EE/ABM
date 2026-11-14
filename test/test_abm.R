@@ -653,6 +653,67 @@ add_test('add_pars_data_frame_replaces_data_frame', function() {
   check(all(abs(d$temp_C - 12) < 1e-8), 'add_pars temp_C data frame not used over mng_pars data frame')
   d
 }, regression = FALSE)
+add_test('add_pars_fixed_value_into_data_frame', function() {
+  # A fixed value in add_pars for a time-variable (data frame) parameter goes into the data frame:
+  # the given columns are constant over time, time and the other columns are unchanged
+  cnst <- function(x, v) all(abs(x - v) < 1e-10)
+  mp <- modlist(man_pars2.0, conc_fresh = cf_df)                     # VFA 1.7/5/2, TAN 0/1/2 at time 0/60/120
+  at <- function(d, col, t) d[[col]][which.min(abs(d$time - t))]
+  for (ap in list(list(conc_fresh.VFA = 4), list(conc_fresh = list(VFA = 4)), list(conc_fresh = c(VFA = 4)))) {
+    d <- run_abm(days = D, man_pars = mp, add_pars = ap)
+    check_ts(d, D, conserv = FALSE)
+    check(cnst(d$conc_fresh_VFA, 4), paste('conc_fresh VFA not constant 4 with add_pars', names(ap)))
+    check(abs(at(d, 'conc_fresh_TAN', 60) - 1) < 1e-10 && abs(at(d, 'conc_fresh_TAN', 120) - 2) < 1e-10, 'other conc_fresh columns changed')
+    check(abs(d$VFA_conc[1] - 4) < 1e-10 && abs(d$TAN_conc[1] - 0) < 1e-10, 'starting concentration not first row of modified conc_fresh')
+  }
+  gp <- modlist(grp_pars2.0, xa_fresh = xaf_df)                     # m0 0.06/0.1/0.06, m1 0.06/0.02/0.06
+  d <- run_abm(days = D, grp_pars = gp, add_pars = list(xa_fresh.m1 = 0.2))
+  check_ts(d, D)
+  check(cnst(d$xa_fresh_m1, 0.2) && abs(at(d, 'xa_fresh_m0', 60) - 0.1) < 1e-10, 'xa_fresh.m1 not put into data frame')
+  d <- run_abm(days = D, grp_pars = gp, add_pars = list(xa_fresh = 0.2))
+  check_ts(d, D)
+  check(cnst(d$xa_fresh_m0, 0.2) && cnst(d$xa_fresh_m1, 0.2) && cnst(d$xa_fresh_sr1, 0.2), 'unnamed xa_fresh did not set all groups')
+  d <- run_abm(days = D, grp_pars = gp, add_pars = list(xa_fresh = c(all = 0.2)))
+  check(cnst(d$xa_fresh_m0, 0.2) && cnst(d$xa_fresh_m2, 0.2), 'xa_fresh all did not set all groups')
+  d <- run_abm(days = D, grp_pars = gp, add_pars = list(xa_fresh = c(default = 0.2, m1 = 0.3)))
+  check_ts(d, D)
+  check(cnst(d$xa_fresh_m1, 0.3) && cnst(d$xa_fresh_m0, 0.2) && cnst(d$xa_fresh_sr1, 0.2), 'xa_fresh default + m1 not put into data frame')
+  d <- run_abm(days = D, grp_pars = gp, add_pars = list(xa_fresh = c(all = 0.2, m1 = 0.3)))
+  check(any(grepl('both an "all" value', attr(d, 'warnings'))) && cnst(d$xa_fresh_m1, 0.2), 'no warning or wrong value for xa_fresh all + m1')
+  # Single-value parameters: unnamed value goes into the column named like the parameter, other columns kept
+  d <- run_abm(days = D, mng_pars = mng(temp_C = temp_df), add_pars = list(temp_C = 15))
+  check_ts(d, D)
+  check(cnst(d$temp_C, 15), 'temp_C not constant 15')
+  d <- run_abm(days = D, man_pars = modlist(man_pars2.0, pH = pH_df), add_pars = list(pH = 6.5))
+  check(cnst(d$pH, 6.5), 'pH not constant 6.5')
+  sm_w <- cbind(sm_df, wash_water = c(0, 0, 10000, 0, 0, 0, 0, 0))
+  d <- run_abm(days = D, mng_pars = mng(slurry_mass = sm_w, wash_water = 0), add_pars = list(slurry_mass = 30000))
+  check_ts(d, D, mass_balance = FALSE)
+  check(sum(d$slurry_mass_eff) < 1e-6, 'constant slurry_mass data frame should give no removals')
+  d
+}, regression = FALSE)
+add_test('wthr_pars_temp_C_never_overrides_mng_temp_C', function() {
+  # temp_C in wthr_pars is ignored: slurry temperature always comes from mng_pars (or add_pars)
+  w <- modlist(wthr_pars2.0, temp_C = 5)
+  d <- run_abm(days = D, wthr_pars = w, mng_pars = mng(temp_C = 25))
+  check(all(abs(d$temp_C - 25) < 1e-10), 'wthr_pars temp_C overrides mng_pars temp_C')
+  d <- run_abm(days = D, wthr_pars = w, mng_pars = mng(temp_C = temp_df))
+  check_ts(d, D)
+  check(abs(d$temp_C[d$time == 30][1] - 15) < 1e-8, 'wthr_pars temp_C overrides mng_pars temp_C data frame')
+  d <- run_abm(days = D, wthr_pars = w, anim_pars = pig_pars3.0, mng_pars = mng(temp_C = 25))
+  check(all(abs(d$temp_C - 25) < 1e-10), 'wthr_pars temp_C overrides mng_pars temp_C with anim_pars')
+  d <- run_abm(days = D, wthr_pars = w, mng_pars = mng(temp_C = 25), add_pars = list(temp_C = 15))
+  check(all(abs(d$temp_C - 15) < 1e-10), 'add_pars temp_C not used')
+  d0 <- run_abm(days = D, mng_pars = mng(temp_C = 25))
+  check(isTRUE(all.equal(d$CH4_emis_cum[nrow(d)] > 0, TRUE)) && isTRUE(all.equal(run_abm(days = D, wthr_pars = w, mng_pars = mng(temp_C = 25))$CH4_emis_cum, d0$CH4_emis_cum)),
+        'temp_C in wthr_pars changes results')
+  # duplicated names in a pars list give a warning
+  p <- c(wthr_pars2.0, list(evap = 1), def_mng, man_pars2.0, list(conc_init = man_pars2.0$conc_fresh), grp_pars2.0, mic_pars2.0,
+         chem_pars2.0, arrh_pars2.0, list(days = D), resp = TRUE, pH_inhib_overrule = FALSE, list(area = 100))
+  d <- run_abm(days = D, pars = p)
+  check(any(grepl('given more than once: area', attr(d, 'warnings'))), 'No warning for duplicated name in pars')
+  d
+}, regression = FALSE)
 add_test('add_pars_conc_init_beats_conc_fresh', function() {
   # conc_init given in add_pars is not replaced by conc_fresh from add_pars
   d <- run_abm(days = D, add_pars = list(conc_fresh.VFA = 5, conc_init.VFA = 2))

@@ -143,8 +143,12 @@ abm <- function(
     }
   }
   
+  # Slurry temperature is mng_pars$temp_C (air temperature is wthr_pars$temp_air_C): temp_C in wthr_pars is never used,
+  # so it can never override mng_pars$temp_C when the lists are combined below
+  wthr_pars <- wthr_pars[names(wthr_pars) != 'temp_C']
+
   # Combine pars to make extraction and pass to rates() easier
-  if (is.null(pars)) { 
+  if (is.null(pars)) {
     pars <- c(wthr_pars, evap_pars, mng_pars, man_pars, init_pars, grp_pars, mic_pars, chem_pars, arrh_pars, list(days = days), resp = resp, pH_inhib_overrule = pH_inhib_overrule)
   }
   
@@ -153,6 +157,12 @@ abm <- function(
     warning('Using anim_pars instead of grp_pars, arrh_pars and man_pars')
   } 
   
+  # A parameter name that occurs more than once (e.g., in a pars list made with c()) is ambiguous: only the first one is used
+  dup <- unique(names(pars)[duplicated(names(pars)) & names(pars) != ''])
+  if (warn && length(dup) > 0) {
+    warning('Parameter(s) given more than once: ', paste(dup, collapse = ', '), '. Only the first one is used.')
+  }
+
   # if variable conc fresh, we need to modify the conc_init a little
   if (is.data.frame(pars$conc_fresh) & (length(pars$conc_init) == length(pars$conc_fresh))) {
     pars$conc_init <- pars$conc_fresh[1, -which(names(pars$conc_fresh) == "time")]
@@ -190,6 +200,11 @@ abm <- function(
     for (i in names(add_pars)) {
       # grps replaces the whole vector, see below
       if (i == 'grps') next
+      # Fixed value for a time-variable (data frame) parameter: goes into the data frame, time column is kept
+      if (is.data.frame(pars[[i]]) && !is.data.frame(add_pars[[i]])) {
+        pars[[i]] <- fixedIntoDF(pars[[i]], add_pars[[i]], i, grp = i %in% grp_par_nms, warn = warn)
+        next
+      }
       if (!is.data.frame(add_pars[[i]]) && length(pars[[i]]) > 1) {
         ap_nms <- names(add_pars[[i]])
         if (is.null(ap_nms) || all(ap_nms == '')) {

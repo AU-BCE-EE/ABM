@@ -67,6 +67,7 @@ abm(days = 365,
     Weather inputs.
     List with elements `temp_air_C` in degree C, `RH` relative humidity in percent, `rain` is precipitation in kg/m2/day, `pres_kpa` is ambient pressure in kPa, `rs` is solar radiation in MJ/m2/d.
     Default \code{rain} is 0 (in-house storage), set it for outdoor storage.
+    Slurry temperature is set in \code{mng_pars} (\code{temp_C}); a \code{temp_C} element in \code{wthr_pars} is ignored and never overrides it.
     With variable slurry mass, rain is reduced in intervals where the given slurry mass increases less than net rain - evaporation (with a warning), so simulated slurry mass follows the given values.
     See \code{\link{parameters}}.
 }
@@ -199,6 +200,8 @@ abm(days = 365,
     \code{add_pars} has the highest priority: its values replace those given in \code{man_pars}, \code{grp_pars}, \code{mng_pars} etc., \code{anim_pars}, and \code{pars}.
     Single elements of a vector or list parameter can be set with \code{par_key}, e.g. \code{add_pars = list(conc_fresh.VFA = 3, qhat_opt.m1 = 2)}.
     A data frame in \code{add_pars} replaces the parameter completely, also if a data frame was given elsewhere.
+    A fixed value for a parameter given elsewhere as a data frame (e.g., time-variable \code{conc_fresh} or \code{xa_fresh}) goes into that data frame:
+    the given columns become constant over time, and the time column and other columns are unchanged.
     See section 'Priority of parameter inputs' and vignette.
 }
   \item{pars}{
@@ -276,12 +279,20 @@ abm(days = 365,
     \item \code{anim_pars} (replaces \code{grp_pars}, \code{man_pars}, and \code{arrh_pars}, with a warning; if \code{anim_pars} is given, \code{pars} is ignored).
     \item \code{pars} (if given, the separate \code{*_pars} arguments and \code{init_pars} are ignored).
     \item The separate arguments \code{wthr_pars}, \code{evap_pars}, \code{mng_pars}, \code{man_pars}, \code{init_pars}, \code{grp_pars}, \code{mic_pars}, \code{chem_pars}, \code{arrh_pars}.
-          These are combined into one list in this order. If the same name occurs in two of them (e.g., \code{temp_C} in both \code{wthr_pars} and \code{mng_pars}), the first one is used.
+          These are combined into one list in this order. If the same name occurs in two of them, the first one is used, with a warning.
+          Exception: \code{temp_C} in \code{wthr_pars} is always ignored, so slurry temperature always comes from \code{mng_pars} (or \code{add_pars}).
   }
   How \code{add_pars} values are combined with the existing value:
   \itemize{
     \item A named vector or list (or \code{par_key} elements like \code{conc_fresh.VFA}) replaces only the named elements.
     \item A data frame (time series) replaces the parameter completely, also if another data frame was given.
+    \item A fixed value (not a data frame) for a parameter that is a data frame (e.g., time-variable \code{conc_fresh} in \code{man_pars}
+          or \code{xa_fresh} in \code{grp_pars}) is put into the data frame: the given columns become constant over time,
+          the time column and all other columns are unchanged.
+          Named values set those columns (e.g., \code{conc_fresh.VFA = 4} or \code{xa_fresh = c(m1 = 0.2)}).
+          An unnamed value sets the column named like the parameter if there is one (e.g., \code{temp_C}, \code{pH}, \code{slurry_mass},
+          so a \code{wash_water} column is kept), otherwise all columns (e.g., all groups in \code{xa_fresh}).
+          For \code{xa_fresh}, \code{default} sets the groups without their own value and \code{all} sets every group.
     \item For microbial group parameters, a single value replaces the old value; groups without their own value keep the old \code{default} (or \code{all}) value.
           An unnamed single value sets all groups.
   }

@@ -38,6 +38,44 @@ timeDF <- function(dat) {
   return(dat)
 }
 
+# Put a fixed (not data frame) value from add_pars into a time-variable parameter given as a data frame
+# (e.g., conc_fresh, xa_fresh, temp_C). The data frame structure is kept: the given columns become constant
+# over time, the time column and all other columns are unchanged.
+# val: named values set those columns; an unnamed value sets the column named like the parameter (nm) if there
+#   is one (e.g., temp_C, pH, slurry_mass), otherwise all value columns (several unnamed values: by position)
+# grp: microbial group parameter, where names 'default' (groups without own value) and 'all' (every group) are keywords
+fixedIntoDF <- function(df, val, nm, grp = FALSE, warn = TRUE) {
+  vcols <- setdiff(names(df), 'time')
+  v <- unlist(val)
+  v_nms <- names(v)
+  if (is.null(v_nms) || all(v_nms == '')) {
+    target <- if (nm %in% vcols) nm else vcols
+    if (length(v) == 1) {
+      df[target] <- v[[1]]
+    } else if (length(v) == length(target)) {
+      df[target] <- as.list(unname(v))
+    } else {
+      stop('`add_pars` element ', nm, ' is unnamed and has length ', length(v), ', but the time-variable parameter has ',
+           length(target), ' value column(s) (', paste(target, collapse = ', '), '). Give a single value, one value per column, or named values.')
+    }
+    return(df)
+  }
+  if (any(v_nms == '')) stop('`add_pars` element ', nm, ' has some unnamed values. Name all values or none.')
+  if ('time' %in% v_nms) stop('`add_pars` element ', nm, ': the time column of a time-variable parameter cannot be set.')
+  kw <- if (grp) c('all', 'default') else character()
+  named <- setdiff(v_nms, kw)
+  if ('default' %in% v_nms && grp) df[vcols] <- v[['default']]
+  if (length(named) > 0) df[named] <- as.list(v[named])
+  if ('all' %in% v_nms && grp) {
+    if (warn && length(named) > 0) {
+      warning('add_pars element ', nm, ' has both an "all" value and group-specific values (', paste(named, collapse = ', '),
+              '). "all" sets every group, so the group-specific values are ignored.\n  Use "default" instead of "all" to give a value for the groups without their own value.')
+    }
+    df[setdiff(names(df), 'time')] <- v[['all']]
+  }
+  df
+}
+
 # Keep only some rows (output times) of simulation output
 # Effluent (columns ending in _eff) in dropped rows is added to the next kept row, so cumulative effluent is correct
 filterTimes <- function(dat, keep) {

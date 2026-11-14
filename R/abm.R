@@ -39,6 +39,9 @@ abm <- function(
   rates_calc = 'instant',# Type of rate output (instantaneuous or average)
   warn = TRUE) {
 
+  # Was init_pars given by the user? If not, conc_fresh given in add_pars is also used as starting concentration (see below)
+  init_missing <- missing(init_pars)
+
   # If startup repetitions are requested, repeat some number of times before returning results
   if (startup > 0) {
 
@@ -51,6 +54,13 @@ abm <- function(
 
     value.orig <- value
     value <- 'ts'
+
+    # xa_init in add_pars (also as xa_init.<group>) is only used in the first run: later runs start from the
+    # microbial biomass at the end of the previous run (startup state has priority)
+    xa_init_add <- length(add_pars) > 0 && any(grepl(paste0('^xa_init(', par_key, '|$)'), names(add_pars)))
+    if (xa_init_add) {
+      message('xa_init in add_pars is used in the first startup run only; later runs start from the end of the previous run.')
+    }
 
     for (i in 1:(startup + 1)) {
       if (i > startup) {
@@ -65,23 +75,31 @@ abm <- function(
       }
 
       # Call abm() with arguments given in outside call except for startup and value
-      out <- abm(days = days, delta_t = delta_t, times = times, wthr_pars = wthr_pars, evap_pars = evap_pars,
-                 mng_pars = mng_pars, man_pars = man_pars, init_pars = init_pars,
-                 grp_pars = grp_pars, mic_pars = mic_pars, chem_pars = chem_pars, arrh_pars = arrh_pars,
-                 add_pars = add_pars, pars = pars, anim_pars = anim_pars,
-                 startup = 0, 
-                 resp = resp,
-                 pH_inhib_overrule = pH_inhib_overrule,
-                 starting = starting, 
-                 approx_method = approx_method, 
-                 par_key = par_key, value = value, rates_calc = rates_calc, warn = warn)
+      args_i <- list(days = days, delta_t = delta_t, times = times, wthr_pars = wthr_pars, evap_pars = evap_pars,
+                     mng_pars = mng_pars, man_pars = man_pars, init_pars = init_pars,
+                     grp_pars = grp_pars, mic_pars = mic_pars, chem_pars = chem_pars, arrh_pars = arrh_pars,
+                     add_pars = add_pars, pars = pars, anim_pars = anim_pars,
+                     startup = 0,
+                     resp = resp,
+                     pH_inhib_overrule = pH_inhib_overrule,
+                     starting = starting,
+                     approx_method = approx_method,
+                     par_key = par_key, value = value, rates_calc = rates_calc, warn = warn)
+      # First run: leave init_pars out if the user did not give it, so starting concentrations are set as without startup
+      # (later runs start from the end of the previous run)
+      if (i == 1 && init_missing) args_i['init_pars'] <- NULL
+      # Later runs: drop xa_init from add_pars so the startup state (in grp_pars, anim_pars, or pars) is used
+      if (i > 1 && xa_init_add) {
+        args_i$add_pars <- add_pars[!grepl(paste0('^xa_init(', par_key, '|$)'), names(add_pars))]
+      }
+      out <- do.call(abm, args_i)
  
       if (i <= startup) {
         # Pull starting *concentrations* (inlcuding xa) from previous sim
         tso <- out
 
         # Names need to deal with possible data frame for conc_fresh
-        cf <- if (is.null(anim_pars)) man_pars$conc_fresh else anim_pars$conc_fresh
+        cf <- if (!is.null(anim_pars)) anim_pars$conc_fresh else if (!is.null(pars)) pars$conc_fresh else man_pars$conc_fresh
         cf_names <- names(cf)[names(cf) != 'time']
 
         init_pars$conc_init <- unlist(tso[nrow(tso), paste0(cf_names, '_conc')])
@@ -89,13 +107,18 @@ abm <- function(
 
         # Microbial groups (could be changed in add_pars)
         # add_pars can be a list or a named vector (e.g. parameter estimates from optim()), so no $ here
-        grps <- if ('grps' %in% names(add_pars)) add_pars[['grps']] else if (is.null(anim_pars)) grp_pars$grps else anim_pars$grps
+        grps <- if ('grps' %in% names(add_pars)) add_pars[['grps']] else if (!is.null(anim_pars)) anim_pars$grps else if (!is.null(pars)) pars$grps else grp_pars$grps
         xa_init <- unlist(tso[nrow(tso), paste0(grps, '_conc')])
         names(xa_init) <- grps
         if (is.null(anim_pars)) {
           grp_pars$xa_init <- xa_init
         } else {
           anim_pars$xa_init <- xa_init
+        }
+        # With a complete pars list, init_pars and grp_pars are not used, so the startup state goes into pars
+        if (!is.null(pars)) {
+          pars$conc_init <- init_pars$conc_init
+          pars$xa_init <- xa_init
         }
       }
  
@@ -187,12 +210,31 @@ abm <- function(
           pars[[i]][ap_nms] <- add_pars[[i]]
         }
       } else {
-        def <- pars[[i]]['all']
+        # Replace the whole parameter (also when both are data frames: add_pars has priority)
+        # For vector grp_pars, the old 'all' or 'default' value stays as default for groups not given in add_pars
+        # (not for time series, i.e. data frames)
+        def <- NULL
+        if (i %in% grp_par_nms && !is.data.frame(pars[[i]])) {
+          if ('all' %in% names(pars[[i]])) def <- pars[[i]]['all'] else if ('default' %in% names(pars[[i]])) def <- pars[[i]]['default']
+        }
         pars[[i]] <- add_pars[[i]]
-        if (i %in% grp_par_nms) {
-          pars[[i]]['default'] <- def
+        if (i %in% grp_par_nms && !is.data.frame(pars[[i]])) {
+          # A single unnamed value sets all groups (as for parameters with several elements above)
+          if (is.null(names(pars[[i]])) && length(pars[[i]]) == 1) {
+            pars[[i]] <- c(default = unname(pars[[i]]))
+          } else if (!is.null(def) && !any(names(pars[[i]]) %in% c('all', 'default'))) {
+            pars[[i]]['default'] <- def
+          }
         }
       }
+    }
+
+    # conc_fresh given in add_pars is also the starting concentration, unless init_pars (or conc_init in add_pars)
+    # is given explicitly (for time-variable conc_fresh: the first row)
+    if (init_missing && 'conc_fresh' %in% names(add_pars) && !'conc_init' %in% names(add_pars)) {
+      cf <- pars$conc_fresh
+      if (is.data.frame(cf)) cf <- as.list(cf[1, names(cf) != 'time', drop = FALSE])
+      pars$conc_init <- cf
     }
   }
   
@@ -211,12 +253,16 @@ abm <- function(
   
   # Fill in default values for grp_pars if keyword name `default` or `all` is used
   # Note: Microbial groups are defined by grps element
-  # Note: `default` does *not* work with add_pars argument because grps are already defined in defaults
-  # Note: But `all` *does* work
+  # Note: `default` is used for groups without their own value; `all` sets every group (overriding group values)
   grp_nms <- pars$grps
   for (i in grp_par_nms) {
     ppo <- pars[[i]]
     p_nms <- names(pars[[i]])
+    if (warn && any(p_nms == 'all') && any(!p_nms %in% c('all', 'default', ''))) {
+      warning('grp_pars element ', i, ' has both an "all" value and group-specific values (',
+              paste(setdiff(p_nms, c('all', 'default', '')), collapse = ', '), '). "all" sets every group, so the group-specific ',
+              'values are ignored.\n  Use "default" instead of "all" to give a value for the groups without their own value.')
+    }
     if (any(p_nms == 'default')) {
       pars[[i]][grp_nms] <- pars[[i]]['default']
       if (any(p_nms != 'default')) {

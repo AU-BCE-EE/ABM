@@ -109,9 +109,11 @@ abm(days = 365,
     Concentrations are on an elemental basis (N/kg wet manure and S/kg wet manure) or else gCOD/kg wet manure (organic components). However, for VSd_A, VSnd_A and ash the unit is g/kg wet manure.
 }
   \item{init_pars}{
-    List of parameters that define the intial concentrations of organic matter components in the slurry.
-    The elements are similar to the \code{conc_fresh} elements in 'man_pars'. 
-    By default the element values are the same as values in \code{conc_fresh}
+    List with element \code{conc_init} that defines the initial concentrations of slurry components in the storage.
+    The elements are similar to the \code{conc_fresh} elements in 'man_pars'.
+    If \code{init_pars} is not given, initial concentrations are equal to fresh slurry concentrations (\code{conc_fresh}, first row if it is a data frame),
+    also when \code{conc_fresh} is given in \code{add_pars}.
+    See section 'Priority of parameter inputs'.
 }
 
   \item{grp_pars}{
@@ -135,6 +137,10 @@ abm(days = 365,
    \code{ki_H2S_min}, inhibition parameter3 for calculating H2S inhibition factor (g H2S-sulfur/kg);
 
    Each of these elements is a vector with a named element for each group.
+   Two keywords can be used as element names: \code{default} gives the value for all groups that do not have their own value
+   (e.g., \code{xa_init = c(default = 0.06, m1 = 0.1)}), and \code{all} sets the value for every group, overriding group-specific values.
+   A warning is given if \code{all} is combined with group-specific values, because these are then ignored.
+   \code{xa_fresh} can also be a data frame with column \code{time} and one column per group (time-variable fresh slurry biomass).
    See usage, examples, and vignettes.
 }
   \item{mic_pars}{
@@ -189,25 +195,39 @@ abm(days = 365,
 }
         
   \item{add_pars}{
-    List of other additional parameters not set in other arguments, or to be modified from defaults.
-    See vignette.
+    List (or named vector, e.g. parameter estimates from \code{optim()}) of parameters to be modified from the values in the other arguments.
+    \code{add_pars} has the highest priority: its values replace those given in \code{man_pars}, \code{grp_pars}, \code{mng_pars} etc., \code{anim_pars}, and \code{pars}.
+    Single elements of a vector or list parameter can be set with \code{par_key}, e.g. \code{add_pars = list(conc_fresh.VFA = 3, qhat_opt.m1 = 2)}.
+    A data frame in \code{add_pars} replaces the parameter completely, also if a data frame was given elsewhere.
+    See section 'Priority of parameter inputs' and vignette.
 }
   \item{pars}{
-    Combined parameters, as an alternative to all the `*_pars` arguments.
-    Used internally when \code{startup} > 0 and may be convenient to use in an \code{abm} call in some cases.
+    Combined parameters, as an alternative to all the `*_pars` arguments (a single list with all parameters).
+    If given, \code{man_pars}, \code{grp_pars}, \code{init_pars}, \code{mng_pars}, \code{wthr_pars}, \code{evap_pars}, \code{mic_pars}, \code{chem_pars}, and \code{arrh_pars} are ignored.
+    \code{add_pars} still has priority over \code{pars}, and if \code{anim_pars} is given, \code{pars} is ignored.
+    See section 'Priority of parameter inputs'.
 }
   \item{startup}{
     Number of startup times the simulation should be run before running a final time.
-    Results from one simulation become starting conditions for next.
+    Results from one simulation become starting conditions for next:
+    each run starts from the slurry concentrations and microbial biomass at the end of the previous run.
     Used to spin up or stabilize microbial population and substrates so that initial conditions do not affect results.
+    Initial values given by the user (\code{init_pars}, \code{xa_init}, or the defaults) are only used in the first run.
+    \code{xa_init} given in \code{add_pars} is also only used in the first run (with a message);
+    \code{conc_init} in \code{add_pars} cannot be combined with \code{startup} (error).
+    Fresh slurry inputs (\code{conc_fresh}, \code{xa_fresh}) and all other parameters are the same in every run.
     Length-one integer vector.
     Optional.
+    See section 'Priority of parameter inputs'.
 }
   \item{starting}{
     Starting conditions.
     Output (\code{value = 'ts'}) from a previous \code{abm()} call.
-    Values here for microbial biomass and slurry mass override those set in other arguments.
+    The last row sets the complete initial state: slurry mass, mass of all slurry components, and microbial biomass.
+    This overrides all other initial values (\code{init_pars}, \code{xa_init} in \code{grp_pars}, \code{anim_pars}, or \code{add_pars},
+    initial \code{slurry_mass} in \code{mng_pars}, including the first value of a \code{slurry_mass} data frame).
     Used to start one simulation where another ended.
+    With \code{startup} > 0, every run starts from \code{starting}, so startup runs do not change the result.
     Optional.
 }
   \item{approx_method}{
@@ -239,12 +259,52 @@ abm(days = 365,
     \code{'eff'} will return only those rows where slurry was removed--this option is convenient for working with effluent slurry.
 }
   \item{warn}{
-    Currently not used.
+    Set to \code{FALSE} to suppress some warnings about inputs and results (e.g., mass balance that does not close,
+    \code{wash_water} that is not applied because it is not at a slurry removal, rain reduced to follow given slurry mass,
+    \code{all} combined with group-specific values in \code{grp_pars}).
 }
 }
 
 \details{
   The function simulates anaerobic biodegradation.
+}
+
+\section{Priority of parameter inputs}{
+  The same parameter can be given in several arguments. The value used is taken from the first source in this list:
+  \enumerate{
+    \item \code{add_pars} (highest priority).
+    \item \code{anim_pars} (replaces \code{grp_pars}, \code{man_pars}, and \code{arrh_pars}, with a warning; if \code{anim_pars} is given, \code{pars} is ignored).
+    \item \code{pars} (if given, the separate \code{*_pars} arguments and \code{init_pars} are ignored).
+    \item The separate arguments \code{wthr_pars}, \code{evap_pars}, \code{mng_pars}, \code{man_pars}, \code{init_pars}, \code{grp_pars}, \code{mic_pars}, \code{chem_pars}, \code{arrh_pars}.
+          These are combined into one list in this order. If the same name occurs in two of them (e.g., \code{temp_C} in both \code{wthr_pars} and \code{mng_pars}), the first one is used.
+  }
+  How \code{add_pars} values are combined with the existing value:
+  \itemize{
+    \item A named vector or list (or \code{par_key} elements like \code{conc_fresh.VFA}) replaces only the named elements.
+    \item A data frame (time series) replaces the parameter completely, also if another data frame was given.
+    \item For microbial group parameters, a single value replaces the old value; groups without their own value keep the old \code{default} (or \code{all}) value.
+          An unnamed single value sets all groups.
+  }
+
+  Initial state (storage contents at time 0), in order of priority:
+  \enumerate{
+    \item \code{starting}: the last row of an earlier simulation sets slurry mass, all slurry components, and microbial biomass. All other initial values are ignored.
+    \item Concentrations: \code{init_pars} if given explicitly (\code{conc_init} in \code{add_pars} also works, but not together with \code{startup});
+          otherwise fresh slurry concentrations \code{conc_fresh} (first row if a data frame), taken from \code{add_pars} if \code{conc_fresh} is given there,
+          otherwise from \code{anim_pars}, \code{pars}, or \code{man_pars}.
+    \item Microbial biomass: \code{xa_init} from \code{add_pars}, \code{anim_pars}, \code{pars}, or \code{grp_pars} (same priority as other parameters).
+    \item Slurry mass: initial \code{slurry_mass} in \code{mng_pars} (first value if a data frame).
+  }
+
+  With \code{startup} > 0, the simulation is repeated and each run starts from the state at the end of the previous run
+  (concentrations and microbial biomass; slurry mass follows the inputs). The initial values above are used in the first run only:
+  \itemize{
+    \item The startup state has priority over \code{xa_init} in \code{add_pars} (used in the first run only, with a message).
+    \item \code{conc_init} in \code{add_pars} is not allowed with \code{startup} (error).
+    \item With \code{pars}, the startup state is written into \code{pars}, so it is also used then.
+    \item With \code{starting}, every run starts from \code{starting}, so startup runs have no effect.
+  }
+  All other parameters, including fresh slurry composition (\code{conc_fresh}, \code{xa_fresh}), are the same in every run, with the priorities described above.
 }
 
 \value{

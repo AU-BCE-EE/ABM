@@ -625,6 +625,74 @@ std_test('par_key_custom', list(days = D, add_pars = list(qhat_opt__m1 = 2), par
            d2 <- run_abm(days = D, add_pars = list(qhat_opt.m1 = 2))
            check(isTRUE(all.equal(d$CH4_emis_cum, d2$CH4_emis_cum)), 'par_key = "__" gives different result than "."')
          })
+add_test('add_pars_conc_fresh_sets_conc_init', function() {
+  # conc_fresh in add_pars is also the starting concentration (first row if time-variable), unless init_pars is given
+  cf2 <- modlist(man_pars2.0$conc_fresh, VFA = 5)
+  d <- run_abm(days = D, add_pars = list(conc_fresh = cf2))
+  check(abs(d$VFA_conc[1] - 5) < 1e-8 && abs(d$conc_fresh_VFA[1] - 5) < 1e-8, 'add_pars conc_fresh not used as starting concentration')
+  d <- run_abm(days = D, add_pars = list(conc_fresh.VFA = 6))
+  check(abs(d$VFA_conc[1] - 6) < 1e-8, 'add_pars conc_fresh.VFA not used as starting concentration')
+  d <- run_abm(days = D, add_pars = list(conc_fresh = cf_df))
+  check(abs(d$VFA_conc[1] - cf_df$VFA[1]) < 1e-8, 'first row of add_pars conc_fresh data frame not used as starting concentration')
+  d <- run_abm(days = D, add_pars = list(conc_fresh = cf2), init_pars = list(conc_init = modlist(man_pars2.0$conc_fresh, VFA = 9)))
+  check(abs(d$VFA_conc[1] - 9) < 1e-8 && abs(d$conc_fresh_VFA[1] - 5) < 1e-8, 'explicit init_pars not used with add_pars conc_fresh')
+  # With startup, add_pars conc_fresh gives the same result as the same conc_fresh in man_pars
+  d1 <- run_abm(days = D, man_pars = modlist(man_pars2.0, conc_fresh = cf2), startup = 1)
+  d2 <- run_abm(days = D, add_pars = list(conc_fresh = cf2), startup = 1)
+  check(identical(d1$CH4_emis_cum, d2$CH4_emis_cum), 'startup: add_pars conc_fresh differs from same conc_fresh in man_pars')
+  d2
+}, regression = FALSE)
+add_test('add_pars_data_frame_replaces_data_frame', function() {
+  # A data frame in add_pars replaces a data frame given elsewhere (add_pars has priority)
+  cf_b <- transform(cf_df, VFA = c(8, 9, 10))
+  d <- run_abm(days = D, man_pars = modlist(man_pars2.0, conc_fresh = cf_df), add_pars = list(conc_fresh = cf_b))
+  check_ts(d, D, conserv = FALSE)
+  check(abs(d$conc_fresh_VFA[d$time == 70][1] - 9) < 1e-8, 'add_pars conc_fresh data frame not used over man_pars data frame')
+  t_b <- data.frame(time = c(0, 120), temp_C = c(12, 12))
+  d <- run_abm(days = D, mng_pars = mng(temp_C = temp_df), add_pars = list(temp_C = t_b))
+  check(all(abs(d$temp_C - 12) < 1e-8), 'add_pars temp_C data frame not used over mng_pars data frame')
+  d
+}, regression = FALSE)
+add_test('add_pars_conc_init_beats_conc_fresh', function() {
+  # conc_init given in add_pars is not replaced by conc_fresh from add_pars
+  d <- run_abm(days = D, add_pars = list(conc_fresh.VFA = 5, conc_init.VFA = 2))
+  check(abs(d$VFA_conc[1] - 2) < 1e-8 && abs(d$conc_fresh_VFA[1] - 5) < 1e-8, 'conc_init in add_pars replaced by conc_fresh')
+  d
+}, regression = FALSE)
+add_test('xa_init_default_all_and_groups', function() {
+  # Default data sets use xa_init = c(default = ...); group values then work, "all" + groups gives a warning
+  check(identical(names(grp_pars2.0$xa_init), 'default') && identical(names(pig_pars3.0$xa_init), 'default'), 'Default xa_init not named "default"')
+  g <- modlist(grp_pars2.0, xa_init = c(default = 0.0628, m1 = 0.2))
+  d <- run_abm(days = D, grp_pars = g)
+  check(abs(d$m1_conc[1] - 0.2) < 1e-12 && abs(d$m0_conc[1] - 0.0628) < 1e-12, 'xa_init group value with default not used')
+  check(!any(grepl('both an "all" value', attr(d, 'warnings'))), 'Warning with default + group values')
+  d2 <- run_abm(days = D, grp_pars = modlist(grp_pars2.0, xa_init = c(all = 0.0628, m1 = 0.2)))
+  check(any(grepl('both an "all" value', attr(d2, 'warnings'))), 'No warning for all + group values')
+  check(abs(d2$m1_conc[1] - 0.0628) < 1e-12, '"all" did not set every group')
+  d3 <- run_abm(days = D, add_pars = list(xa_init.m1 = 0.2))
+  check(abs(d3$m1_conc[1] - 0.2) < 1e-12 && abs(d3$m0_conc[1] - 0.0628) < 1e-12, 'add_pars xa_init.m1 not used or other groups changed')
+  d4 <- run_abm(days = D, add_pars = list(xa_init = 0.03))
+  check(all(abs(unlist(d4[1, c('m0_conc', 'm1_conc', 'm2_conc', 'sr1_conc')]) - 0.03) < 1e-12), 'unnamed single xa_init in add_pars does not set all groups')
+  d
+}, regression = FALSE)
+add_test('startup_state_beats_add_pars_xa_init', function() {
+  # With startup, later runs start from the end of the previous run, also if xa_init is given in add_pars
+  e <- run_abm(days = D, add_pars = list(xa_init.m1 = 0.2))
+  d <- run_abm(days = D, startup = 1, add_pars = list(xa_init.m1 = 0.2))
+  check(isTRUE(all.equal(d$m1_conc[1], e$m1_conc[nrow(e)])), 'startup state not used with xa_init in add_pars')
+  d
+}, regression = FALSE)
+add_test('startup_with_pars', function() {
+  # With pars, the startup state is used too (same result as the equivalent separate arguments)
+  p <- c(wthr_pars2.0, list(evap = 0.5 * ABM:::et(temp_C = 20, pres_kpa = 101, rs = 10)), def_mng, man_pars2.0,
+         list(conc_init = man_pars2.0$conc_fresh), grp_pars2.0, mic_pars2.0, chem_pars2.0, arrh_pars2.0,
+         list(days = D), resp = TRUE, pH_inhib_overrule = FALSE)
+  d1 <- run_abm(days = D, startup = 1)
+  d2 <- run_abm(days = D, startup = 1, pars = p)
+  check(isTRUE(all.equal(d1$CH4_emis_cum, d2$CH4_emis_cum)), 'startup with pars gives different result than with separate arguments')
+  check(abs(d2$m1_conc[1] - 0.0628) > 1e-6, 'startup state not used with pars')
+  d2
+}, regression = FALSE)
 add_test('error_add_pars_bad_name', function() {
   r <- tryCatch(run_abm(days = D, add_pars = list(not_a_par = 1)), error = function(e) 'error')
   check(identical(r, 'error'), 'No error for unknown add_pars name')
